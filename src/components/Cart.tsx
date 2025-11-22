@@ -1,16 +1,21 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, X, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { CartCheckoutModal } from "@/components/CartCheckoutModal";
 
 export const Cart = () => {
+  const location = useLocation();
   const { cart, removeFromCart, getTotalPrice, getCartCount } = useCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  if (getCartCount() === 0) return null;
+  // Only show cart on Shop page
+  const isShopPage = location.pathname === "/shop";
+
+  if (getCartCount() === 0 || !isShopPage) return null;
 
   return (
     <>
