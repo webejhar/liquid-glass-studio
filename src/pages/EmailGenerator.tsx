@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 export default function EmailGenerator() {
+  const navigate = useNavigate();
   const [subject, setSubject] = useState("");
   const [details, setDetails] = useState("");
   const [keywords, setKeywords] = useState("");
@@ -37,10 +39,22 @@ export default function EmailGenerator() {
   };
 
   return (
-    <div className="min-h-screen pt-32 px-4 pb-20">
+    <div className="min-h-screen pt-8 px-4 pb-20">
       <div className="max-w-7xl mx-auto">
+        {/* Back Button */}
+        <motion.button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 px-6 py-3 mb-8 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 transition-all hover:scale-105 font-medium"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Back
+        </motion.button>
+
         <motion.h1
-          className="text-5xl font-bold mb-4 text-center"
+          className="text-4xl md:text-5xl font-bold mb-4 text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
