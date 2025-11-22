@@ -1,12 +1,18 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function Meeting() {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
-  const { toast } = useToast();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [notes, setNotes] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const timeSlots = [
     "09:00 AM",
@@ -18,14 +24,84 @@ export default function Meeting() {
     "05:00 PM",
   ];
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast({
-      title: "Meeting Request Received",
-      description:
-        "You will receive a confirmation email at webejhar@gmail.com shortly.",
-    });
+    
+    if (!name.trim() || !email.trim() || !selectedDate || !selectedTime) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Insert booking
+      const { data: bookingData, error: insertError } = await supabase
+        .from('meeting_bookings')
+        .insert({
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.trim() || null,
+          meeting_date: selectedDate,
+          meeting_time: selectedTime,
+          notes: notes.trim() || null
+        })
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      // Send email
+      const { error: emailError } = await supabase.functions.invoke('send-meeting-email', {
+        body: {
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.trim() || undefined,
+          meetingDate: selectedDate,
+          meetingTime: selectedTime,
+          notes: notes.trim() || undefined,
+          bookingId: bookingData.id
+        }
+      });
+
+      if (emailError) console.error("Email error:", emailError);
+
+      setShowConfirmation(true);
+      
+      // Reset form after delay
+      setTimeout(() => {
+        setShowConfirmation(false);
+        setName("");
+        setEmail("");
+        setPhone("");
+        setSelectedDate("");
+        setSelectedTime("");
+        setNotes("");
+      }, 3000);
+    } catch (error: any) {
+      console.error("Booking error:", error);
+      toast.error("Failed to book meeting. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (showConfirmation) {
+    return (
+      <div className="min-h-screen pt-32 px-4 pb-20 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="glass-premium p-12 rounded-3xl text-center max-w-md"
+        >
+          <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
+          <h2 className="text-3xl font-bold mb-2">Meeting Scheduled!</h2>
+          <p className="text-muted-foreground">
+            You will receive a confirmation email shortly.
+          </p>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-32 px-4 pb-20">
@@ -59,6 +135,8 @@ export default function Meeting() {
               <input
                 type="text"
                 required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
               />
             </div>
@@ -67,17 +145,21 @@ export default function Meeting() {
               <input
                 type="email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
               />
             </div>
           </div>
 
           <div>
-            <label className="block mb-2 font-medium">Phone Number *</label>
+            <label className="block mb-2 font-medium">Phone Number</label>
             <input
               type="tel"
-              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
+              placeholder="Optional"
             />
           </div>
 
@@ -120,26 +202,27 @@ export default function Meeting() {
 
           <div>
             <label className="block mb-2 font-medium">
-              Meeting Topic / Purpose *
+              Notes
             </label>
             <textarea
-              required
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
               rows={4}
               className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent resize-none"
-              placeholder="Briefly describe what you'd like to discuss..."
+              placeholder="Optional: Add any additional information..."
             />
           </div>
 
           <button
             type="submit"
-            disabled={!selectedDate || !selectedTime}
+            disabled={!selectedDate || !selectedTime || isSubmitting}
             className="w-full glass-button px-8 py-4 rounded-full font-medium hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Schedule Meeting
+            {isSubmitting ? "Scheduling..." : "Schedule Meeting"}
           </button>
 
           <p className="text-sm text-muted-foreground text-center">
-            Confirmation will be sent to webejhar@gmail.com and +8801340125311
+            Confirmation will be sent to your email
           </p>
         </motion.form>
       </div>
