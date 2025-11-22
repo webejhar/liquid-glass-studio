@@ -3,7 +3,7 @@ import { Facebook, Linkedin, Globe } from "lucide-react";
 
 export const Footer = () => {
   const location = useLocation();
-  const hideFooterPaths = ['/contact', '/meeting', '/email-generator', '/about'];
+  const hideFooterPaths = ['/contact', '/meeting', '/about'];
   
   if (hideFooterPaths.includes(location.pathname)) {
     return null;
