@@ -17,6 +17,9 @@ import Meeting from "./pages/Meeting";
 import EmailGenerator from "./pages/EmailGenerator";
 import Blog from "./pages/Blog";
 import Testimonials from "./pages/Testimonials";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +45,9 @@ const App = () => (
             <Route path="/email-generator" element={<EmailGenerator />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/testimonials" element={<Testimonials />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Footer />
