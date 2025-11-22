@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Plus, Minus, Facebook, Linkedin, Globe, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-image.png";
+import { DomainChecker } from "@/components/DomainChecker";
 
 export default function Home() {
   const [socialVisible, setSocialVisible] = useState(false);
@@ -124,6 +125,9 @@ export default function Home() {
             </div>
           </motion.div>
         </section>
+
+        {/* Domain Checker Section */}
+        <DomainChecker />
 
         {/* About/Skills Section */}
         <section className="mb-32">
