@@ -64,9 +64,36 @@ const AdminOrders = () => {
 
       if (error) throw error;
 
+      // Send email notification
+      let orderData;
+      let type = "";
+      
+      if (table === "product_orders") {
+        orderData = productOrders.find(o => o.id === id);
+        type = "order";
+      } else if (table === "domain_orders") {
+        orderData = domainOrders.find(o => o.id === id);
+        type = "domain";
+      } else {
+        orderData = meetingBookings.find(o => o.id === id);
+        type = "booking";
+      }
+
+      if (orderData) {
+        await supabase.functions.invoke("send-status-change-email", {
+          body: {
+            type,
+            status,
+            recipientEmail: orderData.buyer_email || orderData.email,
+            recipientName: orderData.buyer_name || orderData.name,
+            details: orderData,
+          },
+        });
+      }
+
       toast({
         title: "Status updated",
-        description: `Order status changed to ${status}`,
+        description: `Order status changed to ${status} and notification sent`,
       });
 
       fetchOrders();

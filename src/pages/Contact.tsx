@@ -30,20 +30,43 @@ export default function Contact() {
     };
 
     try {
-      const { error } = await supabase.functions.invoke('send-contact-email', {
+      // Save to database
+      const { error: dbError } = await supabase
+        .from('contacts')
+        .insert({
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          service: data.service,
+          subject: data.subject,
+          message: data.message,
+          is_freelancer: data.isFreelancer,
+          linkedin_url: data.linkedinUrl,
+          behance_url: data.behanceUrl,
+          website_url: data.websiteUrl,
+          category: data.category,
+        });
+
+      if (dbError) throw dbError;
+
+      // Send email notification
+      const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
         body: data
       });
 
-      if (error) throw error;
+      if (emailError) {
+        console.error("Email error:", emailError);
+        // Don't throw - contact was saved
+      }
 
-      toast.success("Thank you!");
+      toast.success("Thank you! We'll get back to you soon.");
       
       // Redirect to home after 1 second
       setTimeout(() => {
         navigate('/');
       }, 1000);
     } catch (error: any) {
-      console.error("Error sending contact email:", error);
+      console.error("Error submitting contact form:", error);
       toast.error("Sorry, something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);

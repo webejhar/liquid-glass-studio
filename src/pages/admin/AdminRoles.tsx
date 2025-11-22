@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, Trash2 } from "lucide-react";
+import { UserPlus, Trash2, UserCog } from "lucide-react";
 
 interface UserRole {
   id: string;
@@ -55,6 +55,8 @@ const AdminRoles = () => {
   const [selectedUserId, setSelectedUserId] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [managerDialogOpen, setManagerDialogOpen] = useState(false);
+  const [managerData, setManagerData] = useState({ email: "", password: "", name: "", role: "moderator" });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -165,6 +167,44 @@ const AdminRoles = () => {
     }
   };
 
+  const handleCreateManager = async () => {
+    if (!managerData.email || !managerData.password) {
+      toast({
+        title: "Missing fields",
+        description: "Email and password are required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke("create-manager", {
+        body: managerData,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Manager created",
+        description: "New manager account has been created successfully",
+      });
+
+      setManagerDialogOpen(false);
+      setManagerData({ email: "", password: "", name: "", role: "moderator" });
+      fetchUserRoles();
+      fetchProfiles();
+    } catch (error: any) {
+      toast({
+        title: "Error creating manager",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
@@ -177,13 +217,84 @@ const AdminRoles = () => {
             <h1 className="text-4xl font-bold mb-2">Role Management</h1>
             <p className="text-muted-foreground">Assign and manage user roles</p>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <UserPlus className="w-4 h-4" />
-                Assign Role
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Dialog open={managerDialogOpen} onOpenChange={setManagerDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2" variant="secondary">
+                  <UserCog className="w-4 h-4" />
+                  Create Manager
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create Manager Account</DialogTitle>
+                  <DialogDescription>
+                    Create a new manager or moderator account with restricted permissions
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="managerEmail">Email *</Label>
+                    <Input
+                      id="managerEmail"
+                      type="email"
+                      placeholder="manager@example.com"
+                      value={managerData.email}
+                      onChange={(e) => setManagerData({ ...managerData, email: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="managerPassword">Password *</Label>
+                    <Input
+                      id="managerPassword"
+                      type="password"
+                      placeholder="Enter secure password"
+                      value={managerData.password}
+                      onChange={(e) => setManagerData({ ...managerData, password: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="managerName">Name</Label>
+                    <Input
+                      id="managerName"
+                      placeholder="Manager Name"
+                      value={managerData.name}
+                      onChange={(e) => setManagerData({ ...managerData, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="managerRole">Role</Label>
+                    <Select 
+                      value={managerData.role} 
+                      onValueChange={(value) => setManagerData({ ...managerData, role: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="moderator">Moderator</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    onClick={handleCreateManager}
+                    disabled={loading || !managerData.email || !managerData.password}
+                    className="w-full"
+                  >
+                    {loading ? "Creating..." : "Create Manager"}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <UserPlus className="w-4 h-4" />
+                  Assign Role
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Assign Role to User</DialogTitle>
@@ -228,8 +339,9 @@ const AdminRoles = () => {
                   {loading ? "Assigning..." : "Assign Role"}
                 </Button>
               </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-6">
