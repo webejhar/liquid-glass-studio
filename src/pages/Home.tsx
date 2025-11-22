@@ -11,14 +11,15 @@ export default function Home() {
     <div className="min-h-screen pt-32 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Hero Section */}
-        <section className="grid md:grid-cols-2 gap-12 items-center mb-32">
+        <section className="flex flex-col-reverse md:grid md:grid-cols-2 gap-8 md:gap-12 items-center mb-20 md:mb-32">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
+            className="w-full px-2 md:px-0"
           >
             <motion.h1
-              className="text-6xl md:text-7xl font-bold mb-6"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -26,21 +27,21 @@ export default function Home() {
               <span className="text-glow">Designer</span> &{" "}
               <span className="text-primary">Developer</span>
             </motion.h1>
-            <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 md:mb-8 leading-relaxed">
               Crafting stunning UI/UX designs, building powerful web experiences, and
               creating premium digital products. Specialized in Elementor, WordPress,
               React, and modern web technologies.
             </p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-3 md:gap-4">
               <Link
                 to="/portfolio"
-                className="glass-button px-8 py-4 rounded-full font-medium hover:scale-105 transition-transform"
+                className="glass-button px-6 py-3 md:px-8 md:py-4 rounded-full font-medium hover:scale-105 transition-transform text-sm md:text-base"
               >
                 View Portfolio
               </Link>
               <Link
                 to="/contact"
-                className="glass-card px-8 py-4 rounded-full font-medium hover:scale-105 transition-transform border-primary/30"
+                className="glass-card px-6 py-3 md:px-8 md:py-4 rounded-full font-medium hover:scale-105 transition-transform border-primary/30 text-sm md:text-base"
               >
                 Contact Me
               </Link>
@@ -48,28 +49,28 @@ export default function Home() {
           </motion.div>
 
           <motion.div
-            className="relative"
+            className="relative w-full"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
           >
-            <div className="relative glass-card p-4 rounded-3xl">
+            <div className="relative glass-card p-3 md:p-4 rounded-2xl md:rounded-3xl max-w-lg mx-auto md:max-w-none">
               <img
                 src={heroImage}
                 alt="RAHATUL ISLAM - Designer & Developer"
-                className="w-full rounded-2xl"
+                className="w-full h-auto rounded-xl md:rounded-2xl object-cover"
               />
 
               <button
                 onClick={() => setSocialVisible(!socialVisible)}
-                className="absolute left-4 top-1/2 -translate-y-1/2 glass-button p-3 rounded-full hover:scale-110 transition z-10"
+                className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 glass-button p-2 md:p-3 rounded-full hover:scale-110 transition z-10"
               >
-                {socialVisible ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                {socialVisible ? <Minus className="w-4 h-4 md:w-5 md:h-5" /> : <Plus className="w-4 h-4 md:w-5 md:h-5" />}
               </button>
 
               {socialVisible && (
                 <motion.div
-                  className="absolute left-16 top-1/2 -translate-y-1/2 flex flex-col gap-3"
+                  className="absolute left-12 md:left-16 top-1/2 -translate-y-1/2 flex flex-col gap-2 md:gap-3"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
@@ -78,45 +79,45 @@ export default function Home() {
                     href="https://www.facebook.com/share/1AVWrKP62A/?mibextid=wwXIfr"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="glass-button p-4 rounded-full hover:scale-110 transition"
+                    className="glass-button p-3 md:p-4 rounded-full hover:scale-110 transition"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.1 }}
                   >
-                    <Facebook className="w-5 h-5" />
+                    <Facebook className="w-4 h-4 md:w-5 md:h-5" />
                   </motion.a>
                   <motion.a
                     href="https://www.facebook.com/share/1AVWrKP62A/?mibextid=wwXIfr"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="glass-button p-4 rounded-full hover:scale-110 transition"
+                    className="glass-button p-3 md:p-4 rounded-full hover:scale-110 transition"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <Linkedin className="w-5 h-5" />
+                    <Linkedin className="w-4 h-4 md:w-5 md:h-5" />
                   </motion.a>
                   <motion.a
                     href="https://www.facebook.com/share/1AVWrKP62A/?mibextid=wwXIfr"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="glass-button p-4 rounded-full hover:scale-110 transition"
+                    className="glass-button p-3 md:p-4 rounded-full hover:scale-110 transition"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.3 }}
                   >
-                    <Globe className="w-5 h-5" />
+                    <Globe className="w-4 h-4 md:w-5 md:h-5" />
                   </motion.a>
                   <motion.a
                     href="https://www.facebook.com/share/1AVWrKP62A/?mibextid=wwXIfr"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="glass-button p-4 rounded-full hover:scale-110 transition"
+                    className="glass-button p-3 md:p-4 rounded-full hover:scale-110 transition"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.4 }}
                   >
-                    <ExternalLink className="w-5 h-5" />
+                    <ExternalLink className="w-4 h-4 md:w-5 md:h-5" />
                   </motion.a>
                 </motion.div>
               )}
