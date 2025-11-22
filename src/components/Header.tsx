@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Menu } from "lucide-react";
+import { X, Menu, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
@@ -28,10 +28,15 @@ export const Header = () => {
 
   return (
     <>
+      {/* Normal Header - Only visible at top */}
       <motion.header
-        className="fixed top-0 w-full z-50"
+        className={cn(
+          "fixed top-0 w-full z-50 transition-all duration-500",
+          scrolled && "opacity-0 pointer-events-none"
+        )}
         initial={{ y: 0 }}
-        animate={{ y: 0 }}
+        animate={{ y: scrolled ? -100 : 0 }}
+        transition={{ type: "spring", stiffness: 100 }}
       >
         <nav className="glass-card px-6 py-4 m-4 rounded-2xl backdrop-blur-xl bg-background/30">
           <div className="flex items-center justify-between">
@@ -105,7 +110,7 @@ export const Header = () => {
 
               <motion.button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="glass-button p-3 rounded-full hover:scale-110 transition"
+                className="glass-button p-3 rounded-full hover:scale-110 transition md:hidden"
                 whileHover={{ scale: 1.1 }}
               >
                 <Menu className="w-5 h-5" />
@@ -115,10 +120,38 @@ export const Header = () => {
         </nav>
       </motion.header>
 
+      {/* Sticky Header - Only visible on scroll */}
+      <AnimatePresence>
+        {scrolled && (
+          <motion.div
+            className="fixed right-4 top-4 z-50 flex items-center gap-3"
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 100, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 100 }}
+          >
+            <Link
+              to="/shop"
+              className="glass-card backdrop-blur-xl bg-background/30 p-4 rounded-full hover:scale-110 transition"
+            >
+              <ShoppingCart className="w-5 h-5" />
+            </Link>
+            <motion.button
+              onClick={() => setMobileMenuOpen(true)}
+              className="glass-card backdrop-blur-xl bg-background/30 p-4 rounded-full hover:scale-110 transition"
+              whileHover={{ scale: 1.1 }}
+            >
+              <Menu className="w-5 h-5" />
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Slide-in Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            className="fixed inset-0 z-50 md:hidden"
+            className="fixed inset-0 z-[60]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -128,38 +161,45 @@ export const Header = () => {
               onClick={() => setMobileMenuOpen(false)}
             />
             <motion.div
-              className="absolute right-0 top-0 h-full w-80 glass-card p-8"
+              className="absolute right-0 top-0 h-full w-80 glass-card backdrop-blur-xl bg-background/95 p-8 flex flex-col"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
             >
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="absolute top-4 right-4 glass-button p-2 rounded-full"
+                className="absolute top-4 right-4 glass-button p-3 rounded-full hover:scale-110 transition"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="flex flex-col gap-6 mt-12">
-                {menuItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="text-xl hover:text-primary transition-colors"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                <Link
-                  to="/meeting"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="glass-button px-6 py-3 rounded-full text-center mt-4"
-                >
-                  Meeting
-                </Link>
+              <div className="flex flex-col gap-6 mt-16 flex-1">
+                {menuItems.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "text-xl hover:text-primary transition-colors",
+                        isActive && "text-primary font-semibold"
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
               </div>
+
+              <Link
+                to="/meeting"
+                onClick={() => setMobileMenuOpen(false)}
+                className="glass-button px-6 py-4 rounded-full text-center font-medium hover:scale-105 transition-transform mt-auto"
+              >
+                Book a Meeting
+              </Link>
             </motion.div>
           </motion.div>
         )}
