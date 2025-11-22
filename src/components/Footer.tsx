@@ -17,7 +17,7 @@ export const Footer = () => {
   const [secretKey, setSecretKey] = useState("");
   const hideFooterPaths = ['/contact', '/meeting', '/about', '/email-generator', '/login', '/register', '/forgot-password'];
   
-  if (hideFooterPaths.includes(location.pathname)) {
+  if (hideFooterPaths.includes(location.pathname) || location.pathname.startsWith('/admin')) {
     return null;
   }
 
