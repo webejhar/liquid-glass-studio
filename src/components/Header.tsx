@@ -19,7 +19,7 @@ export const Header = () => {
   const location = useLocation();
   
   // Hide header on these pages
-  const hideHeader = ['/email-generator', '/contact', '/meeting'].includes(location.pathname);
+  const hideHeader = ['/email-generator', '/contact', '/meeting', '/about'].includes(location.pathname);
 
   useEffect(() => {
     const handleScroll = () => {
