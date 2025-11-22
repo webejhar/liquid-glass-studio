@@ -1,6 +1,9 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { ShoppingCart, Eye } from "lucide-react";
+import { ProductPurchaseModal } from "@/components/ProductPurchaseModal";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const products = [
   ...Array(20).fill(null).map((_, i) => ({
@@ -21,14 +24,23 @@ const products = [
 
 export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState<"All" | "Plugin" | "Theme">("All");
-  const [cart, setCart] = useState<number[]>([]);
+  const [sortBy, setSortBy] = useState<"name" | "price-low" | "price-high">("name");
+  const [selectedProduct, setSelectedProduct] = useState<typeof products[0] | null>(null);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
 
   const filteredProducts = selectedCategory === "All" 
     ? products 
     : products.filter(p => p.category === selectedCategory);
 
-  const addToCart = (id: number) => {
-    setCart([...cart, id]);
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortBy === "price-low") return a.price - b.price;
+    if (sortBy === "price-high") return b.price - a.price;
+    return a.name.localeCompare(b.name);
+  });
+
+  const handlePurchase = (product: typeof products[0]) => {
+    setSelectedProduct(product);
+    setIsPurchaseModalOpen(true);
   };
 
   return (
@@ -50,22 +62,38 @@ export default function Shop() {
           High-quality themes and plugins for WordPress
         </motion.p>
 
-        <div className="flex justify-center gap-4 mb-12">
-          {["All", "Plugin", "Theme"].map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat as any)}
-              className={`glass-card px-6 py-2 rounded-full transition ${
-                selectedCategory === cat ? "bg-primary/20 border-primary" : ""
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-12">
+          <div className="flex flex-wrap justify-center gap-4">
+            {["All", "Plugin", "Theme"].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat as any)}
+                className={`glass-card px-6 py-2 rounded-full transition ${
+                  selectedCategory === cat ? "bg-primary/20 border-primary" : ""
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Sort by:</span>
+            <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+              <SelectTrigger className="w-[180px] glass-card">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="price-low">Price: Low to High</SelectItem>
+                <SelectItem value="price-high">Price: High to Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredProducts.map((product, i) => (
+          {sortedProducts.map((product, i) => (
             <motion.div
               key={product.id}
               className="glass-card rounded-2xl overflow-hidden hover:scale-105 transition"
@@ -87,30 +115,28 @@ export default function Shop() {
                   <span className="text-2xl font-bold text-primary">
                     ${product.price}
                   </span>
-                  <div className="flex gap-2">
-                    <button className="glass-button p-2 rounded-lg hover:scale-110 transition">
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => addToCart(product.id)}
-                      className="glass-button p-2 rounded-lg hover:scale-110 transition"
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <Button
+                    onClick={() => handlePurchase(product)}
+                    variant="liquid"
+                    size="sm"
+                  >
+                    Buy Now
+                  </Button>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {cart.length > 0 && (
-          <div className="fixed bottom-8 right-8 glass-card p-4 rounded-full">
-            <div className="flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5" />
-              <span className="font-semibold">{cart.length}</span>
-            </div>
-          </div>
+        {selectedProduct && (
+          <ProductPurchaseModal
+            isOpen={isPurchaseModalOpen}
+            onClose={() => {
+              setIsPurchaseModalOpen(false);
+              setSelectedProduct(null);
+            }}
+            product={selectedProduct}
+          />
         )}
       </div>
     </div>
