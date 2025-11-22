@@ -1,22 +1,51 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Facebook, Linkedin, Globe } from "lucide-react";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export const Footer = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [showAdminDialog, setShowAdminDialog] = useState(false);
+  const [secretKey, setSecretKey] = useState("");
   const hideFooterPaths = ['/contact', '/meeting', '/about', '/email-generator', '/login', '/register', '/forgot-password'];
   
   if (hideFooterPaths.includes(location.pathname)) {
     return null;
   }
 
+  const handleAdminAccess = () => {
+    if (secretKey === "R40A12H53A11") {
+      setShowAdminDialog(false);
+      setSecretKey("");
+      navigate("/admin/login");
+    } else {
+      setShowAdminDialog(false);
+      setSecretKey("");
+    }
+  };
+
   return (
     <footer className="relative z-10 glass-card mt-20 mx-4 mb-4 rounded-2xl px-8 py-12">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <h3 className="text-2xl font-bold text-primary mb-4">Webejhar</h3>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-2">
             Creative Digital Designer & Developer
           </p>
+          <button
+            onClick={() => setShowAdminDialog(true)}
+            className="text-muted-foreground hover:text-primary transition text-sm underline-offset-4 hover:underline"
+          >
+            Admin
+          </button>
         </div>
 
         <div>
@@ -100,6 +129,31 @@ export const Footer = () => {
       <div className="mt-12 pt-8 border-t border-border text-center text-muted-foreground">
         <p>&copy; 2025 Webejhar. All rights reserved. | RAHATUL ISLAM</p>
       </div>
+
+      <Dialog open={showAdminDialog} onOpenChange={setShowAdminDialog}>
+        <DialogContent className="sm:max-w-md glass-card">
+          <DialogHeader>
+            <DialogTitle className="text-center">Enter The Secret Key</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <Input
+              type="password"
+              placeholder="Secret Key"
+              value={secretKey}
+              onChange={(e) => setSecretKey(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAdminAccess()}
+              className="glass-input"
+            />
+            <Button
+              onClick={handleAdminAccess}
+              variant="default"
+              className="w-full"
+            >
+              Go
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </footer>
   );
 };
