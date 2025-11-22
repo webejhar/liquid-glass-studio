@@ -7,13 +7,34 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Shield, Lock, Mail } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [secretKey, setSecretKey] = useState("");
+  const [isKeyValidated, setIsKeyValidated] = useState(false);
+  const [showSecretDialog, setShowSecretDialog] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleSecretKeySubmit = () => {
+    if (secretKey === "R40A12H53A11") {
+      setIsKeyValidated(true);
+      setShowSecretDialog(false);
+      setSecretKey("");
+    } else {
+      setShowSecretDialog(false);
+      setSecretKey("");
+      navigate("/");
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +82,39 @@ const AdminLogin = () => {
       setLoading(false);
     }
   };
+
+  if (!isKeyValidated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-primary/5 p-4">
+        <Dialog open={showSecretDialog} onOpenChange={(open) => {
+          if (!open) navigate("/");
+        }}>
+          <DialogContent className="sm:max-w-md glass-card">
+            <DialogHeader>
+              <DialogTitle className="text-center">Enter The Secret Key</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 py-4">
+              <Input
+                type="password"
+                placeholder="Secret Key"
+                value={secretKey}
+                onChange={(e) => setSecretKey(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSecretKeySubmit()}
+                className="glass-input"
+              />
+              <Button
+                onClick={handleSecretKeySubmit}
+                variant="default"
+                className="w-full"
+              >
+                Go
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-primary/5 p-4">
