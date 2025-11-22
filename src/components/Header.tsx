@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Menu, ShoppingCart } from "lucide-react";
+import { X, Menu, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const menuItems = [
   { label: "Home", path: "/" },
@@ -16,10 +17,12 @@ const menuItems = [
 export const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   
   // Hide header on these pages
-  const hideHeader = ['/contact', '/meeting', '/about', '/email-generator', '/login', '/register', '/forgot-password'].includes(location.pathname);
+  const hideHeader = ['/contact', '/meeting', '/about', '/email-generator', '/login', '/register', '/forgot-password', '/account'].includes(location.pathname);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,6 +31,23 @@ export const Header = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    // Check auth state
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLoginClick = () => {
+    navigate(isLoggedIn ? '/account' : '/login');
+  };
 
   if (hideHeader) return null;
 
@@ -135,12 +155,13 @@ export const Header = () => {
             exit={{ x: 100, opacity: 0 }}
             transition={{ type: "spring", stiffness: 100 }}
           >
-            <Link
-              to="/shop"
+            <motion.button
+              onClick={handleLoginClick}
               className="glass-card backdrop-blur-xl bg-background/30 p-4 rounded-full hover:scale-110 transition"
+              whileHover={{ scale: 1.1 }}
             >
-              <ShoppingCart className="w-5 h-5" />
-            </Link>
+              <User className="w-5 h-5" />
+            </motion.button>
             <motion.button
               onClick={() => setMobileMenuOpen(true)}
               className="glass-card backdrop-blur-xl bg-background/30 p-4 rounded-full hover:scale-110 transition"
