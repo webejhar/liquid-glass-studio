@@ -2,7 +2,8 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { Copy, Check, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function EmailGenerator() {
   const navigate = useNavigate();
@@ -10,32 +11,54 @@ export default function EmailGenerator() {
   const [details, setDetails] = useState("");
   const [keywords, setKeywords] = useState("");
   const [tone, setTone] = useState("Professional");
-  const [templates, setTemplates] = useState<string[]>([]);
+  const [templates, setTemplates] = useState<Array<{ title: string; content: string }>>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const { toast } = useToast();
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const generateTemplates = () => {
-    const sampleTemplates = [
-      `Subject: ${subject}\n\nDear [Recipient],\n\nI hope this message finds you well. ${details}\n\nI would appreciate your prompt attention to this matter. Please feel free to reach out if you have any questions.\n\nBest regards,\n[Your Name]`,
-      `Subject: ${subject}\n\nHello [Recipient],\n\n${details}\n\nLooking forward to your response.\n\nKind regards,\n[Your Name]`,
-      `Subject: ${subject}\n\nHi there,\n\n${details}\n\nThanks!\n[Your Name]`,
-      `Subject: ${subject}\n\n${details}`,
-    ];
-    setTemplates(sampleTemplates);
-    toast({
-      title: "Templates Generated!",
-      description: "4 email variations have been created.",
-    });
+  const generateTemplates = async () => {
+    if (!subject || !details) {
+      toast.error("Please fill in subject and details");
+      return;
+    }
+
+    setIsGenerating(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-email-templates", {
+        body: { subject, details, keywords, tone },
+      });
+
+      if (error) {
+        console.error("Error generating templates:", error);
+        if (error.message.includes("429")) {
+          toast.error("Rate limit exceeded. Please try again in a moment.");
+        } else if (error.message.includes("402")) {
+          toast.error("AI usage limit reached. Please contact support.");
+        } else {
+          toast.error("Failed to generate templates. Please try again.");
+        }
+        return;
+      }
+
+      if (data?.templates && Array.isArray(data.templates)) {
+        setTemplates(data.templates);
+        toast.success("Email templates generated successfully!");
+      } else {
+        toast.error("Unexpected response format");
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const copyToClipboard = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2000);
-    toast({
-      title: "Copied!",
-      description: "Email template copied to clipboard.",
-    });
+    toast.success("Email template copied to clipboard!");
   };
 
   return (
@@ -130,10 +153,10 @@ export default function EmailGenerator() {
 
             <button
               onClick={generateTemplates}
-              disabled={!subject || !details}
+              disabled={!subject || !details || isGenerating}
               className="w-full glass-button px-8 py-4 rounded-full font-medium hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Generate Templates
+              {isGenerating ? "Generating..." : "Generate Templates"}
             </button>
           </motion.div>
 
@@ -147,22 +170,17 @@ export default function EmailGenerator() {
               <div className="glass-card p-12 rounded-2xl text-center">
                 <p className="text-muted-foreground">
                   Fill in the form and click "Generate Templates" to see 4
-                  variations
+                  AI-generated variations in your language
                 </p>
               </div>
             ) : (
               <>
-                {[
-                  "Formal Long",
-                  "Professional Medium",
-                  "Casual Friendly",
-                  "Short Summary",
-                ].map((title, i) => (
+                {templates.map((template, i) => (
                   <div key={i} className="glass-card p-6 rounded-2xl">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-semibold text-lg">{title}</h3>
+                      <h3 className="font-semibold text-lg">{template.title}</h3>
                       <button
-                        onClick={() => copyToClipboard(templates[i], i)}
+                        onClick={() => copyToClipboard(template.content, i)}
                         className="glass-button p-2 rounded-lg hover:scale-110 transition"
                       >
                         {copiedIndex === i ? (
@@ -173,7 +191,7 @@ export default function EmailGenerator() {
                       </button>
                     </div>
                     <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-sans">
-                      {templates[i]}
+                      {template.content}
                     </pre>
                   </div>
                 ))}
