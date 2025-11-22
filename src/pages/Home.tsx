@@ -251,37 +251,50 @@ export default function Home() {
 
         {/* AI Email Generator Section */}
         <section className="mb-32">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <motion.div
+            className="relative glass-premium p-12 rounded-3xl overflow-hidden"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            {/* Animated shine effect */}
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <h2 className="text-4xl font-bold mb-6">
-                AI Email <span className="text-primary">Generator</span>
-              </h2>
-              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                Generate professional email templates in seconds using our AI-powered system.
-              </p>
-            </motion.div>
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+              animate={{
+                x: ['-100%', '200%'],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                repeatDelay: 2,
+                ease: "easeInOut"
+              }}
+            />
+            
+            <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-4xl font-bold mb-4">
+                  AI Email <span className="text-primary">Generator</span>
+                </h2>
+                <p className="text-muted-foreground text-lg">
+                  Generate professional email templates in seconds using our
+                  AI-powered system.
+                </p>
+              </div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="flex justify-center md:justify-end"
-            >
-              <Link
-                to="/email-generator"
-                className="glass-button px-8 py-4 rounded-full font-medium hover:scale-105 transition-transform inline-flex items-center gap-2"
-              >
-                Try Now
-                <ExternalLink className="w-5 h-5" />
-              </Link>
-            </motion.div>
-          </div>
+              <div className="flex justify-center md:justify-end">
+                <Link to="/email-generator">
+                  <motion.button 
+                    className="glass-button px-8 py-4 rounded-full text-lg font-medium"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Try Now
+                  </motion.button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
         </section>
 
         {/* Featured Shop Section */}

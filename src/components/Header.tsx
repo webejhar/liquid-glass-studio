@@ -29,17 +29,13 @@ export const Header = () => {
   return (
     <>
       <motion.header
-        className={cn(
-          "fixed top-0 w-full z-50 transition-all duration-500",
-          scrolled && "opacity-0 pointer-events-none"
-        )}
-        initial={{ y: -100 }}
-        animate={{ y: scrolled ? -100 : 0 }}
-        transition={{ type: "spring", stiffness: 100 }}
+        className="fixed top-0 w-full z-50"
+        initial={{ y: 0 }}
+        animate={{ y: 0 }}
       >
-        <nav className="glass-card px-6 py-4 m-4 rounded-2xl">
+        <nav className="glass-card px-6 py-4 m-4 rounded-2xl backdrop-blur-xl bg-background/30">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-4">
               <Link to="/" className="flex items-center gap-2 group">
                 <motion.div
                   className="text-2xl font-bold text-primary"
@@ -56,7 +52,7 @@ export const Header = () => {
                 </motion.div>
               </Link>
 
-              <div className="hidden md:flex items-center gap-6">
+              <div className="hidden md:flex items-center gap-6 ml-8">
                 {menuItems.map((item) => {
                   const isActive = location.pathname === item.path;
                   return (
@@ -108,10 +104,9 @@ export const Header = () => {
               </Link>
 
               <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                onClick={() => setMobileMenuOpen(true)}
-                className="md:hidden glass-button p-2 rounded-full"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="glass-button p-3 rounded-full hover:scale-110 transition"
+                whileHover={{ scale: 1.1 }}
               >
                 <Menu className="w-5 h-5" />
               </motion.button>
@@ -119,46 +114,6 @@ export const Header = () => {
           </div>
         </nav>
       </motion.header>
-
-      {/* Right side sticky bar on scroll */}
-      <AnimatePresence>
-        {scrolled && (
-          <motion.div
-            className="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3"
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 100, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 100 }}
-          >
-            <Link
-              to="/shop"
-              className="glass-button p-4 rounded-full hover:scale-110 transition"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-5 h-5"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="9" cy="21" r="1" />
-                <circle cx="20" cy="21" r="1" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-              </svg>
-            </Link>
-            <motion.button
-              onClick={() => setMobileMenuOpen(true)}
-              className="glass-button p-4 rounded-full hover:scale-110 transition"
-              whileHover={{ scale: 1.1 }}
-            >
-              <Menu className="w-5 h-5" />
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <AnimatePresence>
         {mobileMenuOpen && (
