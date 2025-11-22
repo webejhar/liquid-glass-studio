@@ -11,12 +11,12 @@ export default function Home() {
     <div className="min-h-screen pt-32 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Hero Section */}
-        <section className="flex flex-col-reverse md:grid md:grid-cols-2 gap-8 md:gap-12 items-center mb-20 md:mb-32">
+        <section className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12 items-center mb-20 md:mb-32">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="w-full px-2 md:px-0"
+            className="w-full px-2 md:px-0 order-2 md:order-1"
           >
             <motion.h1
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6"
@@ -49,7 +49,7 @@ export default function Home() {
           </motion.div>
 
           <motion.div
-            className="relative w-full"
+            className="relative w-full order-1 md:order-2"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
