@@ -22,7 +22,7 @@ export const Header = () => {
   const navigate = useNavigate();
   
   // Hide header on these pages
-  const hideHeader = ['/contact', '/meeting', '/about', '/email-generator', '/login', '/register', '/forgot-password', '/account'].includes(location.pathname);
+  const hideHeader = ['/contact', '/meeting', '/about', '/email-generator', '/login', '/register', '/forgot-password', '/account'].includes(location.pathname) || location.pathname.startsWith('/admin');
 
   useEffect(() => {
     const handleScroll = () => {
