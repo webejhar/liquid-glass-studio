@@ -30,10 +30,10 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const data: ContactEmailRequest = await req.json();
 
-    // Send notification to admin
+    // Send notification to admin (both email addresses)
     const adminEmailResponse = await resend.emails.send({
       from: "Webejhar <onboarding@resend.dev>",
-      to: ["webejhar@gmail.com"],
+      to: ["webejhar@gmail.com", "contact@rahatulllc.com"],
       subject: `[Webejhar] New Contact Message — ${data.name}`,
       html: `
         <h1>New Contact Message</h1>

@@ -20,20 +20,25 @@ const TLDS = [
   ".biz", ".me", ".co.uk", ".us", ".agency"
 ];
 
-// Mock domain checker - in production, use a WHOIS/DNS API
-// Popular domains are usually taken, others have random availability
-const mockDomainCheck = (domainBase: string, tld: string): boolean => {
-  const fullDomain = `${domainBase}${tld}`.toLowerCase();
+// Real-time domain availability check using DNS resolution
+const checkDomainAvailability = async (domainBase: string, tld: string): Promise<boolean> => {
+  const fullDomain = `${domainBase}${tld}`;
   
-  // Common words are likely taken
-  const commonWords = ['google', 'facebook', 'amazon', 'apple', 'microsoft', 'test', 'example', 'demo'];
-  if (commonWords.some(word => domainBase.toLowerCase().includes(word))) {
-    return false;
+  try {
+    // Try to resolve the domain using DNS
+    const records = await Deno.resolveDns(fullDomain, "A");
+    
+    // If we get records, the domain is taken
+    if (records && records.length > 0) {
+      return false; // Domain is taken
+    }
+    
+    return true; // Domain might be available
+  } catch (error) {
+    // If DNS resolution fails, the domain is likely available
+    // (no DNS records exist for it)
+    return true;
   }
-  
-  // Generate pseudo-random availability based on domain hash
-  const hash = fullDomain.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return hash % 3 !== 0; // ~66% availability rate
 };
 
 const handler = async (req: Request): Promise<Response> => {
@@ -54,12 +59,18 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const results: DomainResult[] = TLDS.map(tld => ({
+    // Clean the domain base (remove any special characters)
+    const cleanDomainBase = domainBase.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+
+    // Check all TLDs in parallel for faster response
+    const checkPromises = TLDS.map(async (tld) => ({
       tld: tld,
-      available: mockDomainCheck(domainBase, tld)
+      available: await checkDomainAvailability(cleanDomainBase, tld)
     }));
 
-    console.log(`Domain check for: ${domainBase}`, results);
+    const results: DomainResult[] = await Promise.all(checkPromises);
+
+    console.log(`Real-time domain check for: ${cleanDomainBase}`, results);
 
     return new Response(JSON.stringify({ results }), {
       status: 200,

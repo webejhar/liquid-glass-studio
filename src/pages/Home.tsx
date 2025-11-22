@@ -126,6 +126,9 @@ export default function Home() {
           </motion.div>
         </section>
 
+        {/* Domain Checker */}
+        <DomainChecker />
+
         {/* About/Skills Section */}
         <section className="mb-32">
           <motion.h2
@@ -250,9 +253,6 @@ export default function Home() {
             </motion.div>
           </div>
         </section>
-
-        {/* Domain Checker Section */}
-        <DomainChecker />
 
         {/* AI Email Generator Section */}
         <section className="mb-32">
