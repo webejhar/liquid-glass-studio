@@ -3,6 +3,9 @@ project_id = "gnppiredveefqbsqeuob"
 [functions.send-order-email]
 verify_jwt = false
 
+[functions.send-product-order-email]
+verify_jwt = false
+
 [functions.send-meeting-email]
 verify_jwt = false
 

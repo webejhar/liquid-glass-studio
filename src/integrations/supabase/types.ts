@@ -86,6 +86,48 @@ export type Database = {
         }
         Relationships: []
       }
+      product_orders: {
+        Row: {
+          buyer_email: string
+          buyer_name: string | null
+          created_at: string
+          id: string
+          payment_method: string
+          payment_reference: string
+          product_category: string
+          product_id: number
+          product_name: string
+          product_price: number
+          status: string
+        }
+        Insert: {
+          buyer_email: string
+          buyer_name?: string | null
+          created_at?: string
+          id?: string
+          payment_method: string
+          payment_reference: string
+          product_category: string
+          product_id: number
+          product_name: string
+          product_price: number
+          status?: string
+        }
+        Update: {
+          buyer_email?: string
+          buyer_name?: string | null
+          created_at?: string
+          id?: string
+          payment_method?: string
+          payment_reference?: string
+          product_category?: string
+          product_id?: number
+          product_name?: string
+          product_price?: number
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
