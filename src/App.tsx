@@ -24,6 +24,11 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminRoles from "./pages/admin/AdminRoles";
 
 const queryClient = new QueryClient();
 
@@ -49,11 +54,19 @@ const App = () => (
               <Route path="/email-generator" element={<EmailGenerator />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/testimonials" element={<Testimonials />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="*" element={<NotFound />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/account" element={<Account />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/orders" element={<AdminOrders />} />
+              <Route path="/admin/roles" element={<AdminRoles />} />
+              
+              <Route path="*" element={<NotFound />} />
             </Routes>
             <Footer />
             <Cart />

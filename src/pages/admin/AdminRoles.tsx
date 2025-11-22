@@ -117,10 +117,10 @@ const AdminRoles = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.from("user_roles").insert({
+      const { error } = await supabase.from("user_roles").insert([{
         user_id: selectedUserId,
-        role: selectedRole,
-      });
+        role: selectedRole as "admin" | "moderator" | "user",
+      }]);
 
       if (error) throw error;
 
