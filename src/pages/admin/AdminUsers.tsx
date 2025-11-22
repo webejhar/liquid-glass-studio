@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -23,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Eye, Key } from "lucide-react";
+import { Search, Eye, Key, Edit } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -31,6 +32,10 @@ interface Profile {
   name: string | null;
   email: string | null;
   phone: string | null;
+  address: string | null;
+  profession: string | null;
+  bio: string | null;
+  date_of_birth: string | null;
   created_at: string | null;
   verification_status: string | null;
 }
@@ -44,6 +49,9 @@ const AdminUsers = () => {
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [editData, setEditData] = useState<Partial<Profile>>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -101,6 +109,36 @@ const AdminUsers = () => {
     } catch (error: any) {
       toast({
         title: "Error changing password",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedUser) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update(editData)
+        .eq("user_id", selectedUser.user_id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Profile updated",
+        description: "User profile has been updated successfully",
+      });
+
+      setShowEditDialog(false);
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Error updating profile",
         description: error.message,
         variant: "destructive",
       });
@@ -177,8 +215,32 @@ const AdminUsers = () => {
                           size="icon"
                           onClick={() => {
                             setSelectedUser(user);
+                            setShowDetailsDialog(true);
+                          }}
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setEditData(user);
+                            setShowEditDialog(true);
+                          }}
+                          title="Edit Profile"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedUser(user);
                             setShowPasswordDialog(true);
                           }}
+                          title="Change Password"
                         >
                           <Key className="w-4 h-4" />
                         </Button>
@@ -219,6 +281,147 @@ const AdminUsers = () => {
               {loading ? "Changing..." : "Change Password"}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit User Profile</DialogTitle>
+            <DialogDescription>Update user information</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="editName">Name</Label>
+                <Input
+                  id="editName"
+                  value={editData.name || ""}
+                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editEmail">Email</Label>
+                <Input
+                  id="editEmail"
+                  type="email"
+                  value={editData.email || ""}
+                  onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="editPhone">Phone</Label>
+                <Input
+                  id="editPhone"
+                  value={editData.phone || ""}
+                  onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editProfession">Profession</Label>
+                <Input
+                  id="editProfession"
+                  value={editData.profession || ""}
+                  onChange={(e) => setEditData({ ...editData, profession: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editAddress">Address</Label>
+              <Input
+                id="editAddress"
+                value={editData.address || ""}
+                onChange={(e) => setEditData({ ...editData, address: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editBio">Bio</Label>
+              <Textarea
+                id="editBio"
+                value={editData.bio || ""}
+                onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
+                rows={3}
+              />
+            </div>
+            <Button onClick={handleSaveEdit} disabled={loading} className="w-full">
+              {loading ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>User Details</DialogTitle>
+            <DialogDescription>Complete user information</DialogDescription>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Name</p>
+                  <p className="font-medium">{selectedUser.name || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="font-medium">{selectedUser.email || "N/A"}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <p className="font-medium">{selectedUser.phone || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Profession</p>
+                  <p className="font-medium">{selectedUser.profession || "N/A"}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Address</p>
+                <p className="font-medium">{selectedUser.address || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Bio</p>
+                <p className="font-medium whitespace-pre-wrap">{selectedUser.bio || "N/A"}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Date of Birth</p>
+                  <p className="font-medium">
+                    {selectedUser.date_of_birth 
+                      ? new Date(selectedUser.date_of_birth).toLocaleDateString()
+                      : "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Registration Date</p>
+                  <p className="font-medium">
+                    {selectedUser.created_at
+                      ? new Date(selectedUser.created_at).toLocaleDateString()
+                      : "N/A"}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Verification Status</p>
+                <Badge
+                  variant={
+                    selectedUser.verification_status === "verified"
+                      ? "default"
+                      : selectedUser.verification_status === "pending"
+                      ? "secondary"
+                      : "outline"
+                  }
+                >
+                  {selectedUser.verification_status || "unverified"}
+                </Badge>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </AdminLayout>
