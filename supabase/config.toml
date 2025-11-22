@@ -27,3 +27,6 @@ verify_jwt = false
 [functions.generate-email-templates]
 verify_jwt = false
 
+[functions.admin-change-password]
+verify_jwt = true
+

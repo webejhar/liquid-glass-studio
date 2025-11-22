@@ -55,7 +55,7 @@ const AdminOrders = () => {
     }
   };
 
-  const updateOrderStatus = async (table: string, id: string, status: string) => {
+  const updateOrderStatus = async (table: "product_orders" | "domain_orders" | "meeting_bookings", id: string, status: string) => {
     try {
       const { error } = await supabase
         .from(table)
@@ -80,18 +80,19 @@ const AdminOrders = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const config = {
-      pending: { icon: Clock, variant: "secondary" as const, label: "Pending" },
-      confirmed: { icon: CheckCircle, variant: "default" as const, label: "Confirmed" },
-      rejected: { icon: XCircle, variant: "destructive" as const, label: "Rejected" },
+    const config: Record<string, { icon: any; variant: "secondary" | "default" | "destructive"; label: string }> = {
+      pending: { icon: Clock, variant: "secondary", label: "Pending" },
+      confirmed: { icon: CheckCircle, variant: "default", label: "Confirmed" },
+      rejected: { icon: XCircle, variant: "destructive", label: "Rejected" },
     };
 
-    const { icon: Icon, variant, label } = config[status as keyof typeof config] || config.pending;
+    const statusConfig = config[status] || config.pending;
+    const Icon = statusConfig.icon;
 
     return (
-      <Badge variant={variant} className="flex items-center gap-1 w-fit">
+      <Badge variant={statusConfig.variant} className="flex items-center gap-1 w-fit">
         <Icon className="w-3 h-3" />
-        {label}
+        {statusConfig.label}
       </Badge>
     );
   };
