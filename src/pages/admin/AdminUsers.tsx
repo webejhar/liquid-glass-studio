@@ -155,7 +155,7 @@ const AdminUsers = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-4xl font-bold mb-2">User Management</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">User Management</h1>
           <p className="text-muted-foreground">View and manage all registered users</p>
         </div>
 
@@ -172,7 +172,8 @@ const AdminUsers = () => {
             </div>
           </div>
 
-          <div className="rounded-lg border border-border/50 overflow-hidden">
+          <div className="rounded-lg border border-border/50 overflow-x-auto">
+            <div className="min-w-[800px]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -250,6 +251,7 @@ const AdminUsers = () => {
                 ))}
               </TableBody>
             </Table>
+            </div>
           </div>
         </Card>
       </div>
@@ -285,13 +287,13 @@ const AdminUsers = () => {
       </Dialog>
 
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
             <DialogTitle>Edit User Profile</DialogTitle>
             <DialogDescription>Update user information</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="editName">Name</Label>
                 <Input
@@ -310,7 +312,7 @@ const AdminUsers = () => {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="editPhone">Phone</Label>
                 <Input
@@ -353,14 +355,14 @@ const AdminUsers = () => {
       </Dialog>
 
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
             <DialogTitle>User Details</DialogTitle>
             <DialogDescription>Complete user information</DialogDescription>
           </DialogHeader>
           {selectedUser && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Name</p>
                   <p className="font-medium">{selectedUser.name || "N/A"}</p>
@@ -370,7 +372,7 @@ const AdminUsers = () => {
                   <p className="font-medium">{selectedUser.email || "N/A"}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Phone</p>
                   <p className="font-medium">{selectedUser.phone || "N/A"}</p>
@@ -388,7 +390,7 @@ const AdminUsers = () => {
                 <p className="text-sm text-muted-foreground">Bio</p>
                 <p className="font-medium whitespace-pre-wrap">{selectedUser.bio || "N/A"}</p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Date of Birth</p>
                   <p className="font-medium">

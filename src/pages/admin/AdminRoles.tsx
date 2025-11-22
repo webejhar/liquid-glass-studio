@@ -212,17 +212,19 @@ const AdminRoles = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Role Management</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">Role Management</h1>
             <p className="text-muted-foreground">Assign and manage user roles</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
+
             <Dialog open={managerDialogOpen} onOpenChange={setManagerDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="gap-2" variant="secondary">
+                <Button className="gap-2 flex-1 sm:flex-none" variant="secondary">
                   <UserCog className="w-4 h-4" />
-                  Create Manager
+                  <span className="hidden sm:inline">Create Manager</span>
+                  <span className="sm:hidden">Manager</span>
                 </Button>
               </DialogTrigger>
               <DialogContent>
@@ -290,9 +292,10 @@ const AdminRoles = () => {
             
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="gap-2">
+                <Button className="gap-2 flex-1 sm:flex-none">
                   <UserPlus className="w-4 h-4" />
-                  Assign Role
+                  <span className="hidden sm:inline">Assign Role</span>
+                  <span className="sm:hidden">Assign</span>
                 </Button>
               </DialogTrigger>
             <DialogContent>
@@ -344,8 +347,9 @@ const AdminRoles = () => {
           </div>
         </div>
 
-        <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-6">
-          <div className="rounded-lg border border-border/50 overflow-hidden">
+        <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-4 sm:p-6">
+          <div className="rounded-lg border border-border/50 overflow-x-auto">
+            <div className="min-w-[700px]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -395,6 +399,7 @@ const AdminRoles = () => {
                 ))}
               </TableBody>
             </Table>
+            </div>
           </div>
         </Card>
       </div>
