@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { AdminNotifications } from "./AdminNotifications";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -50,7 +51,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             <h1 className="text-xl font-bold">Admin Panel</h1>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <AdminNotifications />
             <Button
               variant="ghost"
               size="icon"
