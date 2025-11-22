@@ -25,6 +25,7 @@ export type Database = {
           payment_reference: string
           status: string
           tld: string
+          user_id: string | null
         }
         Insert: {
           buyer_email: string
@@ -36,6 +37,7 @@ export type Database = {
           payment_reference: string
           status?: string
           tld: string
+          user_id?: string | null
         }
         Update: {
           buyer_email?: string
@@ -47,6 +49,7 @@ export type Database = {
           payment_reference?: string
           status?: string
           tld?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -100,6 +103,7 @@ export type Database = {
           product_name: string
           product_price: number
           status: string
+          user_id: string | null
         }
         Insert: {
           buyer_email: string
@@ -114,6 +118,7 @@ export type Database = {
           product_name: string
           product_price: number
           status?: string
+          user_id?: string | null
         }
         Update: {
           buyer_email?: string
@@ -128,6 +133,46 @@ export type Database = {
           product_name?: string
           product_price?: number
           status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          name: string | null
+          phone: string | null
+          profession: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          profession?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          profession?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
