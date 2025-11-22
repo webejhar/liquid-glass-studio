@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, ShoppingBag, Calendar, DollarSign } from "lucide-react";
+import { Users, ShoppingBag, Calendar, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 
 const AdminDashboard = () => {
@@ -12,7 +12,7 @@ const AdminDashboard = () => {
     totalUsers: 0,
     totalOrders: 0,
     totalBookings: 0,
-    pendingOrders: 0,
+    totalContacts: 0,
   });
 
   useEffect(() => {
@@ -21,24 +21,21 @@ const AdminDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const [profilesData, productOrdersData, domainOrdersData, bookingsData] = await Promise.all([
+      const [profilesData, productOrdersData, domainOrdersData, bookingsData, contactsData] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("product_orders").select("id, status", { count: "exact" }),
-        supabase.from("domain_orders").select("id, status", { count: "exact" }),
+        supabase.from("product_orders").select("id", { count: "exact", head: true }),
+        supabase.from("domain_orders").select("id", { count: "exact", head: true }),
         supabase.from("meeting_bookings").select("id", { count: "exact", head: true }),
+        supabase.from("contacts").select("id", { count: "exact", head: true }),
       ]);
 
       const totalOrders = (productOrdersData.count || 0) + (domainOrdersData.count || 0);
-      const pendingOrders = [
-        ...(productOrdersData.data || []),
-        ...(domainOrdersData.data || []),
-      ].filter((order) => order.status === "pending").length;
 
       setStats({
         totalUsers: profilesData.count || 0,
         totalOrders,
         totalBookings: bookingsData.count || 0,
-        pendingOrders,
+        totalContacts: contactsData.count || 0,
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -52,8 +49,8 @@ const AdminDashboard = () => {
   const statCards = [
     { title: "Total Users", value: stats.totalUsers, icon: Users, color: "text-blue-500" },
     { title: "Total Orders", value: stats.totalOrders, icon: ShoppingBag, color: "text-green-500" },
-    { title: "Pending Orders", value: stats.pendingOrders, icon: DollarSign, color: "text-yellow-500" },
     { title: "Total Bookings", value: stats.totalBookings, icon: Calendar, color: "text-purple-500" },
+    { title: "Total Contacts", value: stats.totalContacts, icon: Mail, color: "text-orange-500" },
   ];
 
   return (

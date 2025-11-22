@@ -7,7 +7,8 @@ import {
   ShoppingBag, 
   Shield, 
   LogOut,
-  Menu
+  Menu,
+  Mail
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +40,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: "/admin/users", label: "Users", icon: Users },
     { path: "/admin/orders", label: "Orders", icon: ShoppingBag },
     { path: "/admin/roles", label: "Roles", icon: Shield },
+    { path: "/admin/contacts", label: "Contacts", icon: Mail },
   ];
 
   return (

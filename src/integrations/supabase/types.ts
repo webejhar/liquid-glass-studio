@@ -44,6 +44,60 @@ export type Database = {
         }
         Relationships: []
       }
+      contacts: {
+        Row: {
+          admin_notes: string | null
+          behance_url: string | null
+          category: string | null
+          created_at: string | null
+          email: string
+          id: string
+          is_freelancer: boolean | null
+          linkedin_url: string | null
+          message: string
+          name: string
+          phone: string | null
+          service: string | null
+          status: string | null
+          subject: string | null
+          website_url: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          behance_url?: string | null
+          category?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          is_freelancer?: boolean | null
+          linkedin_url?: string | null
+          message: string
+          name: string
+          phone?: string | null
+          service?: string | null
+          status?: string | null
+          subject?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          behance_url?: string | null
+          category?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_freelancer?: boolean | null
+          linkedin_url?: string | null
+          message?: string
+          name?: string
+          phone?: string | null
+          service?: string | null
+          status?: string | null
+          subject?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       domain_orders: {
         Row: {
           buyer_email: string
