@@ -51,7 +51,7 @@ export const DomainChecker = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-6 md:mb-4 text-glow"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-6 md:mb-4 text-glow px-4"
           >
             Check if your <span className="text-primary">domain</span> is available
           </motion.h2>
@@ -61,7 +61,7 @@ export const DomainChecker = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="glass-premium rounded-2xl p-6 md:p-8 mt-8"
+            className="glass-premium rounded-2xl p-8 md:p-10 mt-8 mx-4"
           >
             <div className="flex flex-col md:flex-row gap-4 w-full">
               <div className="flex-1 relative w-full">
@@ -71,7 +71,7 @@ export const DomainChecker = () => {
                   value={domainBase}
                   onChange={(e) => setDomainBase(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="h-14 md:h-14 text-lg glass-card border-border/50 w-full"
+                  className="h-16 md:h-14 text-lg md:text-base glass-card border-border/50 w-full px-6"
                   disabled={isChecking}
                 />
               </div>
@@ -80,7 +80,7 @@ export const DomainChecker = () => {
                 disabled={isChecking}
                 size="lg"
                 variant="liquid"
-                className="h-14 md:h-14 px-8 text-lg w-full md:w-auto"
+                className="h-16 md:h-14 px-10 md:px-8 text-lg md:text-base w-full md:w-auto min-w-[140px]"
               >
                 <Search className="w-5 h-5 mr-2" />
                 {isChecking ? "Searching..." : "Search"}
