@@ -36,6 +36,8 @@ export const CartCheckoutModal = ({ isOpen, onClose }: CartCheckoutModalProps) =
 
     setIsSubmitting(true);
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
       const orderId = crypto.randomUUID();
 
       // Insert all items with the same order_id
@@ -48,7 +50,8 @@ export const CartCheckoutModal = ({ isOpen, onClose }: CartCheckoutModalProps) =
         buyer_name: name || null,
         buyer_email: email,
         payment_method: 'Binance',
-        payment_reference: binanceId
+        payment_reference: binanceId,
+        user_id: user?.id || null
       }));
 
       const { error: insertError } = await supabase
@@ -98,6 +101,8 @@ export const CartCheckoutModal = ({ isOpen, onClose }: CartCheckoutModalProps) =
 
     setIsSubmitting(true);
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
       const orderId = crypto.randomUUID();
 
       const orderInserts = cart.map((item) => ({
@@ -109,7 +114,8 @@ export const CartCheckoutModal = ({ isOpen, onClose }: CartCheckoutModalProps) =
         buyer_name: name || null,
         buyer_email: email,
         payment_method: 'bKash',
-        payment_reference: bkashTrxId
+        payment_reference: bkashTrxId,
+        user_id: user?.id || null
       }));
 
       const { error: insertError } = await supabase

@@ -60,6 +60,15 @@ export default function Register() {
 
       if (error) throw error;
 
+      // Create profile for the new user
+      if (data.user) {
+        await supabase.from('profiles').insert({
+          user_id: data.user.id,
+          name,
+          email
+        });
+      }
+
       // Send notification email to admins
       await supabase.functions.invoke("send-registration-notification", {
         body: {
@@ -70,7 +79,7 @@ export default function Register() {
       });
 
       toast.success("Registration successful! Welcome to Webejhar");
-      navigate("/");
+      navigate("/account");
     } catch (error: any) {
       toast.error(error.message || "Failed to register");
     } finally {

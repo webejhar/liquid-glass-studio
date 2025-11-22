@@ -35,6 +35,9 @@ export const PurchaseModal = ({ isOpen, onClose, domainName, tld }: PurchaseModa
 
     setIsSubmitting(true);
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
       // Insert order
       const { error: insertError } = await supabase
         .from('domain_orders')
@@ -43,7 +46,8 @@ export const PurchaseModal = ({ isOpen, onClose, domainName, tld }: PurchaseModa
           tld: tld,
           buyer_email: email,
           payment_method: 'Binance',
-          payment_reference: binanceId
+          payment_reference: binanceId,
+          user_id: user?.id || null
         });
 
       if (insertError) throw insertError;
@@ -85,6 +89,9 @@ export const PurchaseModal = ({ isOpen, onClose, domainName, tld }: PurchaseModa
 
     setIsSubmitting(true);
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { error: insertError } = await supabase
         .from('domain_orders')
         .insert({
@@ -92,7 +99,8 @@ export const PurchaseModal = ({ isOpen, onClose, domainName, tld }: PurchaseModa
           tld: tld,
           buyer_email: email,
           payment_method: 'bKash',
-          payment_reference: bkashTrxId
+          payment_reference: bkashTrxId,
+          user_id: user?.id || null
         });
 
       if (insertError) throw insertError;
