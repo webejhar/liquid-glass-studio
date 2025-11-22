@@ -15,7 +15,6 @@ import Shop from "./pages/Shop";
 import Contact from "./pages/Contact";
 import Meeting from "./pages/Meeting";
 import EmailGenerator from "./pages/EmailGenerator";
-import FocusedEmailGenerator from "./pages/FocusedEmailGenerator";
 import Blog from "./pages/Blog";
 import Testimonials from "./pages/Testimonials";
 import NotFound from "./pages/NotFound";
@@ -41,7 +40,6 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/meeting" element={<Meeting />} />
             <Route path="/email-generator" element={<EmailGenerator />} />
-            <Route path="/email-generator/focused" element={<FocusedEmailGenerator />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/testimonials" element={<Testimonials />} />
             <Route path="*" element={<NotFound />} />
