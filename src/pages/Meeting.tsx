@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Calendar, Clock, CheckCircle, ArrowLeft } from "lucide-react";
+import { Calendar, CheckCircle, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { TimePicker } from "@/components/TimePicker";
 
 export default function Meeting() {
   const navigate = useNavigate();
@@ -15,16 +16,6 @@ export default function Meeting() {
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-
-  const timeSlots = [
-    "09:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "02:00 PM",
-    "03:00 PM",
-    "04:00 PM",
-    "05:00 PM",
-  ];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -185,31 +176,19 @@ export default function Meeting() {
               required
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
               className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-background"
             />
           </div>
 
           <div>
-            <label className="block mb-2 font-medium flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              Select Time Slot *
+            <label className="block mb-2 font-medium">
+              Select Time *
             </label>
-            <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
-              {timeSlots.map((time) => (
-                <button
-                  key={time}
-                  type="button"
-                  onClick={() => setSelectedTime(time)}
-                  className={`glass-card px-4 py-3 rounded-lg transition ${
-                    selectedTime === time
-                      ? "bg-primary/20 border-primary"
-                      : "hover:bg-primary/10"
-                  }`}
-                >
-                  {time}
-                </button>
-              ))}
-            </div>
+            <TimePicker
+              value={selectedTime}
+              onChange={setSelectedTime}
+            />
           </div>
 
           <div>
