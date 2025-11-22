@@ -178,32 +178,6 @@ export default function Home() {
                   </motion.div>
                 ))}
               </div>
-
-              <div className="mt-8">
-                <h3 className="text-2xl font-semibold mb-4">Tools & Technologies</h3>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    "Figma",
-                    "Adobe XD",
-                    "Photoshop",
-                    "Illustrator",
-                    "Elementor Pro",
-                    "WordPress",
-                    "Astra Theme",
-                    "React",
-                    "Next.js",
-                    "TailwindCSS",
-                    "Framer Motion",
-                  ].map((tech) => (
-                    <span
-                      key={tech}
-                      className="glass-card px-4 py-2 rounded-full text-sm hover:bg-primary/20 transition"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              </div>
             </motion.div>
 
             <motion.div
@@ -238,6 +212,32 @@ export default function Home() {
                 </div>
               ))}
 
+              <div className="mt-8">
+                <h3 className="text-2xl font-semibold mb-4">Tools & Technologies</h3>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Figma",
+                    "Adobe XD",
+                    "Photoshop",
+                    "Illustrator",
+                    "Elementor Pro",
+                    "WordPress",
+                    "Astra Theme",
+                    "React",
+                    "Next.js",
+                    "TailwindCSS",
+                    "Framer Motion",
+                  ].map((tech) => (
+                    <span
+                      key={tech}
+                      className="glass-card px-4 py-2 rounded-full text-sm hover:bg-primary/20 transition"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
               <Link
                 to="/contact"
                 className="glass-button px-6 py-3 rounded-full inline-flex items-center gap-2 hover:scale-105 transition mt-8"
@@ -245,6 +245,198 @@ export default function Home() {
                 Download CV
                 <ExternalLink className="w-4 h-4" />
               </Link>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* AI Email Generator Section */}
+        <section className="mb-32">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 className="text-4xl font-bold mb-6">
+                AI Email <span className="text-primary">Generator</span>
+              </h2>
+              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+                Generate professional email templates in seconds using our AI-powered system.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="flex justify-center md:justify-end"
+            >
+              <Link
+                to="/email-generator"
+                className="glass-button px-8 py-4 rounded-full font-medium hover:scale-105 transition-transform inline-flex items-center gap-2"
+              >
+                Try Now
+                <ExternalLink className="w-5 h-5" />
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Featured Shop Section */}
+        <section className="mb-32">
+          <motion.h2
+            className="text-4xl font-bold mb-12 text-center"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            Featured <span className="text-primary">Products</span>
+          </motion.h2>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[
+              ...Array(4).fill(null).map((_, i) => ({
+                id: i + 1,
+                name: `Premium Plugin ${i + 1}`,
+                price: 29 + (i * 10),
+                category: "Plugin",
+              })),
+              ...Array(4).fill(null).map((_, i) => ({
+                id: i + 5,
+                name: `Premium Theme ${i + 1}`,
+                price: 49 + (i * 10),
+                category: "Theme",
+              })),
+            ].map((product, i) => (
+              <motion.div
+                key={product.id}
+                className="glass-card rounded-2xl overflow-hidden hover:scale-105 transition"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                  <span className="text-6xl font-bold opacity-50">
+                    {product.category === "Plugin" ? "P" : "T"}
+                  </span>
+                </div>
+                <div className="p-4">
+                  <h3 className="font-semibold mb-2">{product.name}</h3>
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-primary">
+                      ${product.price}
+                    </span>
+                    <button className="glass-button px-4 py-2 rounded-lg hover:scale-110 transition text-sm">
+                      Buy Now
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            className="flex justify-center"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            <Link
+              to="/shop"
+              className="glass-button px-12 py-4 rounded-full font-medium text-lg hover:scale-105 transition-transform"
+            >
+              See All
+            </Link>
+          </motion.div>
+        </section>
+
+        {/* Client Testimonials Section */}
+        <section className="mb-32">
+          <motion.h2
+            className="text-4xl font-bold mb-12 text-center"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            Client <span className="text-primary">Testimonials</span>
+          </motion.h2>
+
+          <div className="relative overflow-hidden">
+            <motion.div
+              className="flex gap-6"
+              animate={{
+                x: [0, -1920],
+              }}
+              transition={{
+                x: {
+                  repeat: Infinity,
+                  repeatType: "loop",
+                  duration: 30,
+                  ease: "linear",
+                },
+              }}
+            >
+              {[...Array(2)].flatMap(() =>
+                [
+                  {
+                    name: "Sarah Johnson",
+                    role: "CEO, TechStartup Inc",
+                    image: "SJ",
+                    quote: "Webejhar delivered an exceptional website that exceeded all our expectations.",
+                  },
+                  {
+                    name: "Michael Chen",
+                    role: "Marketing Director",
+                    image: "MC",
+                    quote: "Fast turnaround, excellent communication, and pixel-perfect results.",
+                  },
+                  {
+                    name: "Emma Williams",
+                    role: "Freelance Designer",
+                    image: "EW",
+                    quote: "The custom plugin saved me countless hours. Highly recommended!",
+                  },
+                  {
+                    name: "David Brown",
+                    role: "Business Owner",
+                    image: "DB",
+                    quote: "Professional and creative. My site is performing better than ever.",
+                  },
+                ].map((testimonial, i) => (
+                  <motion.div
+                    key={`${testimonial.name}-${i}`}
+                    className="glass-card p-8 rounded-2xl min-w-[400px] flex-shrink-0"
+                    style={{
+                      transform: "perspective(1000px) rotateY(-5deg)",
+                    }}
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-2xl font-bold">
+                        {testimonial.image}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-lg">{testimonial.name}</p>
+                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 mb-4">
+                      {Array.from({ length: 5 }).map((_, j) => (
+                        <svg
+                          key={j}
+                          className="w-5 h-5 fill-primary text-primary"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                      ))}
+                    </div>
+                    <p className="text-muted-foreground italic">"{testimonial.quote}"</p>
+                  </motion.div>
+                ))
+              )}
             </motion.div>
           </div>
         </section>

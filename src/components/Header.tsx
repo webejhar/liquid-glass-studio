@@ -31,70 +31,72 @@ export const Header = () => {
       <motion.header
         className={cn(
           "fixed top-0 w-full z-50 transition-all duration-500",
-          scrolled ? "right-4 w-[calc(100%-2rem)]" : "right-0"
+          scrolled && "opacity-0 pointer-events-none"
         )}
         initial={{ y: -100 }}
-        animate={{ y: 0 }}
+        animate={{ y: scrolled ? -100 : 0 }}
         transition={{ type: "spring", stiffness: 100 }}
       >
         <nav className="glass-card px-6 py-4 m-4 rounded-2xl">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2 group">
-              <motion.div
-                className="text-2xl font-bold text-primary"
-                animate={{
-                  textShadow: [
-                    "0 0 10px rgba(51, 187, 238, 0.5)",
-                    "0 0 20px rgba(51, 187, 238, 0.8)",
-                    "0 0 10px rgba(51, 187, 238, 0.5)",
-                  ],
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                Webejhar
-              </motion.div>
-            </Link>
+            <div className="flex items-center gap-8">
+              <Link to="/" className="flex items-center gap-2 group">
+                <motion.div
+                  className="text-2xl font-bold text-primary"
+                  animate={{
+                    textShadow: [
+                      "0 0 10px rgba(51, 187, 238, 0.5)",
+                      "0 0 20px rgba(51, 187, 238, 0.8)",
+                      "0 0 10px rgba(51, 187, 238, 0.5)",
+                    ],
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  Webejhar
+                </motion.div>
+              </Link>
 
-            <div className="hidden md:flex items-center gap-8">
-              {menuItems.map((item) => {
-                const isActive = location.pathname === item.path;
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className="relative group"
-                  >
-                    <span className="text-foreground hover:text-primary transition-colors">
-                      <span
-                        className={cn(
-                          "inline-block transition-all duration-300",
-                          "group-hover:text-primary group-hover:scale-150 group-hover:font-bold",
-                          isActive && "text-primary scale-150 font-bold"
-                        )}
-                      >
-                        {item.label[0]}
+              <div className="hidden md:flex items-center gap-6">
+                {menuItems.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className="relative group"
+                    >
+                      <span className="text-foreground hover:text-primary transition-colors">
+                        <span
+                          className={cn(
+                            "inline-block transition-all duration-300",
+                            "group-hover:text-primary group-hover:scale-150 group-hover:font-bold",
+                            isActive && "text-primary scale-150 font-bold"
+                          )}
+                        >
+                          {item.label[0]}
+                        </span>
+                        {item.label.slice(1, -1)}
+                        <span
+                          className={cn(
+                            "inline-block transition-all duration-300",
+                            "group-hover:text-accent group-hover:translate-x-1 group-hover:opacity-80",
+                            isActive && "text-accent translate-x-1 opacity-80"
+                          )}
+                        >
+                          {item.label.slice(-1)}
+                        </span>
                       </span>
-                      {item.label.slice(1, -1)}
-                      <span
-                        className={cn(
-                          "inline-block transition-all duration-300",
-                          "group-hover:text-accent group-hover:translate-x-1 group-hover:opacity-80",
-                          isActive && "text-accent translate-x-1 opacity-80"
-                        )}
-                      >
-                        {item.label.slice(-1)}
-                      </span>
-                    </span>
-                    <motion.div
-                      className="absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-primary to-accent"
-                      initial={{ width: 0 }}
-                      whileHover={{ width: "100%" }}
-                      animate={isActive ? { width: "100%" } : { width: 0 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </Link>
-                );
-              })}
+                      <motion.div
+                        className="absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-primary to-accent"
+                        initial={{ width: 0 }}
+                        whileHover={{ width: "100%" }}
+                        animate={isActive ? { width: "100%" } : { width: 0 }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="flex items-center gap-4">
@@ -105,20 +107,58 @@ export const Header = () => {
                 Meeting
               </Link>
 
-              {scrolled && (
-                <motion.button
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  onClick={() => setMobileMenuOpen(true)}
-                  className="md:hidden glass-button p-2 rounded-full"
-                >
-                  <Menu className="w-5 h-5" />
-                </motion.button>
-              )}
+              <motion.button
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                onClick={() => setMobileMenuOpen(true)}
+                className="md:hidden glass-button p-2 rounded-full"
+              >
+                <Menu className="w-5 h-5" />
+              </motion.button>
             </div>
           </div>
         </nav>
       </motion.header>
+
+      {/* Right side sticky bar on scroll */}
+      <AnimatePresence>
+        {scrolled && (
+          <motion.div
+            className="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3"
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 100, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 100 }}
+          >
+            <Link
+              to="/shop"
+              className="glass-button p-4 rounded-full hover:scale-110 transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="9" cy="21" r="1" />
+                <circle cx="20" cy="21" r="1" />
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+              </svg>
+            </Link>
+            <motion.button
+              onClick={() => setMobileMenuOpen(true)}
+              className="glass-button p-4 rounded-full hover:scale-110 transition"
+              whileHover={{ scale: 1.1 }}
+            >
+              <Menu className="w-5 h-5" />
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {mobileMenuOpen && (
