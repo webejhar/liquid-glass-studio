@@ -44,16 +44,16 @@ export const DomainChecker = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="py-20 px-4"
+        className="py-12 md:py-20 px-4 min-h-[80vh] md:min-h-0 flex items-center"
       >
-        <div className="container max-w-4xl mx-auto">
+        <div className="container max-w-4xl mx-auto w-full">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-bold text-center mb-4 text-glow"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-6 md:mb-4 text-glow"
           >
-            Check if your domain is available
+            Check if your <span className="text-primary">domain</span> is available
           </motion.h2>
           
           <motion.div
@@ -63,15 +63,15 @@ export const DomainChecker = () => {
             transition={{ delay: 0.2 }}
             className="glass-premium rounded-2xl p-6 md:p-8 mt-8"
           >
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
+            <div className="flex flex-col md:flex-row gap-4 w-full">
+              <div className="flex-1 relative w-full">
                 <Input
                   type="text"
                   placeholder="example"
                   value={domainBase}
                   onChange={(e) => setDomainBase(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="h-12 md:h-14 text-lg glass-card border-border/50"
+                  className="h-14 md:h-14 text-lg glass-card border-border/50 w-full"
                   disabled={isChecking}
                 />
               </div>
@@ -80,7 +80,7 @@ export const DomainChecker = () => {
                 disabled={isChecking}
                 size="lg"
                 variant="liquid"
-                className="h-12 md:h-14 px-8 text-lg"
+                className="h-14 md:h-14 px-8 text-lg w-full md:w-auto"
               >
                 <Search className="w-5 h-5 mr-2" />
                 {isChecking ? "Searching..." : "Search"}
