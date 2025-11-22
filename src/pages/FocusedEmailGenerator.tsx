@@ -37,11 +37,12 @@ export default function FocusedEmailGenerator() {
         {/* Back Button */}
         <motion.button
           onClick={() => navigate(-1)}
-          className="glass-button px-4 py-2 rounded-lg mb-6 flex items-center gap-2 hover:scale-105 transition-transform"
+          className="inline-flex items-center gap-2 px-6 py-3 mb-8 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 transition-all hover:scale-105 font-medium"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-5 h-5" />
           Back
         </motion.button>
 
