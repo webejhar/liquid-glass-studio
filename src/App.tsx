@@ -7,6 +7,8 @@ import { CustomCursor } from "@/components/CustomCursor";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { Cart } from "@/components/Cart";
+import { CartProvider } from "@/contexts/CartContext";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Services from "./pages/Services";
@@ -27,32 +29,35 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <CustomCursor />
-        <AnimatedBackground />
-        <div className="relative z-10">
-          <Header />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/meeting" element={<Meeting />} />
-            <Route path="/email-generator" element={<EmailGenerator />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/testimonials" element={<Testimonials />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Footer />
-        </div>
-      </BrowserRouter>
+      <CartProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <CustomCursor />
+          <AnimatedBackground />
+          <div className="relative z-10">
+            <Header />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/portfolio" element={<Portfolio />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/meeting" element={<Meeting />} />
+              <Route path="/email-generator" element={<EmailGenerator />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/testimonials" element={<Testimonials />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Footer />
+            <Cart />
+          </div>
+        </BrowserRouter>
+      </CartProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

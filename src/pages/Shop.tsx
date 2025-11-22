@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { ShoppingCart, Eye } from "lucide-react";
-import { ProductPurchaseModal } from "@/components/ProductPurchaseModal";
+import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
 
 const products = [
   ...Array(20).fill(null).map((_, i) => ({
@@ -25,8 +26,7 @@ const products = [
 export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState<"All" | "Plugin" | "Theme">("All");
   const [sortBy, setSortBy] = useState<"name" | "price-low" | "price-high">("name");
-  const [selectedProduct, setSelectedProduct] = useState<typeof products[0] | null>(null);
-  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const { addToCart } = useCart();
 
   const filteredProducts = selectedCategory === "All" 
     ? products 
@@ -38,9 +38,9 @@ export default function Shop() {
     return a.name.localeCompare(b.name);
   });
 
-  const handlePurchase = (product: typeof products[0]) => {
-    setSelectedProduct(product);
-    setIsPurchaseModalOpen(true);
+  const handleAddToCart = (product: typeof products[0]) => {
+    addToCart(product);
+    toast.success(`${product.name} added to cart!`);
   };
 
   return (
@@ -116,28 +116,18 @@ export default function Shop() {
                     ${product.price}
                   </span>
                   <Button
-                    onClick={() => handlePurchase(product)}
+                    onClick={() => handleAddToCart(product)}
                     variant="liquid"
                     size="sm"
                   >
-                    Buy Now
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    Add to Cart
                   </Button>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
-
-        {selectedProduct && (
-          <ProductPurchaseModal
-            isOpen={isPurchaseModalOpen}
-            onClose={() => {
-              setIsPurchaseModalOpen(false);
-              setSelectedProduct(null);
-            }}
-            product={selectedProduct}
-          />
-        )}
       </div>
     </div>
   );

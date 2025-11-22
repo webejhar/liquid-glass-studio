@@ -92,6 +92,7 @@ export type Database = {
           buyer_name: string | null
           created_at: string
           id: string
+          order_id: string | null
           payment_method: string
           payment_reference: string
           product_category: string
@@ -105,6 +106,7 @@ export type Database = {
           buyer_name?: string | null
           created_at?: string
           id?: string
+          order_id?: string | null
           payment_method: string
           payment_reference: string
           product_category: string
@@ -118,6 +120,7 @@ export type Database = {
           buyer_name?: string | null
           created_at?: string
           id?: string
+          order_id?: string | null
           payment_method?: string
           payment_reference?: string
           product_category?: string
