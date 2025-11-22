@@ -46,7 +46,7 @@ export const DomainChecker = () => {
         transition={{ duration: 0.6 }}
         className="py-16 md:py-20 px-4 min-h-[85vh] md:min-h-0 flex items-center"
       >
-        <div className="container max-w-5xl mx-auto w-full">
+        <div className="w-full mx-auto">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -61,30 +61,32 @@ export const DomainChecker = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="glass-premium rounded-3xl p-10 sm:p-12 md:p-10 mt-10 mx-auto max-w-3xl"
+            className="glass-premium rounded-3xl p-10 sm:p-12 md:p-16 mt-10 mx-4 md:mx-8"
           >
-            <div className="flex flex-col md:flex-row gap-5 w-full">
-              <div className="flex-1 relative w-full">
-                <Input
-                  type="text"
-                  placeholder="example"
-                  value={domainBase}
-                  onChange={(e) => setDomainBase(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="h-16 md:h-14 text-lg md:text-base glass-card border-border/50 w-full px-6"
+            <div className="max-w-4xl mx-auto">
+              <div className="flex flex-col md:flex-row gap-5 w-full">
+                <div className="flex-1 relative w-full">
+                  <Input
+                    type="text"
+                    placeholder="example"
+                    value={domainBase}
+                    onChange={(e) => setDomainBase(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    className="h-16 md:h-14 text-lg md:text-base glass-card border-border/50 w-full px-6"
+                    disabled={isChecking}
+                  />
+                </div>
+                <Button
+                  onClick={handleSearch}
                   disabled={isChecking}
-                />
+                  size="lg"
+                  variant="liquid"
+                  className="h-16 md:h-14 px-10 md:px-8 text-lg md:text-base w-full md:w-auto min-w-[140px]"
+                >
+                  <Search className="w-5 h-5 mr-2" />
+                  {isChecking ? "Searching..." : "Search"}
+                </Button>
               </div>
-              <Button
-                onClick={handleSearch}
-                disabled={isChecking}
-                size="lg"
-                variant="liquid"
-                className="h-16 md:h-14 px-10 md:px-8 text-lg md:text-base w-full md:w-auto min-w-[140px]"
-              >
-                <Search className="w-5 h-5 mr-2" />
-                {isChecking ? "Searching..." : "Search"}
-              </Button>
             </div>
           </motion.div>
         </div>
