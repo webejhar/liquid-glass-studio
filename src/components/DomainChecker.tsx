@@ -44,9 +44,9 @@ export const DomainChecker = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="py-16 md:py-20 px-4 min-h-[85vh] md:min-h-0 flex items-center"
+        className="py-16 md:py-20 min-h-[85vh] md:min-h-0 flex items-center"
       >
-        <div className="w-full mx-auto">
+        <div className="w-full">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -61,7 +61,7 @@ export const DomainChecker = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="glass-premium rounded-3xl p-10 sm:p-12 md:p-16 mt-10 mx-4 md:mx-8"
+            className="glass-premium rounded-none sm:rounded-3xl p-8 sm:p-12 md:p-16 mt-10 mx-0 sm:mx-4 md:mx-8"
           >
             <div className="max-w-4xl mx-auto">
               <div className="flex flex-col md:flex-row gap-5 w-full">
@@ -81,7 +81,7 @@ export const DomainChecker = () => {
                   disabled={isChecking}
                   size="lg"
                   variant="liquid"
-                  className="h-16 md:h-14 px-10 md:px-8 text-lg md:text-base w-full md:w-auto min-w-[140px]"
+                  className="h-16 md:h-14 px-10 md:px-8 text-lg md:text-base w-full md:w-auto md:min-w-[140px]"
                 >
                   <Search className="w-5 h-5 mr-2" />
                   {isChecking ? "Searching..." : "Search"}
