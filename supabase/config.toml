@@ -9,6 +9,12 @@ verify_jwt = false
 [functions.send-meeting-email]
 verify_jwt = false
 
+[functions.send-registration-notification]
+verify_jwt = false
+
+[functions.send-password-reset-notification]
+verify_jwt = false
+
 [functions.check-domain]
 verify_jwt = false
 

@@ -3,7 +3,7 @@ import { Facebook, Linkedin, Globe } from "lucide-react";
 
 export const Footer = () => {
   const location = useLocation();
-  const hideFooterPaths = ['/contact', '/meeting', '/about', '/email-generator'];
+  const hideFooterPaths = ['/contact', '/meeting', '/about', '/email-generator', '/login', '/register', '/forgot-password'];
   
   if (hideFooterPaths.includes(location.pathname)) {
     return null;
@@ -48,6 +48,12 @@ export const Footer = () => {
             </Link>
             <Link to="/contact" className="text-muted-foreground hover:text-primary transition">
               Contact
+            </Link>
+            <Link to="/login" className="text-muted-foreground hover:text-primary transition">
+              Login
+            </Link>
+            <Link to="/register" className="text-muted-foreground hover:text-primary transition">
+              Register
             </Link>
           </div>
         </div>
