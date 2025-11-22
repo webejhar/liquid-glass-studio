@@ -132,20 +132,21 @@ const AdminOrders = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Order Management</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Order Management</h1>
           <p className="text-muted-foreground">View and manage all orders and bookings</p>
         </div>
 
         <Tabs defaultValue="products" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="products">Product Orders</TabsTrigger>
-            <TabsTrigger value="domains">Domain Orders</TabsTrigger>
-            <TabsTrigger value="meetings">Meeting Bookings</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="products" className="text-xs sm:text-sm">Product Orders</TabsTrigger>
+            <TabsTrigger value="domains" className="text-xs sm:text-sm">Domain Orders</TabsTrigger>
+            <TabsTrigger value="meetings" className="text-xs sm:text-sm">Meetings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
-            <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-6">
-              <div className="rounded-lg border border-border/50 overflow-hidden">
+            <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-4 sm:p-6">
+              <div className="rounded-lg border border-border/50 overflow-x-auto">
+                <div className="min-w-[900px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -193,13 +194,15 @@ const AdminOrders = () => {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </div>
             </Card>
           </TabsContent>
 
           <TabsContent value="domains">
-            <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-6">
-              <div className="rounded-lg border border-border/50 overflow-hidden">
+            <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-4 sm:p-6">
+              <div className="rounded-lg border border-border/50 overflow-x-auto">
+                <div className="min-w-[900px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -247,13 +250,15 @@ const AdminOrders = () => {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </div>
             </Card>
           </TabsContent>
 
           <TabsContent value="meetings">
-            <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-6">
-              <div className="rounded-lg border border-border/50 overflow-hidden">
+            <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-4 sm:p-6">
+              <div className="rounded-lg border border-border/50 overflow-x-auto">
+                <div className="min-w-[800px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -296,6 +301,7 @@ const AdminOrders = () => {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </div>
             </Card>
           </TabsContent>

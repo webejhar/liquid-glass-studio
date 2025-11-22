@@ -57,7 +57,7 @@ const AdminDashboard = () => {
     <AdminLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Dashboard</h1>
           <p className="text-muted-foreground">Overview of your platform</p>
         </div>
 

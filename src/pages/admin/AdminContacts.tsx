@@ -152,12 +152,13 @@ const AdminContacts = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Contact Messages</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Contact Messages</h1>
           <p className="text-muted-foreground">View and manage all contact form submissions</p>
         </div>
 
-        <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-6">
-          <div className="rounded-lg border border-border/50 overflow-hidden">
+        <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-4 sm:p-6">
+          <div className="rounded-lg border border-border/50 overflow-x-auto">
+            <div className="min-w-[900px]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -218,12 +219,13 @@ const AdminContacts = () => {
                 ))}
               </TableBody>
             </Table>
+            </div>
           </div>
         </Card>
       </div>
 
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
             <DialogTitle>Contact Details</DialogTitle>
             <DialogDescription>View and manage contact information</DialogDescription>
@@ -231,7 +233,7 @@ const AdminContacts = () => {
 
           {selectedContact && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Name</p>
                   <p className="font-medium">{selectedContact.name}</p>
