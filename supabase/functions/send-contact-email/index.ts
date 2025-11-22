@@ -54,7 +54,24 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Contact email sent successfully:", adminEmailResponse);
+    // Send confirmation to user
+    const userEmailResponse = await resend.emails.send({
+      from: "Webejhar <onboarding@resend.dev>",
+      to: [data.email],
+      subject: "Thank You for Contacting Us!",
+      html: `
+        <h1>Thank you for reaching out, ${data.name}!</h1>
+        <p>We have received your message and will get back to you as soon as possible.</p>
+        <p><strong>Your message details:</strong></p>
+        ${data.service ? `<p><strong>Service:</strong> ${data.service}</p>` : ''}
+        ${data.subject ? `<p><strong>Subject:</strong> ${data.subject}</p>` : ''}
+        <p><strong>Message:</strong> ${data.message}</p>
+        <p>We typically respond within 24-48 hours.</p>
+        <p>Best regards,<br>The Webejhar Team</p>
+      `,
+    });
+
+    console.log("Contact emails sent successfully:", { adminEmailResponse, userEmailResponse });
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
