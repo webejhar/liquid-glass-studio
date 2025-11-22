@@ -32,7 +32,7 @@ export default function FocusedEmailGenerator() {
   };
 
   return (
-    <div className="min-h-screen pt-8 px-4 pb-20 bg-background">
+    <div className="min-h-screen pt-8 px-4 pb-20">
       <div className="max-w-7xl mx-auto">
         {/* Back Button */}
         <motion.button

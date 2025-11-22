@@ -17,6 +17,9 @@ export const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  
+  // Hide header on these pages
+  const hideHeader = ['/email-generator', '/contact', '/meeting'].includes(location.pathname);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +28,8 @@ export const Header = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  if (hideHeader) return null;
 
   return (
     <>
