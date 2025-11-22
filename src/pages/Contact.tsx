@@ -1,22 +1,68 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function Contact() {
   const [isFreelancer, setIsFreelancer] = useState(false);
-  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast({
-      title: "Message Received!",
-      description: "Thank you — we'll reply within 48 hours.",
-    });
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      service: formData.get('service') as string,
+      subject: formData.get('subject') as string,
+      message: formData.get('message') as string,
+      isFreelancer,
+      linkedinUrl: formData.get('linkedin') as string,
+      behanceUrl: formData.get('behance') as string,
+      websiteUrl: formData.get('website') as string,
+      category: formData.get('category') as string,
+    };
+
+    try {
+      const { error } = await supabase.functions.invoke('send-contact-email', {
+        body: data
+      });
+
+      if (error) throw error;
+
+      toast.success("Thank you!");
+      
+      // Redirect to home after 1 second
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
+    } catch (error: any) {
+      console.error("Error sending contact email:", error);
+      toast.error("Sorry, something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen pt-32 px-4 pb-20">
+    <div className="min-h-screen pt-8 px-4 pb-20">
       <div className="max-w-4xl mx-auto">
+        {/* Back Button */}
+        <motion.button
+          onClick={() => navigate(-1)}
+          className="glass-button px-4 py-2 rounded-lg mb-6 flex items-center gap-2 hover:scale-105 transition-transform"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </motion.button>
         <motion.h1
           className="text-5xl font-bold mb-4 text-center"
           initial={{ opacity: 0, y: 20 }}
@@ -45,6 +91,7 @@ export default function Contact() {
               <label className="block mb-2 font-medium">Full Name *</label>
               <input
                 type="text"
+                name="name"
                 required
                 className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
               />
@@ -53,6 +100,7 @@ export default function Contact() {
               <label className="block mb-2 font-medium">Email *</label>
               <input
                 type="email"
+                name="email"
                 required
                 className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
               />
@@ -64,13 +112,14 @@ export default function Contact() {
               <label className="block mb-2 font-medium">Phone *</label>
               <input
                 type="tel"
+                name="phone"
                 required
                 className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
               />
             </div>
             <div>
               <label className="block mb-2 font-medium">Service</label>
-              <select className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-background">
+              <select name="service" className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-background">
                 <option>UI/UX Design</option>
                 <option>Web Development</option>
                 <option>WordPress</option>
@@ -84,6 +133,7 @@ export default function Contact() {
             <label className="block mb-2 font-medium">Subject</label>
             <input
               type="text"
+              name="subject"
               className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
             />
           </div>
@@ -91,6 +141,7 @@ export default function Contact() {
           <div>
             <label className="block mb-2 font-medium">Message *</label>
             <textarea
+              name="message"
               required
               rows={6}
               className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent resize-none"
@@ -131,6 +182,7 @@ export default function Contact() {
                   </label>
                   <input
                     type="url"
+                    name="linkedin"
                     required={isFreelancer}
                     className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
                   />
@@ -141,6 +193,7 @@ export default function Contact() {
                   </label>
                   <input
                     type="url"
+                    name="behance"
                     required={isFreelancer}
                     className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
                   />
@@ -151,6 +204,7 @@ export default function Contact() {
                 <label className="block mb-2 font-medium">Website URL</label>
                 <input
                   type="url"
+                  name="website"
                   className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
                 />
               </div>
@@ -159,6 +213,7 @@ export default function Contact() {
                 <label className="block mb-2 font-medium">Category</label>
                 <input
                   type="text"
+                  name="category"
                   placeholder="e.g., Web Developer, Designer, etc."
                   className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
                 />
@@ -168,9 +223,10 @@ export default function Contact() {
 
           <button
             type="submit"
-            className="w-full glass-button px-8 py-4 rounded-full font-medium hover:scale-105 transition-transform"
+            disabled={isSubmitting}
+            className="w-full glass-button px-8 py-4 rounded-full font-medium hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Send Message
+            {isSubmitting ? "Sending..." : "Send Message"}
           </button>
         </motion.form>
       </div>

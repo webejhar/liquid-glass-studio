@@ -29,7 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Email to admin
     const adminEmailResponse = await resend.emails.send({
       from: "Webejhar <onboarding@resend.dev>",
-      to: ["contact@rahatulllc.com"],
+      to: ["webejhar@gmail.com"],
       subject: `[Webejhar] New Meeting Booking — ${name}`,
       html: `
         <h1>New Meeting Booking</h1>

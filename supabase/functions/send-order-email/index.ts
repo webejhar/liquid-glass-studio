@@ -31,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Email to admin
     const adminEmailResponse = await resend.emails.send({
       from: "Webejhar <onboarding@resend.dev>",
-      to: ["contact@rahatulllc.com", "webejhar@gmail.com"],
+      to: ["webejhar@gmail.com"],
       subject: `[Webejhar] New Domain Order — ${fullDomain}`,
       html: `
         <h1>New Domain Order Received</h1>

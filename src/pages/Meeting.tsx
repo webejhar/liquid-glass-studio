@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Calendar, Clock, CheckCircle } from "lucide-react";
+import { Calendar, Clock, CheckCircle, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export default function Meeting() {
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [name, setName] = useState("");
@@ -104,8 +106,18 @@ export default function Meeting() {
   }
 
   return (
-    <div className="min-h-screen pt-32 px-4 pb-20">
+    <div className="min-h-screen pt-8 px-4 pb-20">
       <div className="max-w-4xl mx-auto">
+        {/* Back Button */}
+        <motion.button
+          onClick={() => navigate(-1)}
+          className="glass-button px-4 py-2 rounded-lg mb-6 flex items-center gap-2 hover:scale-105 transition-transform"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </motion.button>
         <motion.h1
           className="text-5xl font-bold mb-4 text-center"
           initial={{ opacity: 0, y: 20 }}
