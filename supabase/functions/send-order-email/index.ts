@@ -28,10 +28,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     const fullDomain = `${domainName}.${tld}`;
     
-    // Email to admin
+    // Email to admin (both email addresses)
     const adminEmailResponse = await resend.emails.send({
       from: "Webejhar <onboarding@resend.dev>",
-      to: ["webejhar@gmail.com"],
+      to: ["webejhar@gmail.com", "contact@rahatulllc.com"],
       subject: `[Webejhar] New Domain Order — ${fullDomain}`,
       html: `
         <h1>New Domain Order Received</h1>

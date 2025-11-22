@@ -1,8 +1,22 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function About() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen pt-32 px-4">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate(-1)}
+        className="fixed top-4 left-4 z-50"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back
+      </Button>
       <div className="max-w-4xl mx-auto">
         <motion.h1
           className="text-5xl font-bold mb-8 text-center"

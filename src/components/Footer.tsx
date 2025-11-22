@@ -1,7 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Facebook, Linkedin, Globe } from "lucide-react";
 
 export const Footer = () => {
+  const location = useLocation();
+  const hideFooterPaths = ['/contact', '/meeting', '/email-generator', '/about'];
+  
+  if (hideFooterPaths.includes(location.pathname)) {
+    return null;
+  }
+
   return (
     <footer className="relative z-10 glass-card mt-20 mx-4 mb-4 rounded-2xl px-8 py-12">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">

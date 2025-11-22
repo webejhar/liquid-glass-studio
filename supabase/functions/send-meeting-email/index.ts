@@ -26,10 +26,10 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { name, email, phone, meetingDate, meetingTime, notes, bookingId }: MeetingEmailRequest = await req.json();
 
-    // Email to admin
+    // Email to admin (both email addresses)
     const adminEmailResponse = await resend.emails.send({
       from: "Webejhar <onboarding@resend.dev>",
-      to: ["webejhar@gmail.com"],
+      to: ["webejhar@gmail.com", "contact@rahatulllc.com"],
       subject: `[Webejhar] New Meeting Booking — ${name}`,
       html: `
         <h1>New Meeting Booking</h1>
