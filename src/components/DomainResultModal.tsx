@@ -46,39 +46,39 @@ export const DomainResultModal = ({ isOpen, onClose, domainBase, results }: Doma
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="glass-premium max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="glass-premium max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl md:text-3xl text-glow">
+            <DialogTitle className="text-xl sm:text-2xl md:text-3xl text-glow break-words">
               Domain Availability: {domainBase}
             </DialogTitle>
           </DialogHeader>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
             {results.map((result) => (
               <div
                 key={result.tld}
-                className={`glass-card rounded-lg p-4 ${
+                className={`glass-card rounded-lg p-3 sm:p-4 ${
                   result.available ? 'border-primary/50' : 'border-border/30'
                 }`}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-lg font-semibold">
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
+                  <span className="text-base sm:text-lg font-semibold break-all">
                     {domainBase}{result.tld}
                   </span>
                   {result.available ? (
-                    <CheckCircle className="w-5 h-5 text-primary" />
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0 ml-2" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-destructive" />
+                    <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive flex-shrink-0 ml-2" />
                   )}
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col gap-1">
-                    <span className={result.available ? "text-primary" : "text-muted-foreground"}>
+                    <span className={`text-sm sm:text-base ${result.available ? "text-primary" : "text-muted-foreground"}`}>
                       {result.available ? "Available" : "Taken"}
                     </span>
                     {result.available && (
-                      <span className="text-xl font-bold text-primary">
+                      <span className="text-lg sm:text-xl font-bold text-primary">
                         ${result.price}
                       </span>
                     )}

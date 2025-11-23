@@ -51,17 +51,17 @@ export default function Services() {
   const [selectedService, setSelectedService] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen pt-32 px-4 pb-20">
+    <div className="min-h-screen pt-24 sm:pt-32 px-4 pb-20">
       <div className="max-w-7xl mx-auto">
         <motion.h1
-          className="text-5xl font-bold mb-4 text-center"
+          className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           My <span className="text-primary">Services</span>
         </motion.h1>
         <motion.p
-          className="text-center text-muted-foreground mb-16 text-lg"
+          className="text-center text-muted-foreground mb-12 sm:mb-16 text-base sm:text-lg px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -69,11 +69,11 @@ export default function Services() {
           Comprehensive digital solutions tailored to your needs
         </motion.p>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {services.map((service, i) => (
             <motion.div
               key={i}
-              className="glass-card p-8 rounded-2xl cursor-pointer hover:scale-105 transition-all relative overflow-hidden group"
+              className="glass-card p-6 sm:p-8 rounded-xl sm:rounded-2xl cursor-pointer hover:scale-105 transition-all relative overflow-hidden group"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
@@ -82,11 +82,11 @@ export default function Services() {
               }
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition" />
-              <service.icon className="w-12 h-12 text-primary mb-4 relative z-10" />
-              <h3 className="text-xl font-semibold mb-2 relative z-10">
+              <service.icon className="w-10 h-10 sm:w-12 sm:h-12 text-primary mb-3 sm:mb-4 relative z-10" />
+              <h3 className="text-lg sm:text-xl font-semibold mb-2 relative z-10">
                 {service.title}
               </h3>
-              <p className="text-muted-foreground mb-4 relative z-10">
+              <p className="text-sm sm:text-base text-muted-foreground mb-4 relative z-10">
                 {service.description}
               </p>
 

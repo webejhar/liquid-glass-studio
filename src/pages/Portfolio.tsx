@@ -77,22 +77,22 @@ export default function Portfolio() {
       : projects.filter((p) => p.category === selectedCategory);
 
   return (
-    <div className="min-h-screen pt-32 px-4 pb-20">
+    <div className="min-h-screen pt-24 sm:pt-32 px-4 pb-20">
       <div className="max-w-7xl mx-auto">
         <motion.h1
-          className="text-5xl font-bold mb-4 text-center"
+          className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           My <span className="text-primary">Portfolio</span>
         </motion.h1>
 
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8 sm:mb-12">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`glass-card px-6 py-2 rounded-full transition ${
+              className={`glass-card px-4 sm:px-6 py-1.5 sm:py-2 rounded-full transition text-sm sm:text-base ${
                 selectedCategory === cat
                   ? "bg-primary/20 border-primary"
                   : "hover:bg-primary/10"
@@ -103,23 +103,23 @@ export default function Portfolio() {
           ))}
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {filteredProjects.map((project, i) => (
             <motion.div
               key={i}
-              className="glass-card rounded-2xl overflow-hidden hover:scale-105 transition group"
+              className="glass-card rounded-xl sm:rounded-2xl overflow-hidden hover:scale-105 transition group"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
             >
               <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                <span className="text-4xl font-bold opacity-50">
+                <span className="text-3xl sm:text-4xl font-bold opacity-50">
                   {project.title[0]}
                 </span>
               </div>
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xl font-semibold">{project.title}</h3>
+                  <h3 className="text-lg sm:text-xl font-semibold">{project.title}</h3>
                   <button
                     onClick={() =>
                       setSelectedProject(selectedProject === i ? null : i)
@@ -152,42 +152,42 @@ export default function Portfolio() {
 
         {selectedProject !== null && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             onClick={() => setSelectedProject(null)}
           >
             <motion.div
-              className="glass-card p-8 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto"
+              className="glass-card p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-between items-start mb-6">
+              <div className="flex justify-between items-start mb-4 sm:mb-6">
                 <div>
-                  <h2 className="text-3xl font-bold mb-2">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">
                     {filteredProjects[selectedProject].category} Website
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     Role: {filteredProjects[selectedProject].role}
                   </p>
                 </div>
                 <button
                   onClick={() => setSelectedProject(null)}
-                  className="glass-button p-2 rounded-full"
+                  className="glass-button p-2 rounded-full flex-shrink-0"
                 >
                   ✕
                 </button>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                 <div>
-                  <h3 className="text-xl font-semibold mb-4">Project Brief</h3>
-                  <p className="text-muted-foreground mb-6">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Project Brief</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
                     {filteredProjects[selectedProject].description}
                   </p>
 
-                  <h3 className="text-xl font-semibold mb-4">Tech Stack</h3>
+                  <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Tech Stack</h3>
                   <div className="flex flex-wrap gap-2 mb-6">
                     {filteredProjects[selectedProject].tech.map((tech) => (
                       <span

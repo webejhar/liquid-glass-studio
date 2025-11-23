@@ -23,14 +23,14 @@ export const Cart = () => {
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        className="fixed bottom-8 right-8 z-50"
+        className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50"
       >
         <button
           onClick={() => setIsCartOpen(true)}
-          className="glass-card p-4 rounded-full hover:scale-110 transition relative"
+          className="glass-card p-3 sm:p-4 rounded-full hover:scale-110 transition relative"
         >
-          <ShoppingCart className="w-6 h-6" />
-          <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+          <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
+          <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-primary text-primary-foreground rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs sm:text-sm font-bold">
             {getCartCount()}
           </span>
         </button>
@@ -52,25 +52,25 @@ export const Cart = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="fixed right-0 top-0 h-full w-full max-w-md bg-background z-50 shadow-2xl"
+              className="fixed right-0 top-0 h-full w-full sm:max-w-md bg-background z-50 shadow-2xl"
             >
               <div className="flex flex-col h-full">
                 {/* Header */}
-                <div className="glass-card p-6 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <ShoppingCart className="w-6 h-6 text-primary" />
-                    <h2 className="text-2xl font-bold">Your Cart</h2>
+                <div className="glass-card p-4 sm:p-6 flex items-center justify-between">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                    <h2 className="text-xl sm:text-2xl font-bold">Your Cart</h2>
                   </div>
                   <button
                     onClick={() => setIsCartOpen(false)}
                     className="glass-button p-2 rounded-full hover:scale-110 transition"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
 
                 {/* Cart Items */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 sm:space-y-4">
                   {cart.map((item, index) => (
                     <motion.div
                       key={`${item.id}-${index}`}

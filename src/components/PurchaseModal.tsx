@@ -167,14 +167,14 @@ export const PurchaseModal = ({ isOpen, onClose, domainName, tld, price }: Purch
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-premium max-w-md">
+      <DialogContent className="glass-premium max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-glow">
+          <DialogTitle className="text-xl sm:text-2xl text-glow break-words">
             Purchase {domainName}{tld}
           </DialogTitle>
           <div className="flex items-center justify-between pt-2">
-            <span className="text-sm text-muted-foreground">Domain Price:</span>
-            <span className="text-xl font-bold text-primary">{getDisplayPrice()}</span>
+            <span className="text-xs sm:text-sm text-muted-foreground">Domain Price:</span>
+            <span className="text-lg sm:text-xl font-bold text-primary">{getDisplayPrice()}</span>
           </div>
         </DialogHeader>
 
