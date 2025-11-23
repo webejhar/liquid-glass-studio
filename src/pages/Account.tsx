@@ -604,10 +604,12 @@ export default function Account() {
                     )}
                   </div>
                   
-                  <div className="flex-1 pr-2 md:pr-0">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                      <h2 className="text-xl sm:text-2xl font-bold break-words pr-2 md:pr-0">{formData.name || "User"}</h2>
-                      <div className="w-fit shrink-0">
+                  <div className="flex-1 min-w-0 pr-2 md:pr-0">
+                    <h2 className="text-xl sm:text-2xl font-bold break-words mb-3">{formData.name || "User"}</h2>
+                    
+                    <div className="flex items-center gap-2 mb-4 flex-wrap">
+                      <p className="text-sm sm:text-base text-muted-foreground truncate">{formData.email}</p>
+                      <div className="shrink-0">
                         {formData.verification_status === 'verified' ? (
                           <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-green-500/20 text-green-400">
                             <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -629,7 +631,6 @@ export default function Account() {
                         )}
                       </div>
                     </div>
-                    <p className="text-sm sm:text-base text-muted-foreground mb-4 break-all pr-2 md:pr-0">{formData.email}</p>
                     
                     {!isEditing && (
                       <Button onClick={() => setIsEditing(true)} variant="liquid" className="text-sm sm:text-base">
