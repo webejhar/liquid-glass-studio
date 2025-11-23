@@ -323,45 +323,48 @@ export default function Home() {
             Featured <span className="text-primary">Products</span>
           </motion.h2>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
             {[
-              ...Array(4).fill(null).map((_, i) => ({
+              ...Array(8).fill(null).map((_, i) => ({
                 id: i + 1,
                 name: `Premium Plugin ${i + 1}`,
                 price: 29 + (i * 10),
                 category: "Plugin",
                 description: "Advanced WordPress plugin with premium features"
               })),
-              ...Array(4).fill(null).map((_, i) => ({
-                id: i + 5,
+              ...Array(7).fill(null).map((_, i) => ({
+                id: i + 9,
                 name: `Premium Theme ${i + 1}`,
                 price: 49 + (i * 10),
                 category: "Theme",
                 description: "Beautiful WordPress theme with modern design"
               })),
-            ].map((product, i) => (
+            ].slice(0, 15).map((product, i) => (
               <motion.div
                 key={product.id}
-                className="glass-card rounded-2xl overflow-hidden hover:scale-105 transition"
+                className="glass-card rounded-xl sm:rounded-2xl overflow-hidden hover:scale-105 transition relative"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: i * 0.05 }}
               >
                 <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                  <span className="text-6xl font-bold opacity-50">
+                  <span className="text-4xl sm:text-6xl font-bold opacity-50">
                     {product.category === "Plugin" ? "P" : "T"}
                   </span>
                 </div>
-                <div className="p-4">
-                  <h3 className="font-semibold mb-2">{product.name}</h3>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-primary">
+                <div className="p-3 sm:p-4">
+                  <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base truncate">{product.name}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">
+                    {product.description}
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+                    <span className="text-xl sm:text-2xl font-bold text-primary">
                       ${product.price}
                     </span>
                     <button 
                       onClick={() => setSelectedProduct(product)}
-                      className="glass-button px-4 py-2 rounded-lg hover:scale-110 transition text-sm"
+                      className="glass-button px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg hover:scale-110 transition text-xs sm:text-sm w-full sm:w-auto"
                     >
                       Buy Now
                     </button>
@@ -372,16 +375,16 @@ export default function Home() {
           </div>
 
           <motion.div
-            className="flex justify-center"
+            className="flex justify-center mt-12"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
             <Link
               to="/shop"
-              className="glass-button px-12 py-4 rounded-full font-medium text-lg hover:scale-105 transition-transform"
+              className="glass-button px-12 py-3 sm:py-4 rounded-full font-medium text-base sm:text-lg hover:scale-105 transition-transform"
             >
-              See All
+              See All Products
             </Link>
           </motion.div>
         </section>
