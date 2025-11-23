@@ -31,10 +31,22 @@ export default function Shop() {
   const [sortBy, setSortBy] = useState<"name" | "price-low" | "price-high">("name");
   const [searchQuery, setSearchQuery] = useState("");
   const [displayCount, setDisplayCount] = useState(15); // 3 rows × 5 items = 15
+  const [isMobile, setIsMobile] = useState(false);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const { addToCart } = useCart();
   const navigate = useNavigate();
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Load user and favorites
   useEffect(() => {
@@ -75,8 +87,8 @@ export default function Shop() {
     return a.name.localeCompare(b.name);
   });
 
-  // Paginated products
-  const displayedProducts = sortedProducts.slice(0, displayCount);
+  // Paginated products - limit to 4 on mobile, use displayCount on desktop
+  const displayedProducts = sortedProducts.slice(0, isMobile ? 4 : displayCount);
 
   const handleAddToCart = (product: typeof products[0]) => {
     addToCart(product);
@@ -253,8 +265,8 @@ export default function Shop() {
           ))}
         </div>
 
-        {/* Load More Button */}
-        {displayCount < sortedProducts.length && (
+        {/* Load More Button - hide on mobile */}
+        {!isMobile && displayCount < sortedProducts.length && (
           <div className="mt-12 text-center">
             <Button
               onClick={loadMore}
@@ -264,6 +276,15 @@ export default function Shop() {
             >
               See More Products
             </Button>
+          </div>
+        )}
+        
+        {/* Mobile View All Link */}
+        {isMobile && sortedProducts.length > 4 && (
+          <div className="mt-8 text-center">
+            <p className="text-muted-foreground text-sm">
+              Showing 4 of {sortedProducts.length} products. Switch to desktop view to see all products.
+            </p>
           </div>
         )}
       </div>
