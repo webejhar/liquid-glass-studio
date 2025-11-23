@@ -1,8 +1,11 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PurchaseModal } from "./PurchaseModal";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface DomainResult {
   tld: string;
@@ -18,8 +21,24 @@ interface DomainResultModalProps {
 
 export const DomainResultModal = ({ isOpen, onClose, domainBase, results }: DomainResultModalProps) => {
   const [selectedTld, setSelectedTld] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setIsLoggedIn(!!user);
+  };
 
   const handleBuy = (tld: string) => {
+    if (!isLoggedIn) {
+      toast.error("Please login to continue your purchase");
+      navigate("/login");
+      return;
+    }
     setSelectedTld(tld);
   };
 
