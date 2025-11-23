@@ -564,7 +564,7 @@ export default function Account() {
               </TabsTrigger>
               <TabsTrigger value="favorites" className="gap-2">
                 <Heart className="w-4 h-4" />
-                Fav
+                Fav ({favorites.length})
               </TabsTrigger>
             </TabsList>
 
@@ -607,30 +607,29 @@ export default function Account() {
                   <div className="flex-1 min-w-0 pr-2 md:pr-0">
                     <h2 className="text-xl sm:text-2xl font-bold break-words mb-3">{formData.name || "User"}</h2>
                     
-                    <div className="flex items-center gap-2 mb-4 flex-wrap">
-                      <p className="text-sm sm:text-base text-muted-foreground truncate">{formData.email}</p>
-                      <div className="shrink-0">
-                        {formData.verification_status === 'verified' ? (
-                          <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-green-500/20 text-green-400">
-                            <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                            <span className="text-xs sm:text-sm font-semibold">Verified</span>
-                          </div>
-                        ) : formData.verification_status === 'pending' ? (
-                          <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400">
-                            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                            <span className="text-xs sm:text-sm font-semibold">Pending Review</span>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => setShowVerificationModal(true)}
-                            className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition"
-                          >
-                            <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                            <span className="text-xs sm:text-sm font-semibold">Unverified</span>
-                          </button>
-                        )}
-                      </div>
+                    <div className="mb-3">
+                      {formData.verification_status === 'verified' ? (
+                        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-green-500/20 text-green-400">
+                          <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <span className="text-xs sm:text-sm font-semibold">Verified</span>
+                        </div>
+                      ) : formData.verification_status === 'pending' ? (
+                        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400">
+                          <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <span className="text-xs sm:text-sm font-semibold">Pending Review</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setShowVerificationModal(true)}
+                          className="inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition"
+                        >
+                          <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <span className="text-xs sm:text-sm font-semibold">Unverified</span>
+                        </button>
+                      )}
                     </div>
+                    
+                    <p className="text-sm sm:text-base text-muted-foreground mb-4 break-words">{formData.email}</p>
                     
                     {!isEditing && (
                       <Button onClick={() => setIsEditing(true)} variant="liquid" className="text-sm sm:text-base">
