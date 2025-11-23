@@ -15,7 +15,7 @@ export const Footer = () => {
   const navigate = useNavigate();
   const [showAdminDialog, setShowAdminDialog] = useState(false);
   const [secretKey, setSecretKey] = useState("");
-  const hideFooterPaths = ['/contact', '/meeting', '/about', '/email-generator', '/login', '/register', '/forgot-password'];
+  const hideFooterPaths = ['/contact', '/meeting', '/about', '/email-generator', '/login', '/register', '/forgot-password', '/account'];
   
   if (hideFooterPaths.includes(location.pathname) || location.pathname.startsWith('/admin')) {
     return null;

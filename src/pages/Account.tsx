@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart } from "lucide-react";
+import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -564,7 +564,7 @@ export default function Account() {
               </TabsTrigger>
               <TabsTrigger value="favorites" className="gap-2">
                 <Heart className="w-4 h-4" />
-                Favorites
+                Fav
               </TabsTrigger>
             </TabsList>
 
@@ -631,11 +631,23 @@ export default function Account() {
                     </div>
                     <p className="text-sm sm:text-base text-muted-foreground mb-4 break-all pr-2 md:pr-0">{formData.email}</p>
                     
-                    {!isEditing && (
-                      <Button onClick={() => setIsEditing(true)} variant="liquid" className="text-sm sm:text-base">
-                        Edit Profile
-                      </Button>
-                    )}
+                    <div className="flex flex-wrap gap-2 sm:gap-3">
+                      {!isEditing && (
+                        <Button onClick={() => setIsEditing(true)} variant="liquid" className="text-sm sm:text-base">
+                          Edit Profile
+                        </Button>
+                      )}
+                      <a
+                        href="https://wa.me/01340125311"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button variant="liquid" className="text-sm sm:text-base gap-2 shrink-0">
+                          <MessageCircle className="w-4 h-4" />
+                          WhatsApp
+                        </Button>
+                      </a>
+                    </div>
                   </div>
                 </div>
 
