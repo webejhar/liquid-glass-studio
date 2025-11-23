@@ -13,14 +13,28 @@ interface PurchaseModalProps {
   onClose: () => void;
   domainName: string;
   tld: string;
+  price: number; // Price in USD
 }
 
-export const PurchaseModal = ({ isOpen, onClose, domainName, tld }: PurchaseModalProps) => {
+export const PurchaseModal = ({ isOpen, onClose, domainName, tld, price }: PurchaseModalProps) => {
   const [binanceId, setBinanceId] = useState("");
   const [bkashTrxId, setBkashTrxId] = useState("");
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<'binance' | 'bkash'>('binance');
+  
+  // USD to BDT conversion rate (update this periodically or fetch from an API)
+  const USD_TO_BDT = 110; // Current approximate rate
+  
+  const getDisplayPrice = () => {
+    if (selectedPayment === 'binance') {
+      return `$${price.toFixed(2)} USD`;
+    } else {
+      const bdtPrice = (price * USD_TO_BDT).toFixed(2);
+      return `৳${bdtPrice} BDT`;
+    }
+  };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -154,17 +168,24 @@ export const PurchaseModal = ({ isOpen, onClose, domainName, tld }: PurchaseModa
           <DialogTitle className="text-2xl text-glow">
             Purchase {domainName}{tld}
           </DialogTitle>
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-sm text-muted-foreground">Domain Price:</span>
+            <span className="text-xl font-bold text-primary">{getDisplayPrice()}</span>
+          </div>
         </DialogHeader>
 
-        <Tabs defaultValue="binance" className="mt-4">
+        <Tabs defaultValue="binance" className="mt-4" onValueChange={(value) => setSelectedPayment(value as 'binance' | 'bkash')}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="binance">Binance</TabsTrigger>
-            <TabsTrigger value="bkash">bKash</TabsTrigger>
+            <TabsTrigger value="binance">Binance (USD)</TabsTrigger>
+            <TabsTrigger value="bkash">bKash (BDT)</TabsTrigger>
           </TabsList>
 
           <TabsContent value="binance" className="space-y-4 mt-4">
             <div className="glass-card p-4 rounded-lg">
-              <p className="text-sm mb-2">Pay to:</p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm">Pay to:</p>
+                <p className="text-sm font-semibold text-primary">${price.toFixed(2)} USD</p>
+              </div>
               <div className="flex items-center gap-2">
                 <code className="flex-1 bg-background/50 px-3 py-2 rounded">1158996624</code>
                 <Button
@@ -214,7 +235,10 @@ export const PurchaseModal = ({ isOpen, onClose, domainName, tld }: PurchaseModa
 
           <TabsContent value="bkash" className="space-y-4 mt-4">
             <div className="glass-card p-4 rounded-lg">
-              <p className="text-sm mb-2">bKash Personal</p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm">bKash Personal</p>
+                <p className="text-sm font-semibold text-primary">৳{(price * USD_TO_BDT).toFixed(2)} BDT</p>
+              </div>
               <p className="text-sm mb-2">Number:</p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 bg-background/50 px-3 py-2 rounded">+8801340125311</code>

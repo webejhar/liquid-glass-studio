@@ -11,7 +11,7 @@ export const DomainChecker = () => {
   const [domainBase, setDomainBase] = useState("");
   const [isChecking, setIsChecking] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [results, setResults] = useState<Array<{ tld: string; available: boolean }>>([]);
+  const [results, setResults] = useState<Array<{ tld: string; available: boolean; price: number }>>([]);
 
   const handleSearch = async () => {
     if (!domainBase.trim()) {
