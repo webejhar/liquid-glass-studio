@@ -10,6 +10,7 @@ import { toast } from "sonner";
 interface DomainResult {
   tld: string;
   available: boolean;
+  price: number; // Price in USD
 }
 
 interface DomainResultModalProps {
@@ -72,9 +73,16 @@ export const DomainResultModal = ({ isOpen, onClose, domainBase, results }: Doma
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <span className={result.available ? "text-primary" : "text-muted-foreground"}>
-                    {result.available ? "Available" : "Taken"}
-                  </span>
+                  <div className="flex flex-col gap-1">
+                    <span className={result.available ? "text-primary" : "text-muted-foreground"}>
+                      {result.available ? "Available" : "Taken"}
+                    </span>
+                    {result.available && (
+                      <span className="text-xl font-bold text-primary">
+                        ${result.price}
+                      </span>
+                    )}
+                  </div>
                   
                   {result.available ? (
                     <Button
@@ -82,7 +90,7 @@ export const DomainResultModal = ({ isOpen, onClose, domainBase, results }: Doma
                       variant="glass"
                       onClick={() => handleBuy(result.tld)}
                     >
-                      Get
+                      Buy Now
                     </Button>
                   ) : (
                     <Button size="sm" variant="ghost" disabled className="opacity-50">
@@ -102,6 +110,7 @@ export const DomainResultModal = ({ isOpen, onClose, domainBase, results }: Doma
           onClose={() => setSelectedTld(null)}
           domainName={domainBase}
           tld={selectedTld}
+          price={results.find(r => r.tld === selectedTld)?.price || 0}
         />
       )}
     </>

@@ -12,6 +12,7 @@ interface DomainCheckRequest {
 interface DomainResult {
   tld: string;
   available: boolean;
+  price: number; // Price in USD
 }
 
 const TLDS = [
@@ -19,6 +20,30 @@ const TLDS = [
   ".online", ".site", ".tech", ".app", ".store", ".blog", ".info",
   ".biz", ".me", ".co.uk", ".us", ".agency"
 ];
+
+// Pricing for each TLD in USD
+const TLD_PRICING: { [key: string]: number } = {
+  ".com": 12.99,
+  ".org": 14.99,
+  ".net": 13.99,
+  ".xyz": 9.99,
+  ".dev": 14.99,
+  ".co": 29.99,
+  ".io": 39.99,
+  ".shop": 34.99,
+  ".online": 24.99,
+  ".site": 19.99,
+  ".tech": 49.99,
+  ".app": 14.99,
+  ".store": 54.99,
+  ".blog": 29.99,
+  ".info": 19.99,
+  ".biz": 19.99,
+  ".me": 19.99,
+  ".co.uk": 9.99,
+  ".us": 9.99,
+  ".agency": 24.99
+};
 
 // Real-time domain availability check using DNS resolution
 const checkDomainAvailability = async (domainBase: string, tld: string): Promise<boolean> => {
@@ -65,7 +90,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Check all TLDs in parallel for faster response
     const checkPromises = TLDS.map(async (tld) => ({
       tld: tld,
-      available: await checkDomainAvailability(cleanDomainBase, tld)
+      available: await checkDomainAvailability(cleanDomainBase, tld),
+      price: TLD_PRICING[tld] || 19.99 // Default price if not found
     }));
 
     const results: DomainResult[] = await Promise.all(checkPromises);
