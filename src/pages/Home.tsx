@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Plus, Minus, Facebook, Linkedin, Globe, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -17,6 +17,18 @@ interface Product {
 export default function Home() {
   const [socialVisible, setSocialVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <div className="min-h-screen pt-32 px-4">
@@ -339,7 +351,7 @@ export default function Home() {
                 category: "Theme",
                 description: "Beautiful WordPress theme with modern design"
               })),
-            ].slice(0, 15).map((product, i) => (
+            ].slice(0, isMobile ? 4 : 15).map((product, i) => (
               <motion.div
                 key={product.id}
                 className="glass-card rounded-xl sm:rounded-2xl overflow-hidden hover:scale-105 transition relative"
@@ -384,7 +396,7 @@ export default function Home() {
               to="/shop"
               className="glass-button px-12 py-3 sm:py-4 rounded-full font-medium text-base sm:text-lg hover:scale-105 transition-transform"
             >
-              See All Products
+              {isMobile ? "View All in Shop" : "See All Products"}
             </Link>
           </motion.div>
         </section>
