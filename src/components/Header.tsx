@@ -187,7 +187,7 @@ export const Header = () => {
               onClick={() => setMobileMenuOpen(false)}
             />
             <motion.div
-              className="absolute right-0 top-0 h-full w-80 max-w-[85vw] glass-card backdrop-blur-xl bg-background/95 p-6 sm:p-8 flex flex-col"
+              className="absolute right-0 top-0 h-full w-64 max-w-[75vw] glass-card backdrop-blur-xl bg-background/95 p-6 flex flex-col shadow-2xl"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
@@ -195,7 +195,7 @@ export const Header = () => {
             >
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="absolute top-4 right-4 glass-button p-3 rounded-full hover:scale-110 transition"
+                className="absolute top-4 right-4 glass-button p-2 rounded-full hover:scale-110 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -209,7 +209,7 @@ export const Header = () => {
                       to={item.path}
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
-                        "text-xl hover:text-primary transition-colors",
+                        "text-lg hover:text-primary transition-colors",
                         isActive && "text-primary font-semibold"
                       )}
                     >
@@ -222,7 +222,7 @@ export const Header = () => {
               <Link
                 to="/meeting"
                 onClick={() => setMobileMenuOpen(false)}
-                className="glass-button px-6 py-4 rounded-full text-center font-medium hover:scale-105 transition-transform mt-auto"
+                className="glass-button px-6 py-3 rounded-full text-center font-medium hover:scale-105 transition-transform mt-auto"
               >
                 Book a Meeting
               </Link>
