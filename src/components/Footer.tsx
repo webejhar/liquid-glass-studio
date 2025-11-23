@@ -43,13 +43,21 @@ export const Footer = () => {
               Creative Digital Designer & Developer
             </p>
           </div>
-          <div className="text-right">
+          <div className="text-right space-y-2">
             <button
               onClick={() => setShowAdminDialog(true)}
-              className="text-muted-foreground hover:text-primary transition text-sm underline-offset-4 hover:underline"
+              className="text-muted-foreground hover:text-primary transition text-sm underline-offset-4 hover:underline block ml-auto"
             >
               Admin
             </button>
+            <a
+              href="https://wa.me/8801340125311"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="glass-button px-3 py-1.5 rounded-full inline-block hover:scale-105 transition text-xs"
+            >
+              WhatsApp Chat
+            </a>
           </div>
         </div>
 

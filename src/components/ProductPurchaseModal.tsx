@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Copy, CheckCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface Product {
   id: number;
@@ -27,6 +28,23 @@ export const ProductPurchaseModal = ({ isOpen, onClose, product }: ProductPurcha
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("Please login to continue your purchase");
+      navigate("/login");
+      onClose();
+      return;
+    }
+    setIsLoggedIn(true);
+  };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -41,6 +59,9 @@ export const ProductPurchaseModal = ({ isOpen, onClose, product }: ProductPurcha
 
     setIsSubmitting(true);
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
       // Insert order
       const { error: insertError } = await supabase
         .from('product_orders')
@@ -51,7 +72,8 @@ export const ProductPurchaseModal = ({ isOpen, onClose, product }: ProductPurcha
           product_category: product.category,
           buyer_email: email,
           payment_method: 'Binance',
-          payment_reference: binanceId
+          payment_reference: binanceId,
+          user_id: user?.id || null
         });
 
       if (insertError) throw insertError;
@@ -94,6 +116,9 @@ export const ProductPurchaseModal = ({ isOpen, onClose, product }: ProductPurcha
 
     setIsSubmitting(true);
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { error: insertError } = await supabase
         .from('product_orders')
         .insert({
@@ -103,7 +128,8 @@ export const ProductPurchaseModal = ({ isOpen, onClose, product }: ProductPurcha
           product_category: product.category,
           buyer_email: email,
           payment_method: 'bKash',
-          payment_reference: bkashTrxId
+          payment_reference: bkashTrxId,
+          user_id: user?.id || null
         });
 
       if (insertError) throw insertError;

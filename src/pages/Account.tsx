@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
+import { ImageCropper } from "@/components/ImageCropper";
 
 const professions = [
   "Developer",
@@ -81,6 +82,8 @@ export default function Account() {
   const profilePicInputRef = useRef<HTMLInputElement>(null);
   const nidInputRef = useRef<HTMLInputElement>(null);
   const faceInputRef = useRef<HTMLInputElement>(null);
+  const [showCropper, setShowCropper] = useState(false);
+  const [pendingImage, setPendingImage] = useState<File | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -160,9 +163,20 @@ export default function Account() {
   };
 
   const loadOrders = async (userId: string) => {
+    // Get user's email
+    const { data: { user } } = await supabase.auth.getUser();
+    const userEmail = user?.email;
+
+    // Fetch orders by user_id OR by email
     const [{ data: productOrders }, { data: domainOrders }] = await Promise.all([
-      supabase.from("product_orders").select("*").eq("user_id", userId),
-      supabase.from("domain_orders").select("*").eq("user_id", userId)
+      supabase
+        .from("product_orders")
+        .select("*")
+        .or(`user_id.eq.${userId},buyer_email.eq.${userEmail}`),
+      supabase
+        .from("domain_orders")
+        .select("*")
+        .or(`user_id.eq.${userId},buyer_email.eq.${userEmail}`)
     ]);
 
     const allOrders: Order[] = [
@@ -220,19 +234,55 @@ export default function Account() {
     
     setIsLoading(true);
     try {
-      const { error } = await supabase
+      // Check if profile exists
+      const { data: existingProfile } = await supabase
         .from("profiles")
-        .upsert({
-          user_id: user.id,
-          ...formData
-        });
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
 
-      if (error) throw error;
+      if (existingProfile) {
+        // Update existing profile
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            name: formData.name,
+            email: formData.email,
+            address: formData.address,
+            profession: formData.profession,
+            phone: formData.phone,
+            avatar_url: formData.avatar_url,
+            bio: formData.bio,
+            date_of_birth: formData.date_of_birth,
+            updated_at: new Date().toISOString()
+          })
+          .eq("user_id", user.id);
+
+        if (error) throw error;
+      } else {
+        // Insert new profile
+        const { error } = await supabase
+          .from("profiles")
+          .insert({
+            user_id: user.id,
+            name: formData.name,
+            email: formData.email,
+            address: formData.address,
+            profession: formData.profession,
+            phone: formData.phone,
+            avatar_url: formData.avatar_url,
+            bio: formData.bio,
+            date_of_birth: formData.date_of_birth
+          });
+
+        if (error) throw error;
+      }
 
       toast.success("Profile updated successfully!");
       setIsEditing(false);
       await loadProfile(user.id);
     } catch (error: any) {
+      console.error("Save error:", error);
       toast.error(error.message || "Failed to update profile");
     } finally {
       setIsLoading(false);
@@ -289,6 +339,41 @@ export default function Account() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file size (2MB max)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image size must be less than 2MB");
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    // Check image dimensions
+    const img = new Image();
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+      img.src = event.target?.result as string;
+    };
+
+    img.onload = () => {
+      // If dimensions don't match exactly, show cropper
+      if (img.width !== 1080 || img.height !== 1080) {
+        setPendingImage(file);
+        setShowCropper(true);
+      } else {
+        // If perfect size, upload directly
+        uploadProfilePicture(file);
+      }
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const uploadProfilePicture = async (file: File) => {
     setUploadingProfilePic(true);
     const url = await handleFileUpload(file, 'profile-pictures', 'avatars');
     if (url) {
@@ -296,6 +381,11 @@ export default function Account() {
       toast.success("Profile picture uploaded!");
     }
     setUploadingProfilePic(false);
+  };
+
+  const handleCropComplete = async (croppedFile: File) => {
+    await uploadProfilePicture(croppedFile);
+    setPendingImage(null);
   };
 
   const handleNIDUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -471,9 +561,11 @@ export default function Account() {
                   </div>
                   
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
                       <h2 className="text-2xl font-bold">{formData.name || "User"}</h2>
-                      {getVerificationBadge()}
+                      <div className="w-fit">
+                        {getVerificationBadge()}
+                      </div>
                     </div>
                     <p className="text-muted-foreground mb-4">{formData.email}</p>
                     
@@ -875,6 +967,19 @@ export default function Account() {
           </Tabs>
         </motion.div>
       </div>
+
+      {/* Image Cropper Modal */}
+      {showCropper && pendingImage && (
+        <ImageCropper
+          isOpen={showCropper}
+          onClose={() => {
+            setShowCropper(false);
+            setPendingImage(null);
+          }}
+          imageFile={pendingImage}
+          onCropComplete={handleCropComplete}
+        />
+      )}
     </div>
   );
 }
