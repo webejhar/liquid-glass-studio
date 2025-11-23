@@ -140,6 +140,7 @@ export type Database = {
           id: string
           payment_method: string
           payment_reference: string
+          price: number | null
           status: string
           tld: string
           user_id: string | null
@@ -152,6 +153,7 @@ export type Database = {
           id?: string
           payment_method: string
           payment_reference: string
+          price?: number | null
           status?: string
           tld: string
           user_id?: string | null
@@ -164,6 +166,7 @@ export type Database = {
           id?: string
           payment_method?: string
           payment_reference?: string
+          price?: number | null
           status?: string
           tld?: string
           user_id?: string | null

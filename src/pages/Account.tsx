@@ -266,20 +266,20 @@ export default function Account() {
           buyer_name: order.buyer_name,
           buyer_email: order.buyer_email
         })),
-        ...(domainOrders || []).map(order => ({
-          id: order.id,
-          type: 'domain' as const,
-          name: `${order.domain_name}.${order.tld}`,
-          date: order.created_at,
-          price: 0, // Domain prices not stored
-          payment_method: order.payment_method,
-          payment_reference: order.payment_reference,
-          status: order.status,
-          quantity: 1,
-          category: 'Domain',
-          buyer_name: order.buyer_name,
-          buyer_email: order.buyer_email
-        }))
+      ...(domainOrders || []).map(order => ({
+        id: order.id,
+        type: 'domain' as const,
+        name: `${order.domain_name}.${order.tld}`,
+        date: order.created_at,
+        price: order.price || 0,
+        payment_method: order.payment_method,
+        payment_reference: order.payment_reference,
+        status: order.status,
+        quantity: 1,
+        category: 'Domain',
+        buyer_name: order.buyer_name,
+        buyer_email: order.buyer_email
+      }))
       ];
 
       setOrders(sortOrders(allOrders, sortBy));
