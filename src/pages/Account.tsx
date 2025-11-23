@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle } from "lucide-react";
+import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
@@ -62,8 +63,12 @@ interface Order {
   date: string;
   price: number;
   payment_method: string;
+  payment_reference: string;
   status: string;
   quantity?: number;
+  category?: string;
+  buyer_name?: string;
+  buyer_email: string;
 }
 
 export default function Account() {
@@ -87,6 +92,8 @@ export default function Account() {
   const [pendingImage, setPendingImage] = useState<File | null>(null);
   const [favorites, setFavorites] = useState<any[]>([]);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [showOrderDetails, setShowOrderDetails] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -191,8 +198,12 @@ export default function Account() {
         date: order.created_at,
         price: order.product_price,
         payment_method: order.payment_method,
+        payment_reference: order.payment_reference,
         status: order.status,
-        quantity: 1
+        quantity: 1,
+        category: order.product_category,
+        buyer_name: order.buyer_name,
+        buyer_email: order.buyer_email
       })),
       ...(domainOrders || []).map(order => ({
         id: order.id,
@@ -201,8 +212,12 @@ export default function Account() {
         date: order.created_at,
         price: 0, // Domain prices not stored
         payment_method: order.payment_method,
+        payment_reference: order.payment_reference,
         status: order.status,
-        quantity: 1
+        quantity: 1,
+        category: 'Domain',
+        buyer_name: order.buyer_name,
+        buyer_email: order.buyer_email
       }))
     ];
 
@@ -341,6 +356,31 @@ export default function Account() {
       month: 'short', 
       year: 'numeric' 
     });
+  };
+
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', { 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  const getStatusDisplay = (status: string) => {
+    if (status === 'pending') return 'Pending';
+    if (status === 'completed') return 'Confirmed';
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
+  const getStatusColor = (status: string) => {
+    if (status === 'pending') return 'bg-yellow-500/20 text-yellow-400';
+    if (status === 'completed') return 'bg-green-500/20 text-green-400';
+    if (status === 'cancelled') return 'bg-red-500/20 text-red-400';
+    return 'bg-muted/20 text-muted-foreground';
   };
 
   const getInitials = (name: string) => {
@@ -870,12 +910,30 @@ export default function Account() {
                     {orders.map((order) => (
                       <div
                         key={order.id}
-                        className="glass-subtle p-4 sm:p-6 rounded-lg sm:rounded-xl hover:bg-white/5 transition-colors"
+                        className="glass-subtle p-4 sm:p-6 rounded-lg sm:rounded-xl hover:bg-white/5 transition-colors cursor-pointer"
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setShowOrderDetails(true);
+                        }}
                       >
-                        <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+                        <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
                           <div className="flex-1 min-w-0 w-full">
-                            <h3 className="font-semibold text-base sm:text-lg mb-1 sm:mb-2 break-words">{order.name}</h3>
-                            <div className="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <h3 className="font-semibold text-base sm:text-lg break-words flex-1">{order.name}</h3>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="shrink-0 h-8 w-8 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedOrder(order);
+                                  setShowOrderDetails(true);
+                                }}
+                              >
+                                <Info className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            <div className="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-2">
                               <span className="flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
                                 {formatDate(order.date)}
@@ -891,18 +949,16 @@ export default function Account() {
                                 </span>
                               )}
                             </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-3 shrink-0">
-                            <span
-                              className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
-                                order.status === "completed"
-                                  ? "bg-green-500/20 text-green-400"
-                                  : "bg-yellow-500/20 text-yellow-400"
-                              }`}
-                            >
-                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
+                                {getStatusDisplay(order.status)}
+                              </span>
+                              {order.category && (
+                                <span className="px-2 sm:px-3 py-1 rounded-full text-xs bg-muted/10 text-muted-foreground">
+                                  {order.category}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -994,6 +1050,112 @@ export default function Account() {
           }
         }}
       />
+
+      {/* Order Details Modal */}
+      <Dialog open={showOrderDetails} onOpenChange={setShowOrderDetails}>
+        <DialogContent className="glass-premium max-w-md sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl sm:text-2xl">Order Details</DialogTitle>
+          </DialogHeader>
+          
+          {selectedOrder && (
+            <div className="space-y-4 sm:space-y-6">
+              <div className="glass-subtle p-4 rounded-lg space-y-3">
+                <div>
+                  <Label className="text-xs sm:text-sm text-muted-foreground">Product/Service</Label>
+                  <p className="font-semibold text-sm sm:text-base mt-1">{selectedOrder.name}</p>
+                </div>
+                
+                {selectedOrder.category && (
+                  <div>
+                    <Label className="text-xs sm:text-sm text-muted-foreground">Category</Label>
+                    <p className="font-semibold text-sm sm:text-base mt-1">{selectedOrder.category}</p>
+                  </div>
+                )}
+                
+                <div>
+                  <Label className="text-xs sm:text-sm text-muted-foreground">Order Status</Label>
+                  <div className="mt-2">
+                    <span className={`inline-flex px-3 py-1 rounded-full text-xs sm:text-sm font-semibold ${getStatusColor(selectedOrder.status)}`}>
+                      {getStatusDisplay(selectedOrder.status)}
+                    </span>
+                  </div>
+                </div>
+                
+                {selectedOrder.price > 0 && (
+                  <div>
+                    <Label className="text-xs sm:text-sm text-muted-foreground">Amount</Label>
+                    <p className="font-bold text-lg sm:text-xl text-primary mt-1">${selectedOrder.price}</p>
+                  </div>
+                )}
+                
+                <div>
+                  <Label className="text-xs sm:text-sm text-muted-foreground">Payment Method</Label>
+                  <p className="font-semibold text-sm sm:text-base mt-1 flex items-center gap-2">
+                    <CreditCard className="w-4 h-4" />
+                    {selectedOrder.payment_method}
+                  </p>
+                </div>
+                
+                <div>
+                  <Label className="text-xs sm:text-sm text-muted-foreground">Payment Reference</Label>
+                  <p className="font-mono text-xs sm:text-sm bg-background/50 p-2 rounded mt-1 break-all">
+                    {selectedOrder.payment_reference}
+                  </p>
+                </div>
+                
+                <div>
+                  <Label className="text-xs sm:text-sm text-muted-foreground">Order Date & Time</Label>
+                  <p className="font-semibold text-sm sm:text-base mt-1 flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    {formatDateTime(selectedOrder.date)}
+                  </p>
+                </div>
+                
+                {selectedOrder.buyer_name && (
+                  <div>
+                    <Label className="text-xs sm:text-sm text-muted-foreground">Buyer Name</Label>
+                    <p className="font-semibold text-sm sm:text-base mt-1">{selectedOrder.buyer_name}</p>
+                  </div>
+                )}
+                
+                <div>
+                  <Label className="text-xs sm:text-sm text-muted-foreground">Buyer Email</Label>
+                  <p className="font-semibold text-sm sm:text-base mt-1 break-all">{selectedOrder.buyer_email}</p>
+                </div>
+                
+                <div>
+                  <Label className="text-xs sm:text-sm text-muted-foreground">Order ID</Label>
+                  <p className="font-mono text-xs bg-background/50 p-2 rounded mt-1 break-all">
+                    {selectedOrder.id}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <Button
+                  onClick={() => setShowOrderDetails(false)}
+                  variant="outline"
+                  className="w-full text-sm sm:text-base"
+                >
+                  Close
+                </Button>
+                <a
+                  href="https://wa.me/01340125311"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full"
+                >
+                  <Button variant="liquid" className="w-full text-sm sm:text-base gap-2">
+                    <MessageCircle className="w-4 h-4" />
+                    Contact Support
+                  </Button>
+                </a>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* WhatsApp Contact Button */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pb-6 sm:pb-8">
