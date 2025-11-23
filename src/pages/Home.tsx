@@ -4,9 +4,19 @@ import { Plus, Minus, Facebook, Linkedin, Globe, ExternalLink } from "lucide-rea
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-image.png";
 import { DomainChecker } from "@/components/DomainChecker";
+import { ProductPurchaseModal } from "@/components/ProductPurchaseModal";
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+  description: string;
+}
 
 export default function Home() {
   const [socialVisible, setSocialVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   return (
     <div className="min-h-screen pt-32 px-4">
@@ -320,12 +330,14 @@ export default function Home() {
                 name: `Premium Plugin ${i + 1}`,
                 price: 29 + (i * 10),
                 category: "Plugin",
+                description: "Advanced WordPress plugin with premium features"
               })),
               ...Array(4).fill(null).map((_, i) => ({
                 id: i + 5,
                 name: `Premium Theme ${i + 1}`,
                 price: 49 + (i * 10),
                 category: "Theme",
+                description: "Beautiful WordPress theme with modern design"
               })),
             ].map((product, i) => (
               <motion.div
@@ -347,7 +359,10 @@ export default function Home() {
                     <span className="text-2xl font-bold text-primary">
                       ${product.price}
                     </span>
-                    <button className="glass-button px-4 py-2 rounded-lg hover:scale-110 transition text-sm">
+                    <button 
+                      onClick={() => setSelectedProduct(product)}
+                      className="glass-button px-4 py-2 rounded-lg hover:scale-110 transition text-sm"
+                    >
                       Buy Now
                     </button>
                   </div>
@@ -459,6 +474,15 @@ export default function Home() {
           </div>
         </section>
       </div>
+
+      {/* Product Purchase Modal */}
+      {selectedProduct && (
+        <ProductPurchaseModal
+          isOpen={!!selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          product={selectedProduct}
+        />
+      )}
     </div>
   );
 }
