@@ -61,7 +61,8 @@ export const PurchaseModal = ({ isOpen, onClose, domainName, tld, price }: Purch
           buyer_email: email,
           payment_method: 'Binance',
           payment_reference: binanceId,
-          user_id: user?.id || null
+          user_id: user?.id || null,
+          price: price
         });
 
       if (insertError) throw insertError;
@@ -74,7 +75,8 @@ export const PurchaseModal = ({ isOpen, onClose, domainName, tld, price }: Purch
           buyerEmail: email,
           paymentMethod: 'Binance',
           paymentReference: binanceId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          price: price
         }
       });
 
@@ -114,7 +116,8 @@ export const PurchaseModal = ({ isOpen, onClose, domainName, tld, price }: Purch
           buyer_email: email,
           payment_method: 'bKash',
           payment_reference: bkashTrxId,
-          user_id: user?.id || null
+          user_id: user?.id || null,
+          price: price
         });
 
       if (insertError) throw insertError;
@@ -126,7 +129,8 @@ export const PurchaseModal = ({ isOpen, onClose, domainName, tld, price }: Purch
           buyerEmail: email,
           paymentMethod: 'bKash',
           paymentReference: bkashTrxId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          price: price
         }
       });
 

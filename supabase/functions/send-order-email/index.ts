@@ -16,6 +16,7 @@ interface OrderEmailRequest {
   paymentMethod: string;
   paymentReference: string;
   timestamp: string;
+  price?: number;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -24,9 +25,10 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { domainName, tld, buyerEmail, buyerName, paymentMethod, paymentReference, timestamp }: OrderEmailRequest = await req.json();
+    const { domainName, tld, buyerEmail, buyerName, paymentMethod, paymentReference, timestamp, price }: OrderEmailRequest = await req.json();
 
     const fullDomain = `${domainName}.${tld}`;
+    const priceDisplay = price ? `$${price.toFixed(2)} USD` : 'N/A';
     
     // Email to admin (both email addresses)
     const adminEmailResponse = await resend.emails.send({
@@ -36,6 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
       html: `
         <h1>New Domain Order Received</h1>
         <p><strong>Domain:</strong> ${fullDomain}</p>
+        <p><strong>Price:</strong> ${priceDisplay}</p>
         <p><strong>Buyer Name:</strong> ${buyerName || 'Not provided'}</p>
         <p><strong>Buyer Email:</strong> ${buyerEmail}</p>
         <p><strong>Payment Method:</strong> ${paymentMethod}</p>
@@ -53,6 +56,7 @@ const handler = async (req: Request): Promise<Response> => {
       html: `
         <h1>Thank you for your order!</h1>
         <p>We have received your domain order for <strong>${fullDomain}</strong>.</p>
+        <p><strong>Price:</strong> ${priceDisplay}</p>
         <p><strong>Payment Method:</strong> ${paymentMethod}</p>
         <p><strong>Payment Reference:</strong> ${paymentReference}</p>
         <p>Please wait a few minutes while we process your order. We will contact you shortly.</p>
