@@ -30,7 +30,7 @@ export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState<"All" | "Plugin" | "Theme">("All");
   const [sortBy, setSortBy] = useState<"name" | "price-low" | "price-high">("name");
   const [searchQuery, setSearchQuery] = useState("");
-  const [displayCount, setDisplayCount] = useState(10);
+  const [displayCount, setDisplayCount] = useState(15); // 3 rows × 5 items = 15
   const [favorites, setFavorites] = useState<number[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const { addToCart } = useCart();
@@ -134,7 +134,7 @@ export default function Shop() {
   };
 
   const loadMore = () => {
-    setDisplayCount(prev => prev + 10);
+    setDisplayCount(prev => prev + 15); // Load 3 more rows (3 rows × 5 items = 15)
   };
 
   return (
@@ -200,11 +200,11 @@ export default function Shop() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
           {displayedProducts.map((product, i) => (
             <motion.div
               key={product.id}
-              className="glass-card rounded-2xl overflow-hidden hover:scale-105 transition relative"
+              className="glass-card rounded-xl sm:rounded-2xl overflow-hidden hover:scale-105 transition relative"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
@@ -212,10 +212,10 @@ export default function Shop() {
               {/* Favorite Button */}
               <button
                 onClick={() => handleToggleFavorite(product)}
-                className="absolute top-4 right-4 z-10 glass-button p-2 rounded-full hover:scale-110 transition"
+                className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 glass-button p-1.5 sm:p-2 rounded-full hover:scale-110 transition"
               >
                 <Heart
-                  className={`w-5 h-5 ${
+                  className={`w-4 h-4 sm:w-5 sm:h-5 ${
                     favorites.includes(product.id)
                       ? "fill-red-500 text-red-500"
                       : "text-foreground"
@@ -224,26 +224,28 @@ export default function Shop() {
               </button>
 
               <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                <span className="text-6xl font-bold opacity-50">
+                <span className="text-4xl sm:text-6xl font-bold opacity-50">
                   {product.category === "Plugin" ? "P" : "T"}
                 </span>
               </div>
-              <div className="p-4">
-                <h3 className="font-semibold mb-2">{product.name}</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+              <div className="p-3 sm:p-4">
+                <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base truncate">{product.name}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">
                   {product.description}
                 </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-primary">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+                  <span className="text-xl sm:text-2xl font-bold text-primary">
                     ${product.price}
                   </span>
                   <Button
                     onClick={() => handleAddToCart(product)}
                     variant="liquid"
                     size="sm"
+                    className="w-full sm:w-auto text-xs sm:text-sm"
                   >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    Add to Cart
+                    <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Add to Cart</span>
+                    <span className="sm:hidden">Add</span>
                   </Button>
                 </div>
               </div>
