@@ -63,7 +63,7 @@ export const Header = () => {
         animate={{ y: scrolled ? -100 : 0 }}
         transition={{ type: "spring", stiffness: 100 }}
       >
-        <nav className="glass-card px-6 py-4 m-4 rounded-2xl backdrop-blur-xl bg-background/30">
+        <nav className="glass-card px-4 sm:px-6 py-3 sm:py-4 mx-2 sm:mx-4 my-2 sm:my-4 rounded-xl sm:rounded-2xl backdrop-blur-xl bg-background/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link to="/" className="flex items-center gap-2 group">
@@ -128,17 +128,17 @@ export const Header = () => {
             <div className="flex items-center gap-4">
               <Link
                 to="/meeting"
-                className="glass-button px-6 py-2 rounded-full text-sm font-medium hidden md:block hover:scale-105 transition-transform"
+                className="glass-button px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium hidden md:block hover:scale-105 transition-transform"
               >
                 Meeting
               </Link>
 
               <motion.button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="glass-button p-3 rounded-full hover:scale-110 transition md:hidden"
+                className="glass-button p-2 sm:p-3 rounded-full hover:scale-110 transition md:hidden"
                 whileHover={{ scale: 1.1 }}
               >
-                <Menu className="w-5 h-5" />
+                <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
               </motion.button>
             </div>
           </div>
@@ -149,7 +149,7 @@ export const Header = () => {
       <AnimatePresence>
         {scrolled && (
           <motion.div
-            className="fixed right-4 top-4 z-50 flex items-center gap-3"
+            className="fixed right-2 sm:right-4 top-2 sm:top-4 z-50 flex items-center gap-2 sm:gap-3"
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 100, opacity: 0 }}
@@ -157,17 +157,17 @@ export const Header = () => {
           >
             <motion.button
               onClick={handleLoginClick}
-              className="glass-card backdrop-blur-xl bg-background/30 p-4 rounded-full hover:scale-110 transition"
+              className="glass-card backdrop-blur-xl bg-background/30 p-3 sm:p-4 rounded-full hover:scale-110 transition"
               whileHover={{ scale: 1.1 }}
             >
-              <User className="w-5 h-5" />
+              <User className="w-4 h-4 sm:w-5 sm:h-5" />
             </motion.button>
             <motion.button
               onClick={() => setMobileMenuOpen(true)}
-              className="glass-card backdrop-blur-xl bg-background/30 p-4 rounded-full hover:scale-110 transition"
+              className="glass-card backdrop-blur-xl bg-background/30 p-3 sm:p-4 rounded-full hover:scale-110 transition"
               whileHover={{ scale: 1.1 }}
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
             </motion.button>
           </motion.div>
         )}
@@ -187,7 +187,7 @@ export const Header = () => {
               onClick={() => setMobileMenuOpen(false)}
             />
             <motion.div
-              className="absolute right-0 top-0 h-full w-80 glass-card backdrop-blur-xl bg-background/95 p-8 flex flex-col"
+              className="absolute right-0 top-0 h-full w-full sm:w-80 max-w-sm glass-card backdrop-blur-xl bg-background/95 p-6 sm:p-8 flex flex-col"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}

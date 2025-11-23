@@ -42,17 +42,17 @@ const testimonials = [
 
 export default function Testimonials() {
   return (
-    <div className="min-h-screen pt-32 px-4 pb-20">
+    <div className="min-h-screen pt-24 sm:pt-32 px-4 pb-20">
       <div className="max-w-7xl mx-auto">
         <motion.h1
-          className="text-5xl font-bold mb-4 text-center"
+          className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           Client <span className="text-primary">Testimonials</span>
         </motion.h1>
         <motion.p
-          className="text-center text-muted-foreground mb-12 text-lg"
+          className="text-center text-muted-foreground mb-8 sm:mb-12 text-base sm:text-lg px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -60,27 +60,27 @@ export default function Testimonials() {
           What clients say about working with Webejhar
         </motion.p>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {testimonials.map((testimonial, i) => (
             <motion.div
               key={i}
-              className="glass-card p-8 rounded-2xl hover:scale-105 transition relative"
+              className="glass-card p-6 sm:p-8 rounded-xl sm:rounded-2xl hover:scale-105 transition relative"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
             >
-              <Quote className="w-10 h-10 text-primary/30 absolute top-4 right-4" />
-              <div className="flex gap-1 mb-4">
+              <Quote className="w-8 h-8 sm:w-10 sm:h-10 text-primary/30 absolute top-3 right-3 sm:top-4 sm:right-4" />
+              <div className="flex gap-1 mb-3 sm:mb-4">
                 {Array.from({ length: testimonial.rating }).map((_, j) => (
                   <Star key={j} className="w-4 h-4 fill-primary text-primary" />
                 ))}
               </div>
-              <p className="text-muted-foreground mb-6 italic">
+              <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 italic">
                 "{testimonial.text}"
               </p>
               <div>
-                <p className="font-semibold">{testimonial.name}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="font-semibold text-sm sm:text-base">{testimonial.name}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {testimonial.role}
                 </p>
               </div>
