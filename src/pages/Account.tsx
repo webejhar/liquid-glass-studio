@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info } from "lucide-react";
+import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -94,6 +94,7 @@ export default function Account() {
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [isRefreshingOrders, setIsRefreshingOrders] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -126,9 +127,58 @@ export default function Account() {
       lastScrollY.current = currentScrollY;
     };
 
+    // Reload orders when window gains focus (user comes back to tab)
+    const handleFocus = () => {
+      if (user) {
+        loadOrders(user.id);
+      }
+    };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    window.addEventListener("focus", handleFocus);
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [user]);
+
+  // Set up real-time subscription for orders
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('order-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'product_orders',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          loadOrders(user.id);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'domain_orders',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          loadOrders(user.id);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -174,54 +224,76 @@ export default function Account() {
   };
 
   const loadOrders = async (userId: string) => {
-    // Get user's email
-    const { data: { user } } = await supabase.auth.getUser();
-    const userEmail = user?.email;
+    try {
+      // Get user's email
+      const { data: { user } } = await supabase.auth.getUser();
+      const userEmail = user?.email;
 
-    // Fetch orders by user_id OR by email
-    const [{ data: productOrders }, { data: domainOrders }] = await Promise.all([
-      supabase
-        .from("product_orders")
-        .select("*")
-        .or(`user_id.eq.${userId},buyer_email.eq.${userEmail}`),
-      supabase
-        .from("domain_orders")
-        .select("*")
-        .or(`user_id.eq.${userId},buyer_email.eq.${userEmail}`)
-    ]);
+      if (!userEmail) {
+        console.error("No user email found");
+        return;
+      }
 
-    const allOrders: Order[] = [
-      ...(productOrders || []).map(order => ({
-        id: order.id,
-        type: 'product' as const,
-        name: order.product_name,
-        date: order.created_at,
-        price: order.product_price,
-        payment_method: order.payment_method,
-        payment_reference: order.payment_reference,
-        status: order.status,
-        quantity: 1,
-        category: order.product_category,
-        buyer_name: order.buyer_name,
-        buyer_email: order.buyer_email
-      })),
-      ...(domainOrders || []).map(order => ({
-        id: order.id,
-        type: 'domain' as const,
-        name: `${order.domain_name}.${order.tld}`,
-        date: order.created_at,
-        price: 0, // Domain prices not stored
-        payment_method: order.payment_method,
-        payment_reference: order.payment_reference,
-        status: order.status,
-        quantity: 1,
-        category: 'Domain',
-        buyer_name: order.buyer_name,
-        buyer_email: order.buyer_email
-      }))
-    ];
+      // Fetch orders by user_id OR by email
+      const [{ data: productOrders, error: productError }, { data: domainOrders, error: domainError }] = await Promise.all([
+        supabase
+          .from("product_orders")
+          .select("*")
+          .or(`user_id.eq.${userId},buyer_email.eq.${userEmail}`)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from("domain_orders")
+          .select("*")
+          .or(`user_id.eq.${userId},buyer_email.eq.${userEmail}`)
+          .order('created_at', { ascending: false })
+      ]);
 
-    setOrders(sortOrders(allOrders, sortBy));
+      if (productError) console.error("Error loading product orders:", productError);
+      if (domainError) console.error("Error loading domain orders:", domainError);
+
+      const allOrders: Order[] = [
+        ...(productOrders || []).map(order => ({
+          id: order.id,
+          type: 'product' as const,
+          name: order.product_name,
+          date: order.created_at,
+          price: order.product_price,
+          payment_method: order.payment_method,
+          payment_reference: order.payment_reference,
+          status: order.status,
+          quantity: 1,
+          category: order.product_category,
+          buyer_name: order.buyer_name,
+          buyer_email: order.buyer_email
+        })),
+        ...(domainOrders || []).map(order => ({
+          id: order.id,
+          type: 'domain' as const,
+          name: `${order.domain_name}.${order.tld}`,
+          date: order.created_at,
+          price: 0, // Domain prices not stored
+          payment_method: order.payment_method,
+          payment_reference: order.payment_reference,
+          status: order.status,
+          quantity: 1,
+          category: 'Domain',
+          buyer_name: order.buyer_name,
+          buyer_email: order.buyer_email
+        }))
+      ];
+
+      setOrders(sortOrders(allOrders, sortBy));
+    } catch (error) {
+      console.error("Error loading orders:", error);
+    }
+  };
+
+  const handleRefreshOrders = async () => {
+    if (!user) return;
+    setIsRefreshingOrders(true);
+    await loadOrders(user.id);
+    toast.success("Orders refreshed!");
+    setTimeout(() => setIsRefreshingOrders(false), 500);
   };
 
   const loadFavorites = async (userId: string) => {
@@ -884,20 +956,33 @@ export default function Account() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <h2 className="text-xl sm:text-2xl font-bold">Order History</h2>
                   
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-full sm:w-48 text-xs sm:text-sm">
-                      <Filter className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="date-desc">Newest First</SelectItem>
-                      <SelectItem value="date-asc">Oldest First</SelectItem>
-                      <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                      <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                      <SelectItem value="price-desc">Price (High to Low)</SelectItem>
-                      <SelectItem value="price-asc">Price (Low to High)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+                    <Button
+                      onClick={handleRefreshOrders}
+                      disabled={isRefreshingOrders}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 text-xs sm:text-sm w-full sm:w-auto"
+                    >
+                      <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${isRefreshingOrders ? 'animate-spin' : ''}`} />
+                      Refresh
+                    </Button>
+                    
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger className="w-full sm:w-48 text-xs sm:text-sm">
+                        <Filter className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="date-desc">Newest First</SelectItem>
+                        <SelectItem value="date-asc">Oldest First</SelectItem>
+                        <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                        <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                        <SelectItem value="price-desc">Price (High to Low)</SelectItem>
+                        <SelectItem value="price-asc">Price (Low to High)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 {orders.length === 0 ? (
