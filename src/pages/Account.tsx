@@ -631,23 +631,11 @@ export default function Account() {
                     </div>
                     <p className="text-sm sm:text-base text-muted-foreground mb-4 break-all pr-2 md:pr-0">{formData.email}</p>
                     
-                    <div className="flex flex-wrap gap-2 sm:gap-3">
-                      {!isEditing && (
-                        <Button onClick={() => setIsEditing(true)} variant="liquid" className="text-sm sm:text-base">
-                          Edit Profile
-                        </Button>
-                      )}
-                      <a
-                        href="https://wa.me/01340125311"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Button variant="liquid" className="text-sm sm:text-base gap-2 shrink-0">
-                          <MessageCircle className="w-4 h-4" />
-                          WhatsApp
-                        </Button>
-                      </a>
-                    </div>
+                    {!isEditing && (
+                      <Button onClick={() => setIsEditing(true)} variant="liquid" className="text-sm sm:text-base">
+                        Edit Profile
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -1006,6 +994,21 @@ export default function Account() {
           }
         }}
       />
+
+      {/* WhatsApp Contact Button */}
+      <div className="max-w-5xl mx-auto px-4 pb-8">
+        <a
+          href="https://wa.me/01340125311"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full"
+        >
+          <Button variant="liquid" className="w-full text-base sm:text-lg gap-3 py-6">
+            <MessageCircle className="w-5 h-5" />
+            Contact Us on WhatsApp
+          </Button>
+        </a>
+      </div>
     </div>
   );
 }
