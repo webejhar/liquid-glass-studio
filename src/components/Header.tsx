@@ -187,7 +187,7 @@ export const Header = () => {
               onClick={() => setMobileMenuOpen(false)}
             />
             <motion.div
-              className="absolute right-0 top-0 h-full w-full sm:w-80 max-w-sm glass-card backdrop-blur-xl bg-background/95 p-6 sm:p-8 flex flex-col"
+              className="absolute right-0 top-0 h-full w-80 max-w-[85vw] glass-card backdrop-blur-xl bg-background/95 p-6 sm:p-8 flex flex-col"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
