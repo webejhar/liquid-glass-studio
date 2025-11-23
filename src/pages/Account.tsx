@@ -557,9 +557,10 @@ export default function Account() {
                 <ShoppingCart className="w-4 h-4" />
                 Cart ({cart.length})
               </TabsTrigger>
-              <TabsTrigger value="orders" className="gap-2">
+              <TabsTrigger value="orders" className="gap-2 text-xs sm:text-sm">
                 <Package className="w-4 h-4" />
-                Order History
+                <span className="hidden xs:inline">Order</span>
+                <span className="xs:hidden">Order</span>
               </TabsTrigger>
               <TabsTrigger value="favorites" className="gap-2">
                 <Heart className="w-4 h-4" />
@@ -603,35 +604,35 @@ export default function Account() {
                     )}
                   </div>
                   
-                  <div className="flex-1">
+                  <div className="flex-1 pr-2 md:pr-0">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                      <h2 className="text-2xl font-bold">{formData.name || "User"}</h2>
-                      <div className="w-fit">
+                      <h2 className="text-xl sm:text-2xl font-bold break-words pr-2 md:pr-0">{formData.name || "User"}</h2>
+                      <div className="w-fit shrink-0">
                         {formData.verification_status === 'verified' ? (
-                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 text-green-400">
-                            <CheckCircle className="w-4 h-4" />
-                            <span className="text-sm font-semibold">Verified</span>
+                          <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-green-500/20 text-green-400">
+                            <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            <span className="text-xs sm:text-sm font-semibold">Verified</span>
                           </div>
                         ) : formData.verification_status === 'pending' ? (
-                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400">
-                            <Clock className="w-4 h-4" />
-                            <span className="text-sm font-semibold">Pending Review</span>
+                          <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400">
+                            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            <span className="text-xs sm:text-sm font-semibold">Pending Review</span>
                           </div>
                         ) : (
                           <button
                             onClick={() => setShowVerificationModal(true)}
-                            className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition"
+                            className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition"
                           >
-                            <Shield className="w-4 h-4" />
-                            <span className="text-sm font-semibold">Unverified</span>
+                            <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            <span className="text-xs sm:text-sm font-semibold">Unverified</span>
                           </button>
                         )}
                       </div>
                     </div>
-                    <p className="text-muted-foreground mb-4">{formData.email}</p>
+                    <p className="text-sm sm:text-base text-muted-foreground mb-4 break-all pr-2 md:pr-0">{formData.email}</p>
                     
                     {!isEditing && (
-                      <Button onClick={() => setIsEditing(true)} variant="liquid">
+                      <Button onClick={() => setIsEditing(true)} variant="liquid" className="text-sm sm:text-base">
                         Edit Profile
                       </Button>
                     )}
@@ -953,10 +954,10 @@ export default function Account() {
                           <Button
                             onClick={() => handleRemoveFavorite(favorite.product_id)}
                             variant="ghost"
-                            size="sm"
-                            className="text-red-500 hover:text-red-600"
+                            size="icon"
+                            className="text-red-500 hover:text-red-600 shrink-0"
                           >
-                            Remove
+                            <Heart className="w-5 h-5 fill-current" />
                           </Button>
                         </div>
                       </motion.div>
