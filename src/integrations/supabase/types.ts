@@ -44,6 +44,39 @@ export type Database = {
         }
         Relationships: []
       }
+      cart_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_category: string
+          product_description: string
+          product_id: number
+          product_name: string
+          product_price: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_category: string
+          product_description: string
+          product_id: number
+          product_name: string
+          product_price: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_category?: string
+          product_description?: string
+          product_id?: number
+          product_name?: string
+          product_price?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       contacts: {
         Row: {
           admin_notes: string | null
@@ -134,6 +167,39 @@ export type Database = {
           status?: string
           tld?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      favorites: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_category: string
+          product_description: string
+          product_id: number
+          product_name: string
+          product_price: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_category: string
+          product_description: string
+          product_id: number
+          product_name: string
+          product_price: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_category?: string
+          product_description?: string
+          product_id?: number
+          product_name?: string
+          product_price?: number
+          user_id?: string
         }
         Relationships: []
       }

@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock } from "lucide-react";
+import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
 import { ImageCropper } from "@/components/ImageCropper";
+import { VerificationModal } from "@/components/VerificationModal";
 
 const professions = [
   "Developer",
@@ -84,6 +85,8 @@ export default function Account() {
   const faceInputRef = useRef<HTMLInputElement>(null);
   const [showCropper, setShowCropper] = useState(false);
   const [pendingImage, setPendingImage] = useState<File | null>(null);
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -129,6 +132,7 @@ export default function Account() {
     setUser(user);
     await loadProfile(user.id);
     await loadOrders(user.id);
+    await loadFavorites(user.id);
   };
 
   const loadProfile = async (userId: string) => {
@@ -203,6 +207,41 @@ export default function Account() {
     ];
 
     setOrders(sortOrders(allOrders, sortBy));
+  };
+
+  const loadFavorites = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setFavorites(data || []);
+    } catch (error) {
+      console.error("Error loading favorites:", error);
+    }
+  };
+
+  const handleRemoveFavorite = async (productId: number) => {
+    try {
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('product_id', productId);
+
+      if (error) throw error;
+      
+      setFavorites(favorites.filter(f => f.product_id !== productId));
+      toast.success("Removed from favorites");
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      toast.error("Failed to remove favorite");
+    }
   };
 
   const sortOrders = (ordersList: Order[], sortType: string) => {
@@ -522,6 +561,10 @@ export default function Account() {
                 <Package className="w-4 h-4" />
                 Order History
               </TabsTrigger>
+              <TabsTrigger value="favorites" className="gap-2">
+                <Heart className="w-4 h-4" />
+                Favorites
+              </TabsTrigger>
             </TabsList>
 
             {/* Profile Tab */}
@@ -564,7 +607,25 @@ export default function Account() {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
                       <h2 className="text-2xl font-bold">{formData.name || "User"}</h2>
                       <div className="w-fit">
-                        {getVerificationBadge()}
+                        {formData.verification_status === 'verified' ? (
+                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 text-green-400">
+                            <CheckCircle className="w-4 h-4" />
+                            <span className="text-sm font-semibold">Verified</span>
+                          </div>
+                        ) : formData.verification_status === 'pending' ? (
+                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400">
+                            <Clock className="w-4 h-4" />
+                            <span className="text-sm font-semibold">Pending Review</span>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setShowVerificationModal(true)}
+                            className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition"
+                          >
+                            <Shield className="w-4 h-4" />
+                            <span className="text-sm font-semibold">Unverified</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                     <p className="text-muted-foreground mb-4">{formData.email}</p>
@@ -681,121 +742,6 @@ export default function Account() {
                     />
                   </div>
                 </div>
-
-                {/* Verification Section */}
-                {!isEditing && (
-                  <div className="mt-8 p-6 glass-subtle rounded-xl">
-                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                      <Shield className="w-5 h-5" />
-                      Account Verification
-                    </h3>
-                    
-                    {formData.verification_status === "unverified" && (
-                      <div className="space-y-4">
-                        <p className="text-muted-foreground">
-                          Verify your account to unlock additional features and build trust with the community.
-                        </p>
-
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <Label>Upload NID Card</Label>
-                            <input
-                              ref={nidInputRef}
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handleNIDUpload}
-                            />
-                            <Button
-                              onClick={() => nidInputRef.current?.click()}
-                              disabled={uploadingNID}
-                              variant="outline"
-                              className="w-full mt-2"
-                            >
-                              {uploadingNID ? "Uploading..." : formData.nid_url ? "Change NID" : "Upload NID"}
-                            </Button>
-                            {formData.nid_url && (
-                              <p className="text-sm text-green-400 mt-1">✓ NID uploaded</p>
-                            )}
-                          </div>
-
-                          <div>
-                            <Label>Upload Face Verification</Label>
-                            <input
-                              ref={faceInputRef}
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handleFaceUpload}
-                            />
-                            <Button
-                              onClick={() => faceInputRef.current?.click()}
-                              disabled={uploadingFace}
-                              variant="outline"
-                              className="w-full mt-2"
-                            >
-                              {uploadingFace ? "Uploading..." : formData.face_verification_url ? "Change Photo" : "Upload Photo"}
-                            </Button>
-                            {formData.face_verification_url && (
-                              <p className="text-sm text-green-400 mt-1">✓ Face photo uploaded</p>
-                            )}
-                          </div>
-                        </div>
-
-                        <Button
-                          onClick={handleVerifyAccount}
-                          disabled={!formData.nid_url || !formData.face_verification_url || isLoading}
-                          variant="liquid"
-                          className="w-full"
-                        >
-                          {isLoading ? "Submitting..." : "Submit for Verification"}
-                        </Button>
-                      </div>
-                    )}
-
-                    {formData.verification_status === "pending" && (
-                      <div className="text-center py-4">
-                        <Clock className="w-12 h-12 mx-auto mb-4 text-yellow-400" />
-                        <h4 className="text-lg font-semibold mb-2">Verification Pending</h4>
-                        <p className="text-muted-foreground">
-                          Your documents are being reviewed. We'll notify you once the process is complete.
-                        </p>
-                      </div>
-                    )}
-
-                    {formData.verification_status === "verified" && (
-                      <div className="text-center py-4">
-                        <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-400" />
-                        <h4 className="text-lg font-semibold mb-2">Account Verified</h4>
-                        <p className="text-muted-foreground">
-                          Your account has been successfully verified!
-                        </p>
-                      </div>
-                    )}
-
-                    {formData.verification_status === "rejected" && (
-                      <div className="space-y-4">
-                        <div className="text-center py-4">
-                          <XCircle className="w-12 h-12 mx-auto mb-4 text-red-400" />
-                          <h4 className="text-lg font-semibold mb-2">Verification Rejected</h4>
-                          <p className="text-muted-foreground mb-4">
-                            {formData.verification_notes || "Please review your documents and try again."}
-                          </p>
-                        </div>
-
-                        <Button
-                          onClick={() => {
-                            setFormData({ ...formData, verification_status: "unverified" });
-                          }}
-                          variant="liquid"
-                          className="w-full"
-                        >
-                          Resubmit Verification
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
 
                 {isEditing && (
                   <div className="flex gap-4 mt-8">
@@ -964,6 +910,61 @@ export default function Account() {
                 )}
               </motion.div>
             </TabsContent>
+
+            {/* Favorites Tab */}
+            <TabsContent value="favorites">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="glass-premium p-8 rounded-2xl"
+              >
+                <h2 className="text-2xl font-bold mb-6">Favorite Products</h2>
+                
+                {favorites.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Heart className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <p className="text-muted-foreground mb-4">No favorites yet</p>
+                    <Button onClick={() => navigate("/shop")} variant="liquid">
+                      Browse Products
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {favorites.map((favorite) => (
+                      <motion.div
+                        key={favorite.id}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="glass-subtle p-4 rounded-xl"
+                      >
+                        <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center rounded-lg mb-4">
+                          <span className="text-4xl font-bold opacity-50">
+                            {favorite.product_category === "Plugin" ? "P" : "T"}
+                          </span>
+                        </div>
+                        <h3 className="font-semibold mb-2">{favorite.product_name}</h3>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {favorite.product_description}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xl font-bold text-primary">
+                            ${favorite.product_price}
+                          </span>
+                          <Button
+                            onClick={() => handleRemoveFavorite(favorite.product_id)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-600"
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            </TabsContent>
           </Tabs>
         </motion.div>
       </div>
@@ -980,6 +981,18 @@ export default function Account() {
           onCropComplete={handleCropComplete}
         />
       )}
+
+      {/* Verification Modal */}
+      <VerificationModal
+        isOpen={showVerificationModal}
+        onClose={() => setShowVerificationModal(false)}
+        profileId={profile?.id || ""}
+        onVerificationComplete={() => {
+          if (user) {
+            loadProfile(user.id);
+          }
+        }}
+      />
     </div>
   );
 }
