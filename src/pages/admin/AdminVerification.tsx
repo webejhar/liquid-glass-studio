@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Pencil, CheckCircle, XCircle, Clock } from "lucide-react";
 
 interface ProfileVerification {
   id: string;
@@ -164,7 +164,7 @@ const AdminVerification = () => {
                           setShowDetailsDialog(true);
                         }}
                       >
-                        <Eye className="w-4 h-4" />
+                        <Pencil className="w-4 h-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
