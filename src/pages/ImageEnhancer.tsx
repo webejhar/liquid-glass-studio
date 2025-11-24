@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { Download, Loader2, ArrowLeft, Upload, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Download, Loader2, ArrowLeft, Upload, Sparkles, SplitSquareHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 
 export default function ImageEnhancer() {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ export default function ImageEnhancer() {
   const [selectedResolution, setSelectedResolution] = useState<'HD' | '2K' | '4K'>('HD');
   const [faceClean, setFaceClean] = useState(false);
   const [showEnhanceDialog, setShowEnhanceDialog] = useState(false);
+  const [enhancementProgress, setEnhancementProgress] = useState(0);
+  const [showComparison, setShowComparison] = useState(false);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -36,6 +39,19 @@ export default function ImageEnhancer() {
     reader.readAsDataURL(file);
   };
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isEnhancing && enhancementProgress < 95) {
+      interval = setInterval(() => {
+        setEnhancementProgress(prev => {
+          const increment = Math.random() * 15 + 5;
+          return Math.min(prev + increment, 95);
+        });
+      }, 500);
+    }
+    return () => clearInterval(interval);
+  }, [isEnhancing, enhancementProgress]);
+
   const enhanceImage = async () => {
     if (!uploadedImage) {
       toast.error("Please upload an image first");
@@ -43,6 +59,7 @@ export default function ImageEnhancer() {
     }
 
     setIsEnhancing(true);
+    setEnhancementProgress(0);
     try {
       toast.info(`Enhancing to ${selectedResolution}...`);
 
@@ -63,17 +80,23 @@ export default function ImageEnhancer() {
         } else {
           toast.error("Failed to enhance image");
         }
+        setEnhancementProgress(0);
         return;
       }
 
       if (data?.imageUrl) {
-        setEnhancedImage(data.imageUrl);
-        toast.success(`Image enhanced to ${selectedResolution}!`);
-        setShowEnhanceDialog(false);
+        setEnhancementProgress(100);
+        setTimeout(() => {
+          setEnhancedImage(data.imageUrl);
+          toast.success(`Image enhanced to ${selectedResolution}!`);
+          setShowEnhanceDialog(false);
+          setEnhancementProgress(0);
+        }, 500);
       }
     } catch (error: any) {
       console.error('Enhancement error:', error);
       toast.error(error.message || 'Failed to enhance image');
+      setEnhancementProgress(0);
     } finally {
       setIsEnhancing(false);
     }
@@ -109,6 +132,8 @@ export default function ImageEnhancer() {
     setEnhancedImage(null);
     setSelectedResolution('HD');
     setFaceClean(false);
+    setShowComparison(false);
+    setEnhancementProgress(0);
   };
 
   return (
@@ -175,60 +200,125 @@ export default function ImageEnhancer() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
+            {/* Progress Bar */}
+            {isEnhancing && (
+              <motion.div
+                className="glass-card p-6 rounded-2xl"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold">Enhancing Image...</h3>
+                    <span className="text-sm text-muted-foreground">{Math.round(enhancementProgress)}%</span>
+                  </div>
+                  <Progress value={enhancementProgress} className="h-3" />
+                  <p className="text-sm text-muted-foreground">
+                    Processing your image to {selectedResolution} resolution
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
             {/* Image Preview Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Original Image */}
-              <div className="glass-card p-6 rounded-2xl">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <Upload className="w-5 h-5 text-primary" />
-                  Original Image
-                </h3>
-                <div className="relative group">
-                  <img
-                    src={uploadedImage}
-                    alt="Original"
-                    className="w-full rounded-lg"
-                  />
+            {!showComparison ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Original Image */}
+                <div className="glass-card p-6 rounded-2xl">
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <Upload className="w-5 h-5 text-primary" />
+                    Original Image
+                  </h3>
+                  <div className="relative group">
+                    <img
+                      src={uploadedImage}
+                      alt="Original"
+                      className="w-full rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                {/* Enhanced Image */}
+                <div className="glass-card p-6 rounded-2xl">
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    Enhanced Image
+                  </h3>
+                  {enhancedImage ? (
+                    <div className="relative group">
+                      <img
+                        src={enhancedImage}
+                        alt="Enhanced"
+                        className="w-full rounded-lg"
+                      />
+                      <div className="absolute top-2 right-2 flex gap-2">
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          onClick={() => setShowComparison(true)}
+                          className="glass-button"
+                        >
+                          <SplitSquareHorizontal className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          onClick={() => downloadImage(enhancedImage)}
+                          className="glass-button"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <div className="absolute bottom-2 left-2 bg-primary text-primary-foreground px-3 py-1 rounded-lg text-sm font-medium">
+                        {selectedResolution}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full aspect-square rounded-lg bg-secondary/50 flex items-center justify-center">
+                      <div className="text-center text-muted-foreground">
+                        <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>Enhanced image will appear here</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {/* Enhanced Image */}
+            ) : (
+              /* Image Comparison View */
               <div className="glass-card p-6 rounded-2xl">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  Enhanced Image
-                </h3>
-                {enhancedImage ? (
-                  <div className="relative group">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold flex items-center gap-2">
+                    <SplitSquareHorizontal className="w-5 h-5 text-primary" />
+                    Image Comparison
+                  </h3>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowComparison(false)}
+                    className="glass-button"
+                  >
+                    Close Comparison
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-sm font-medium mb-2 text-muted-foreground">Original</h4>
+                    <img
+                      src={uploadedImage}
+                      alt="Original"
+                      className="w-full rounded-lg border-2 border-border"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium mb-2 text-muted-foreground">Enhanced ({selectedResolution})</h4>
                     <img
                       src={enhancedImage}
                       alt="Enhanced"
-                      className="w-full rounded-lg"
+                      className="w-full rounded-lg border-2 border-primary"
                     />
-                    <div className="absolute top-2 right-2">
-                      <Button
-                        size="icon"
-                        variant="secondary"
-                        onClick={() => downloadImage(enhancedImage)}
-                        className="glass-button"
-                      >
-                        <Download className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <div className="absolute bottom-2 left-2 bg-primary text-primary-foreground px-3 py-1 rounded-lg text-sm font-medium">
-                      {selectedResolution}
-                    </div>
                   </div>
-                ) : (
-                  <div className="w-full aspect-square rounded-lg bg-secondary/50 flex items-center justify-center">
-                    <div className="text-center text-muted-foreground">
-                      <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>Enhanced image will appear here</p>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Enhancement Controls */}
             <div className="glass-card p-8 rounded-2xl">
