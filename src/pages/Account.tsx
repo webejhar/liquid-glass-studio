@@ -18,6 +18,7 @@ import { VerificationModal } from "@/components/VerificationModal";
 import { SessionManager } from "@/components/SessionManager";
 import { useSessionTracking } from "@/hooks/useSessionTracking";
 import { NotificationsList } from "@/components/NotificationsList";
+import { AccountToggleBar } from "@/components/AccountToggleBar";
 
 const professions = [
   "Developer",
@@ -760,7 +761,20 @@ export default function Account() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8 text-glow">My Account</h1>
+          <div className="flex items-center justify-between mb-6 sm:mb-8 gap-4">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-glow">My Account</h1>
+            <AccountToggleBar
+              cartCount={cart.length}
+              favoritesCount={favorites.length}
+              verificationStatus={formData.verification_status}
+              onNavigate={(tab) => {
+                const tabsList = document.querySelector('[role="tablist"]');
+                const targetTab = tabsList?.querySelector(`[value="${tab}"]`) as HTMLButtonElement;
+                targetTab?.click();
+              }}
+              onLogout={handleLogout}
+            />
+          </div>
 
           <Tabs defaultValue="profile" className="w-full">
             <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-3 sm:grid-cols-6 gap-1">
