@@ -732,31 +732,8 @@ export default function Account() {
 
   return (
     <div className="min-h-screen">
-      {/* Header - Hide/Show on Scroll */}
-      <AnimatePresence>
-        {headerVisible && (
-          <motion.header
-            className="glass-premium border-b border-white/10 fixed top-0 left-0 right-0 z-50"
-            initial={{ y: 0 }}
-            animate={{ y: 0 }}
-            exit={{ y: -100 }}
-            transition={{ type: "spring", stiffness: 100 }}
-          >
-            <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-              <Link to="/" className="text-2xl font-bold text-glow">
-                Webejhar
-              </Link>
-              <Button variant="ghost" onClick={handleLogout} className="gap-2">
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
-            </div>
-          </motion.header>
-        )}
-      </AnimatePresence>
-
       {/* Main Content */}
-      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 max-w-7xl pt-20 sm:pt-24">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 max-w-7xl pt-6 sm:pt-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1019,17 +996,31 @@ export default function Account() {
                 {/* Delete Account Section */}
                 {!isEditing && (
                   <div className="mt-8 pt-8 border-t border-border/20">
-                    <h3 className="text-lg font-semibold mb-2 text-red-400">Danger Zone</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Once you delete your account, there is no going back. Please be certain.
-                    </p>
-                    <Button
-                      onClick={() => setShowDeleteDialog(true)}
-                      variant="destructive"
-                      className="text-sm"
-                    >
-                      Delete Account
-                    </Button>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2 text-red-400">Danger Zone</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Once you delete your account, there is no going back. Please be certain.
+                        </p>
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button
+                          onClick={() => setShowDeleteDialog(true)}
+                          variant="destructive"
+                          className="text-sm"
+                        >
+                          Delete Account
+                        </Button>
+                        <Button
+                          onClick={handleLogout}
+                          variant="outline"
+                          className="text-sm gap-2 hidden md:flex"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Logout
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </motion.div>
