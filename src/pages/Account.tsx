@@ -148,7 +148,7 @@ export default function Account() {
     };
   }, [user]);
 
-  // Set up real-time subscription for orders
+  // Set up real-time subscription for orders and profile updates
   useEffect(() => {
     if (!user) return;
 
@@ -184,9 +184,28 @@ export default function Account() {
       )
       .subscribe();
 
+    // Listen for profile updates (including verification status changes)
+    const profileChannel = supabase
+      .channel('user-profile-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Profile updated, reloading...', payload);
+          loadProfile(user.id);
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(productOrdersChannel);
       supabase.removeChannel(domainOrdersChannel);
+      supabase.removeChannel(profileChannel);
     };
   }, [user]);
 

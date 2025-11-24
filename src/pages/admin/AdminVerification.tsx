@@ -76,24 +76,33 @@ const AdminVerification = () => {
 
   const updateVerificationStatus = async (userId: string, status: string, notes: string) => {
     try {
-      const { error } = await supabase
+      console.log('Updating verification:', { userId, status, notes });
+      
+      const { data, error } = await supabase
         .from("profiles")
         .update({ 
           verification_status: status,
           verification_notes: notes 
         })
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Verification update error:', error);
+        throw error;
+      }
+
+      console.log('Verification updated successfully:', data);
 
       toast({
         title: "Verification updated",
         description: `Verification status changed to ${status}`,
       });
 
-      fetchVerifications();
+      await fetchVerifications();
       setShowDetailsDialog(false);
     } catch (error: any) {
+      console.error('Error in updateVerificationStatus:', error);
       toast({
         title: "Error updating verification",
         description: error.message,
