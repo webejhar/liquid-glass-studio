@@ -385,7 +385,7 @@ export default function ImageGenerator() {
 
         {/* Feature Buttons */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12"
+          className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
@@ -413,6 +413,14 @@ export default function ImageGenerator() {
           >
             <Shirt className="w-5 h-5" />
             <span>Change Dress</span>
+          </Button>
+          <Button
+            onClick={() => navigate('/image-enhancer')}
+            variant="outline"
+            className="glass-button py-6 flex items-center gap-3"
+          >
+            <Sparkles className="w-5 h-5" />
+            <span>Image Enhancer</span>
           </Button>
         </motion.div>
 

@@ -324,6 +324,53 @@ export default function Home() {
           </motion.div>
         </section>
 
+        {/* AI Image Enhancer Section */}
+        <section className="mb-32">
+          <motion.div
+            className="glass-card p-12 rounded-3xl relative overflow-hidden"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-r from-accent/20 via-primary/20 to-accent/20"
+              animate={{
+                x: ['-100%', '200%'],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                repeatDelay: 2,
+                ease: "easeInOut"
+              }}
+            />
+            
+            <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-4xl font-bold mb-4">
+                  AI Image <span className="text-primary">Enhancer</span>
+                </h2>
+                <p className="text-muted-foreground text-lg">
+                  Enhance your images to HD, 2K, or 4K resolution with AI-powered quality improvement and optional face cleaning.
+                </p>
+              </div>
+
+              <div className="flex justify-center md:justify-end">
+                <Link to="/image-enhancer">
+                  <motion.button 
+                    className="glass-button px-8 py-4 rounded-full text-lg font-medium"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Try Now
+                  </motion.button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
         {/* Featured Shop Section */}
         <section className="mb-32">
           <motion.h2
