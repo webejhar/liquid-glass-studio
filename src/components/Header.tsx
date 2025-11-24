@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Menu, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { UserNotifications } from "./UserNotifications";
 
 const menuItems = [
   { label: "Home", path: "/" },
@@ -125,13 +126,15 @@ export const Header = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Link
                 to="/meeting"
                 className="glass-button px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium hidden md:block hover:scale-105 transition-transform"
               >
                 Meeting
               </Link>
+
+              {isLoggedIn && <UserNotifications />}
 
               <motion.button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -155,6 +158,7 @@ export const Header = () => {
             exit={{ x: 100, opacity: 0 }}
             transition={{ type: "spring", stiffness: 100 }}
           >
+            {isLoggedIn && <UserNotifications />}
             <motion.button
               onClick={handleLoginClick}
               className="glass-card backdrop-blur-xl bg-background/30 p-3 sm:p-4 rounded-full hover:scale-110 transition"
