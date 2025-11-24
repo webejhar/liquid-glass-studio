@@ -777,7 +777,7 @@ export default function Account() {
           </div>
 
           <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-3 sm:grid-cols-6 gap-1">
+            <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-3 sm:grid-cols-6 gap-1 hidden md:grid">
               <TabsTrigger value="profile" className="gap-1 sm:gap-2 text-xs sm:text-sm">
                 <User className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Profile</span>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Heart, ShoppingCart, Bell, Shield, Package, Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AccountToggleBarProps {
   cartCount: number;
@@ -19,6 +20,10 @@ export const AccountToggleBar = ({
   onLogout
 }: AccountToggleBarProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const isMobile = useIsMobile();
+
+  // Don't render on desktop
+  if (!isMobile) return null;
 
   const menuItems = [
     {
