@@ -53,6 +53,27 @@ const AdminVerification = () => {
 
   useEffect(() => {
     fetchVerifications();
+
+    // Real-time subscription for verification updates
+    const channel = supabase
+      .channel('admin-verification-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles'
+        },
+        (payload) => {
+          console.log('Profile verification updated:', payload);
+          fetchVerifications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchVerifications = async () => {
@@ -89,25 +110,34 @@ const AdminVerification = () => {
 
       if (error) {
         console.error('Verification update error:', error);
+        toast({
+          title: "Error updating verification",
+          description: error.message,
+          variant: "destructive",
+        });
         throw error;
       }
 
       console.log('Verification updated successfully:', data);
 
-      toast({
-        title: "Verification updated",
-        description: `Verification status changed to ${status}`,
-      });
-
-      await fetchVerifications();
-      setShowDetailsDialog(false);
+      if (data && data.length > 0) {
+        toast({
+          title: "Verification updated successfully",
+          description: `Status changed to ${status}`,
+        });
+        
+        // Refresh the list and close dialog
+        await fetchVerifications();
+        setShowDetailsDialog(false);
+      } else {
+        toast({
+          title: "Warning",
+          description: "No profile was updated. Please check the user exists.",
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
       console.error('Error in updateVerificationStatus:', error);
-      toast({
-        title: "Error updating verification",
-        description: error.message,
-        variant: "destructive",
-      });
     }
   };
 
