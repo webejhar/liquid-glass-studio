@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Download, Edit2, Loader2, ArrowLeft } from "lucide-react";
+import { Download, Edit2, Loader2, ArrowLeft, Upload, Scissors, Shirt } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface GeneratedImage {
   url: string;
@@ -22,6 +23,24 @@ export default function ImageGenerator() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editPrompt, setEditPrompt] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Photo Edit feature
+  const [showPhotoEdit, setShowPhotoEdit] = useState(false);
+  const [photoEditFile, setPhotoEditFile] = useState<File | null>(null);
+  const [photoEditPrompt, setPhotoEditPrompt] = useState("");
+  const [isPhotoEditing, setIsPhotoEditing] = useState(false);
+  
+  // Face Swap feature
+  const [showFaceSwap, setShowFaceSwap] = useState(false);
+  const [originalFaceFile, setOriginalFaceFile] = useState<File | null>(null);
+  const [targetFaceFile, setTargetFaceFile] = useState<File | null>(null);
+  const [isFaceSwapping, setIsFaceSwapping] = useState(false);
+  
+  // Change Dress feature
+  const [showChangeDress, setShowChangeDress] = useState(false);
+  const [dressPhotoFile, setDressPhotoFile] = useState<File | null>(null);
+  const [dressPrompt, setDressPrompt] = useState("");
+  const [isChangingDress, setIsChangingDress] = useState(false);
 
   const generateImages = async () => {
     if (!prompt.trim()) {
@@ -117,6 +136,162 @@ export default function ImageGenerator() {
     }
   };
 
+  const handlePhotoEdit = async () => {
+    if (!photoEditFile || !photoEditPrompt.trim()) {
+      toast.error("Please upload a photo and provide editing instructions");
+      return;
+    }
+
+    setIsPhotoEditing(true);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const imageUrl = e.target?.result as string;
+        
+        const { data, error } = await supabase.functions.invoke("generate-image", {
+          body: { 
+            prompt: photoEditPrompt,
+            imageUrl 
+          },
+        });
+
+        if (error) {
+          console.error("Error editing photo:", error);
+          if (error.message.includes("429")) {
+            toast.error("Rate limit exceeded. Please try again in a moment.");
+          } else if (error.message.includes("402")) {
+            toast.error("AI usage limit reached. Please contact support.");
+          } else {
+            toast.error("Failed to edit photo");
+          }
+          setIsPhotoEditing(false);
+          return;
+        }
+
+        if (data?.imageUrl) {
+          setImages([...images, { url: data.imageUrl, prompt: `Photo edited: ${photoEditPrompt}` }]);
+          toast.success("Photo edited successfully!");
+          setShowPhotoEdit(false);
+          setPhotoEditFile(null);
+          setPhotoEditPrompt("");
+        }
+        setIsPhotoEditing(false);
+      };
+      reader.readAsDataURL(photoEditFile);
+    } catch (err) {
+      console.error("Error:", err);
+      toast.error("An error occurred while editing the photo");
+      setIsPhotoEditing(false);
+    }
+  };
+
+  const handleFaceSwap = async () => {
+    if (!originalFaceFile || !targetFaceFile) {
+      toast.error("Please upload both original and target face photos");
+      return;
+    }
+
+    setIsFaceSwapping(true);
+
+    try {
+      const originalReader = new FileReader();
+      originalReader.onload = async (e) => {
+        const originalUrl = e.target?.result as string;
+        
+        const targetReader = new FileReader();
+        targetReader.onload = async (te) => {
+          const targetUrl = te.target?.result as string;
+          
+          const { data, error } = await supabase.functions.invoke("generate-image", {
+            body: { 
+              prompt: `Swap the face in this image with the target face, maintaining 100% accuracy and preserving the body and background exactly as in the original image`,
+              imageUrl: originalUrl
+            },
+          });
+
+          if (error) {
+            console.error("Error swapping face:", error);
+            if (error.message.includes("429")) {
+              toast.error("Rate limit exceeded. Please try again in a moment.");
+            } else if (error.message.includes("402")) {
+              toast.error("AI usage limit reached. Please contact support.");
+            } else {
+              toast.error("Failed to swap face");
+            }
+            setIsFaceSwapping(false);
+            return;
+          }
+
+          if (data?.imageUrl) {
+            setImages([...images, { url: data.imageUrl, prompt: "Face swap completed" }]);
+            toast.success("Face swapped successfully!");
+            setShowFaceSwap(false);
+            setOriginalFaceFile(null);
+            setTargetFaceFile(null);
+          }
+          setIsFaceSwapping(false);
+        };
+        targetReader.readAsDataURL(targetFaceFile);
+      };
+      originalReader.readAsDataURL(originalFaceFile);
+    } catch (err) {
+      console.error("Error:", err);
+      toast.error("An error occurred while swapping faces");
+      setIsFaceSwapping(false);
+    }
+  };
+
+  const handleChangeDress = async () => {
+    if (!dressPhotoFile || !dressPrompt.trim()) {
+      toast.error("Please upload a photo and describe the dress");
+      return;
+    }
+
+    setIsChangingDress(true);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const imageUrl = e.target?.result as string;
+        
+        const { data, error } = await supabase.functions.invoke("generate-image", {
+          body: { 
+            prompt: `Change only the dress/clothing in this image to: ${dressPrompt}. Keep the face, body, pose, and background exactly the same. Only modify the clothing.`,
+            imageUrl 
+          },
+        });
+
+        if (error) {
+          console.error("Error changing dress:", error);
+          if (error.message.includes("429")) {
+            toast.error("Rate limit exceeded. Please try again in a moment.");
+          } else if (error.message.includes("402")) {
+            toast.error("AI usage limit reached. Please contact support.");
+          } else {
+            toast.error("Failed to change dress");
+          }
+          setIsChangingDress(false);
+          return;
+        }
+
+        if (data?.imageUrl) {
+          setImages([...images, { url: data.imageUrl, prompt: `Dress changed: ${dressPrompt}` }]);
+          toast.success("Dress changed successfully!");
+          setShowChangeDress(false);
+          setDressPhotoFile(null);
+          setDressPrompt("");
+        }
+        setIsChangingDress(false);
+      };
+      reader.readAsDataURL(dressPhotoFile);
+    } catch (err) {
+      console.error("Error:", err);
+      toast.error("An error occurred while changing the dress");
+      setIsChangingDress(false);
+    }
+  };
+
   const downloadImage = (imageUrl: string, index: number) => {
     const link = document.createElement('a');
     link.href = imageUrl;
@@ -157,6 +332,39 @@ export default function ImageGenerator() {
           Create stunning images from text in any language
         </motion.p>
 
+        {/* Feature Buttons */}
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
+          <Button
+            onClick={() => setShowPhotoEdit(true)}
+            variant="outline"
+            className="glass-button py-6 flex items-center gap-3"
+          >
+            <Edit2 className="w-5 h-5" />
+            <span>Photo Edit</span>
+          </Button>
+          <Button
+            onClick={() => setShowFaceSwap(true)}
+            variant="outline"
+            className="glass-button py-6 flex items-center gap-3"
+          >
+            <Scissors className="w-5 h-5" />
+            <span>Face Swap</span>
+          </Button>
+          <Button
+            onClick={() => setShowChangeDress(true)}
+            variant="outline"
+            className="glass-button py-6 flex items-center gap-3"
+          >
+            <Shirt className="w-5 h-5" />
+            <span>Change Dress</span>
+          </Button>
+        </motion.div>
+
         <motion.div
           className="glass-card p-8 rounded-2xl mb-12"
           initial={{ opacity: 0, y: 20 }}
@@ -191,7 +399,7 @@ export default function ImageGenerator() {
 
         {images.length > 0 && (
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            className="grid grid-cols-2 md:grid-cols-4 gap-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
@@ -240,6 +448,7 @@ export default function ImageGenerator() {
           </motion.div>
         )}
 
+        {/* Edit Dialog */}
         <Dialog open={editingIndex !== null} onOpenChange={() => setEditingIndex(null)}>
           <DialogContent className="glass-premium">
             <DialogHeader>
@@ -275,6 +484,168 @@ export default function ImageGenerator() {
                   variant="outline"
                   onClick={() => setEditingIndex(null)}
                   disabled={isEditing}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Photo Edit Dialog */}
+        <Dialog open={showPhotoEdit} onOpenChange={setShowPhotoEdit}>
+          <DialogContent className="glass-premium">
+            <DialogHeader>
+              <DialogTitle>Photo Edit</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="photo-upload">Upload Photo</Label>
+                <Input
+                  id="photo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setPhotoEditFile(e.target.files?.[0] || null)}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="photo-edit-prompt">Edit Instructions (any language)</Label>
+                <Textarea
+                  id="photo-edit-prompt"
+                  value={photoEditPrompt}
+                  onChange={(e) => setPhotoEditPrompt(e.target.value)}
+                  placeholder="Describe how you want to edit this photo..."
+                  className="mt-2 min-h-[100px]"
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={handlePhotoEdit}
+                  disabled={!photoEditFile || !photoEditPrompt.trim() || isPhotoEditing}
+                  className="flex-1"
+                >
+                  {isPhotoEditing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Editing...
+                    </>
+                  ) : (
+                    "Edit Photo"
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowPhotoEdit(false)}
+                  disabled={isPhotoEditing}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Face Swap Dialog */}
+        <Dialog open={showFaceSwap} onOpenChange={setShowFaceSwap}>
+          <DialogContent className="glass-premium">
+            <DialogHeader>
+              <DialogTitle>Face Swap</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="original-face">Upload Original Photo</Label>
+                <Input
+                  id="original-face"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setOriginalFaceFile(e.target.files?.[0] || null)}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="target-face">Upload Target Face</Label>
+                <Input
+                  id="target-face"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setTargetFaceFile(e.target.files?.[0] || null)}
+                  className="mt-2"
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleFaceSwap}
+                  disabled={!originalFaceFile || !targetFaceFile || isFaceSwapping}
+                  className="flex-1"
+                >
+                  {isFaceSwapping ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Swapping...
+                    </>
+                  ) : (
+                    "Swap Face"
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFaceSwap(false)}
+                  disabled={isFaceSwapping}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Change Dress Dialog */}
+        <Dialog open={showChangeDress} onOpenChange={setShowChangeDress}>
+          <DialogContent className="glass-premium">
+            <DialogHeader>
+              <DialogTitle>Change Dress</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="dress-photo">Upload Photo</Label>
+                <Input
+                  id="dress-photo"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setDressPhotoFile(e.target.files?.[0] || null)}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="dress-prompt">Describe the New Dress (any language)</Label>
+                <Textarea
+                  id="dress-prompt"
+                  value={dressPrompt}
+                  onChange={(e) => setDressPrompt(e.target.value)}
+                  placeholder="E.g., red evening gown, casual blue jeans with white shirt..."
+                  className="mt-2 min-h-[100px]"
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleChangeDress}
+                  disabled={!dressPhotoFile || !dressPrompt.trim() || isChangingDress}
+                  className="flex-1"
+                >
+                  {isChangingDress ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Changing...
+                    </>
+                  ) : (
+                    "Change Dress"
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowChangeDress(false)}
+                  disabled={isChangingDress}
                 >
                   Cancel
                 </Button>
