@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell, X } from "lucide-react";
+import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -740,7 +740,13 @@ export default function Account() {
           transition={{ duration: 0.5 }}
         >
           <div className="flex items-center justify-between mb-6 sm:mb-8 gap-4">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-glow">My Account</h1>
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 sm:gap-3 group hover:scale-105 transition-transform"
+            >
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-glow">Back Home</h1>
+              <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-primary group-hover:translate-x-1 transition-transform" />
+            </button>
             <AccountToggleBar
               cartCount={cart.length}
               favoritesCount={favorites.length}
