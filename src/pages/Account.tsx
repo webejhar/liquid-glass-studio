@@ -84,6 +84,7 @@ export default function Account() {
   const [isLoading, setIsLoading] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [sortBy, setSortBy] = useState<string>("date-desc");
+  const [activeTab, setActiveTab] = useState<string>("profile");
   const [headerVisible, setHeaderVisible] = useState(true);
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
   const [uploadingNID, setUploadingNID] = useState(false);
@@ -767,16 +768,12 @@ export default function Account() {
               cartCount={cart.length}
               favoritesCount={favorites.length}
               verificationStatus={formData.verification_status}
-              onNavigate={(tab) => {
-                const tabsList = document.querySelector('[role="tablist"]');
-                const targetTab = tabsList?.querySelector(`[value="${tab}"]`) as HTMLButtonElement;
-                targetTab?.click();
-              }}
+              onNavigate={(tab) => setActiveTab(tab)}
               onLogout={handleLogout}
             />
           </div>
 
-          <Tabs defaultValue="profile" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-3 sm:grid-cols-6 gap-1 hidden md:grid">
               <TabsTrigger value="profile" className="gap-1 sm:gap-2 text-xs sm:text-sm">
                 <User className="w-3 h-3 sm:w-4 sm:h-4" />
