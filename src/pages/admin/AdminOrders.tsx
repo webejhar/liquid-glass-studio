@@ -29,7 +29,6 @@ const AdminOrders = () => {
   const { toast } = useToast();
   const [productOrders, setProductOrders] = useState<any[]>([]);
   const [domainOrders, setDomainOrders] = useState<any[]>([]);
-  const [meetingBookings, setMeetingBookings] = useState<any[]>([]);
 
   useEffect(() => {
     fetchOrders();
@@ -37,15 +36,13 @@ const AdminOrders = () => {
 
   const fetchOrders = async () => {
     try {
-      const [products, domains, meetings] = await Promise.all([
+      const [products, domains] = await Promise.all([
         supabase.from("product_orders").select("*").order("created_at", { ascending: false }),
         supabase.from("domain_orders").select("*").order("created_at", { ascending: false }),
-        supabase.from("meeting_bookings").select("*").order("created_at", { ascending: false }),
       ]);
 
       setProductOrders(products.data || []);
       setDomainOrders(domains.data || []);
-      setMeetingBookings(meetings.data || []);
     } catch (error: any) {
       toast({
         title: "Error fetching orders",
@@ -55,7 +52,7 @@ const AdminOrders = () => {
     }
   };
 
-  const updateOrderStatus = async (table: "product_orders" | "domain_orders" | "meeting_bookings", id: string, status: string) => {
+  const updateOrderStatus = async (table: "product_orders" | "domain_orders", id: string, status: string) => {
     try {
       const { error } = await supabase
         .from(table)
@@ -71,12 +68,9 @@ const AdminOrders = () => {
       if (table === "product_orders") {
         orderData = productOrders.find(o => o.id === id);
         type = "order";
-      } else if (table === "domain_orders") {
+      } else {
         orderData = domainOrders.find(o => o.id === id);
         type = "domain";
-      } else {
-        orderData = meetingBookings.find(o => o.id === id);
-        type = "booking";
       }
 
       if (orderData) {
@@ -84,8 +78,8 @@ const AdminOrders = () => {
           body: {
             type,
             status,
-            recipientEmail: orderData.buyer_email || orderData.email,
-            recipientName: orderData.buyer_name || orderData.name,
+            recipientEmail: orderData.buyer_email,
+            recipientName: orderData.buyer_name,
             details: orderData,
           },
         });
@@ -132,31 +126,29 @@ const AdminOrders = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Order Management</h1>
-          <p className="text-muted-foreground">View and manage all orders and bookings</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">Order Management</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">View and manage all orders</p>
         </div>
 
         <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="products" className="text-xs sm:text-sm">Product Orders</TabsTrigger>
-            <TabsTrigger value="domains" className="text-xs sm:text-sm">Domain Orders</TabsTrigger>
-            <TabsTrigger value="meetings" className="text-xs sm:text-sm">Meetings</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="products" className="text-xs sm:text-sm">Products</TabsTrigger>
+            <TabsTrigger value="domains" className="text-xs sm:text-sm">Domains</TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
-            <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-4 sm:p-6">
+            <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-3 sm:p-4 md:p-6">
               <div className="rounded-lg border border-border/50 overflow-x-auto">
-                <div className="min-w-[900px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Product</TableHead>
-                      <TableHead>Buyer</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Payment Method</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="min-w-[120px]">Product</TableHead>
+                      <TableHead className="min-w-[150px]">Buyer</TableHead>
+                      <TableHead className="min-w-[80px]">Price</TableHead>
+                      <TableHead className="min-w-[120px]">Payment</TableHead>
+                      <TableHead className="min-w-[100px]">Status</TableHead>
+                      <TableHead className="min-w-[100px]">Date</TableHead>
+                      <TableHead className="text-right min-w-[140px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -165,14 +157,14 @@ const AdminOrders = () => {
                         <TableCell className="font-medium">{order.product_name}</TableCell>
                         <TableCell>
                           <div>
-                            <div>{order.buyer_name || "N/A"}</div>
-                            <div className="text-sm text-muted-foreground">{order.buyer_email}</div>
+                            <div className="text-xs sm:text-sm">{order.buyer_name || "N/A"}</div>
+                            <div className="text-xs text-muted-foreground">{order.buyer_email}</div>
                           </div>
                         </TableCell>
                         <TableCell>${order.product_price}</TableCell>
-                        <TableCell>{order.payment_method}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{order.payment_method}</TableCell>
                         <TableCell>{getStatusBadge(order.status)}</TableCell>
-                        <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{new Date(order.created_at).toLocaleDateString()}</TableCell>
                         <TableCell className="text-right">
                           <Select
                             value={order.status}
@@ -180,7 +172,7 @@ const AdminOrders = () => {
                               updateOrderStatus("product_orders", order.id, value)
                             }
                           >
-                            <SelectTrigger className="w-32">
+                            <SelectTrigger className="w-[110px] sm:w-32">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -194,25 +186,23 @@ const AdminOrders = () => {
                     ))}
                   </TableBody>
                 </Table>
-                </div>
               </div>
             </Card>
           </TabsContent>
 
           <TabsContent value="domains">
-            <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-4 sm:p-6">
+            <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-3 sm:p-4 md:p-6">
               <div className="rounded-lg border border-border/50 overflow-x-auto">
-                <div className="min-w-[900px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Domain</TableHead>
-                      <TableHead>Buyer</TableHead>
-                      <TableHead>TLD</TableHead>
-                      <TableHead>Payment Method</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="min-w-[150px]">Domain</TableHead>
+                      <TableHead className="min-w-[150px]">Buyer</TableHead>
+                      <TableHead className="min-w-[60px]">TLD</TableHead>
+                      <TableHead className="min-w-[120px]">Payment</TableHead>
+                      <TableHead className="min-w-[100px]">Status</TableHead>
+                      <TableHead className="min-w-[100px]">Date</TableHead>
+                      <TableHead className="text-right min-w-[140px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -221,14 +211,14 @@ const AdminOrders = () => {
                         <TableCell className="font-medium">{order.domain_name}</TableCell>
                         <TableCell>
                           <div>
-                            <div>{order.buyer_name || "N/A"}</div>
-                            <div className="text-sm text-muted-foreground">{order.buyer_email}</div>
+                            <div className="text-xs sm:text-sm">{order.buyer_name || "N/A"}</div>
+                            <div className="text-xs text-muted-foreground">{order.buyer_email}</div>
                           </div>
                         </TableCell>
                         <TableCell>{order.tld}</TableCell>
-                        <TableCell>{order.payment_method}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{order.payment_method}</TableCell>
                         <TableCell>{getStatusBadge(order.status)}</TableCell>
-                        <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{new Date(order.created_at).toLocaleDateString()}</TableCell>
                         <TableCell className="text-right">
                           <Select
                             value={order.status}
@@ -236,7 +226,7 @@ const AdminOrders = () => {
                               updateOrderStatus("domain_orders", order.id, value)
                             }
                           >
-                            <SelectTrigger className="w-32">
+                            <SelectTrigger className="w-[110px] sm:w-32">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -250,58 +240,6 @@ const AdminOrders = () => {
                     ))}
                   </TableBody>
                 </Table>
-                </div>
-              </div>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="meetings">
-            <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-4 sm:p-6">
-              <div className="rounded-lg border border-border/50 overflow-x-auto">
-                <div className="min-w-[800px]">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Date & Time</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {meetingBookings.map((booking) => (
-                      <TableRow key={booking.id}>
-                        <TableCell className="font-medium">{booking.name}</TableCell>
-                        <TableCell>{booking.email}</TableCell>
-                        <TableCell>{booking.phone || "N/A"}</TableCell>
-                        <TableCell>
-                          {new Date(booking.meeting_date).toLocaleDateString()} at {booking.meeting_time}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                        <TableCell className="text-right">
-                          <Select
-                            value={booking.status}
-                            onValueChange={(value) =>
-                              updateOrderStatus("meeting_bookings", booking.id, value)
-                            }
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="confirmed">Confirmed</SelectItem>
-                              <SelectItem value="rejected">Rejected</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                </div>
               </div>
             </Card>
           </TabsContent>

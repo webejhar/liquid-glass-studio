@@ -8,7 +8,9 @@ import {
   Shield, 
   LogOut,
   Menu,
-  Mail
+  Mail,
+  Calendar,
+  CheckSquare
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +41,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { path: "/admin/users", label: "Users", icon: Users },
     { path: "/admin/orders", label: "Orders", icon: ShoppingBag },
+    { path: "/admin/meetings", label: "Meetings", icon: Calendar },
+    { path: "/admin/verification", label: "Verification", icon: CheckSquare },
     { path: "/admin/roles", label: "Roles", icon: Shield },
     { path: "/admin/contacts", label: "Contacts", icon: Mail },
   ];
@@ -151,8 +155,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </AnimatePresence>
 
         {/* Main Content */}
-        <main className="flex-1 p-3 sm:p-4 md:p-8">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 p-3 sm:p-4 md:p-8 overflow-x-hidden">
+          <div className="max-w-7xl mx-auto w-full">
             {children}
           </div>
         </main>
