@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { EmailVerificationDialog } from "@/components/EmailVerificationDialog";
+import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -15,6 +17,8 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
 
   const getPasswordStrength = (password: string) => {
     if (password.length === 0) return { strength: "", color: "" };
@@ -29,6 +33,28 @@ export default function Register() {
   const passwordStrength = getPasswordStrength(password);
   const passwordsMatch = password && confirmPassword && password === confirmPassword;
 
+  const sendVerificationCode = async () => {
+    // Generate a random 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setVerificationCode(code);
+    
+    // Send code via edge function (you'll need to create this)
+    try {
+      await supabase.functions.invoke("send-verification-code", {
+        body: {
+          email,
+          code,
+          name
+        },
+      });
+      toast.success("Verification code sent to your email!");
+      setShowVerification(true);
+    } catch (error: any) {
+      toast.error("Failed to send verification code. Please try again.");
+      console.error(error);
+    }
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -39,6 +65,17 @@ export default function Register() {
 
     if (password.length < 6) {
       toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsLoading(true);
+    await sendVerificationCode();
+    setIsLoading(false);
+  };
+
+  const handleVerifyCode = async (inputCode: string) => {
+    if (inputCode !== verificationCode) {
+      toast.error("Invalid verification code");
       return;
     }
 
@@ -251,6 +288,15 @@ export default function Register() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.9 }}
+            className="mt-6"
+          >
+            <SocialLoginButtons />
+          </motion.div>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 1.0 }}
             className="mt-6 text-center"
           >
             <p className="text-muted-foreground">
@@ -262,6 +308,14 @@ export default function Register() {
           </motion.div>
         </div>
       </motion.div>
+
+      <EmailVerificationDialog
+        isOpen={showVerification}
+        onVerify={handleVerifyCode}
+        onResend={sendVerificationCode}
+        email={email}
+        isLoading={isLoading}
+      />
     </div>
   );
 }
