@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.84.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,10 +14,14 @@ serve(async (req) => {
   try {
     const { prompt, imageUrl } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
+
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_KEY!);
 
     console.log('Generating image with prompt:', prompt);
     
@@ -88,10 +93,60 @@ serve(async (req) => {
       throw new Error('No image generated in response');
     }
 
-    return new Response(
-      JSON.stringify({ imageUrl: imageBase64 }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // Convert base64 to blob and upload to storage
+    try {
+      const base64Data = imageBase64.split(',')[1] || imageBase64;
+      const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+      
+      const fileName = `${crypto.randomUUID()}.png`;
+      const filePath = `generated/${fileName}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from('temp-images')
+        .upload(filePath, binaryData, {
+          contentType: 'image/png',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('temp-images')
+        .getPublicUrl(filePath);
+
+      // Track in database
+      const { error: dbError } = await supabase
+        .from('temp_images')
+        .insert({
+          file_path: filePath,
+          bucket_name: 'temp-images',
+          expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutes from now
+        });
+
+      if (dbError) {
+        console.error('Database tracking error:', dbError);
+        // Don't fail the request if tracking fails
+      }
+
+      console.log('Image uploaded and tracked:', filePath);
+
+      return new Response(
+        JSON.stringify({ imageUrl: publicUrl }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (storageError: any) {
+      console.error('Error handling image storage:', storageError);
+      // Fallback to base64 if storage fails
+      return new Response(
+        JSON.stringify({ imageUrl: imageBase64 }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
   } catch (error: any) {
     console.error('Error in generate-image function:', error);
