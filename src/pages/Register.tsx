@@ -18,8 +18,9 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showVerification, setShowVerification] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
+  // Email verification disabled by default
+  // const [showVerification, setShowVerification] = useState(false);
+  // const [verificationCode, setVerificationCode] = useState("");
   const [captchaVerified, setCaptchaVerified] = useState(false);
 
   const getPasswordStrength = (password: string) => {
@@ -35,27 +36,9 @@ export default function Register() {
   const passwordStrength = getPasswordStrength(password);
   const passwordsMatch = password && confirmPassword && password === confirmPassword;
 
-  const sendVerificationCode = async () => {
-    // Generate a random 6-digit code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setVerificationCode(code);
-    
-    // Send code via edge function (you'll need to create this)
-    try {
-      await supabase.functions.invoke("send-verification-code", {
-        body: {
-          email,
-          code,
-          name
-        },
-      });
-      toast.success("Verification code sent to your email!");
-      setShowVerification(true);
-    } catch (error: any) {
-      toast.error("Failed to send verification code. Please try again.");
-      console.error(error);
-    }
-  };
+  // Email verification functions disabled
+  // const sendVerificationCode = async () => { ... };
+  // const handleVerifyCode = async (inputCode: string) => { ... };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,14 +53,8 @@ export default function Register() {
       return;
     }
 
-    setIsLoading(true);
-    await sendVerificationCode();
-    setIsLoading(false);
-  };
-
-  const handleVerifyCode = async (inputCode: string) => {
-    if (inputCode !== verificationCode) {
-      toast.error("Invalid verification code");
+    if (!captchaVerified) {
+      toast.error("Please complete the captcha verification");
       return;
     }
 
@@ -319,13 +296,7 @@ export default function Register() {
         </div>
       </motion.div>
 
-      <EmailVerificationDialog
-        isOpen={showVerification}
-        onVerify={handleVerifyCode}
-        onResend={sendVerificationCode}
-        email={email}
-        isLoading={isLoading}
-      />
+      {/* Email verification disabled */}
     </div>
   );
 }
