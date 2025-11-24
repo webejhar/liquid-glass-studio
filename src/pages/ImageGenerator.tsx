@@ -292,14 +292,33 @@ export default function ImageGenerator() {
     }
   };
 
-  const downloadImage = (imageUrl: string, index: number) => {
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = `generated-image-${index + 1}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("Image downloaded!");
+  const downloadImage = async (imageUrl: string, index: number) => {
+    try {
+      toast.info("Preparing download...");
+      
+      // Fetch the image as a blob to handle cross-origin images
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      
+      // Create object URL from blob
+      const blobUrl = URL.createObjectURL(blob);
+      
+      // Create and trigger download
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `generated-image-${index + 1}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the object URL
+      URL.revokeObjectURL(blobUrl);
+      
+      toast.success("Image downloaded!");
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.error("Failed to download image. Please try again.");
+    }
   };
 
   return (
