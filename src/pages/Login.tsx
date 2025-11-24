@@ -9,12 +9,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSessionTracking } from "@/hooks/useSessionTracking";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
+import { CaptchaSlider } from "@/components/CaptchaSlider";
 
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [captchaVerified, setCaptchaVerified] = useState(false);
   
   useSessionTracking();
 
@@ -73,6 +75,15 @@ export default function Login() {
           >
             Sign in to continue to Webejhar
           </motion.p>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.35 }}
+            className="mb-6"
+          >
+            <SocialLoginButtons />
+          </motion.div>
 
           <form onSubmit={handleLogin} className="space-y-6">
             <motion.div
@@ -134,25 +145,24 @@ export default function Login() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.7 }}
             >
+              <CaptchaSlider onVerified={setCaptchaVerified} />
+            </motion.div>
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.8 }}
+            >
               <Button
                 type="submit"
                 variant="liquid"
                 className="w-full"
-                disabled={isLoading}
+                disabled={isLoading || !captchaVerified}
               >
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>
             </motion.div>
           </form>
-
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="mt-6"
-          >
-            <SocialLoginButtons />
-          </motion.div>
 
           <motion.div
             initial={{ y: 20, opacity: 0 }}
