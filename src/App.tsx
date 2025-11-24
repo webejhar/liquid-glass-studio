@@ -40,7 +40,7 @@ const App = () => (
     <TooltipProvider>
       <CartProvider>
         <Toaster />
-        <Sonner />
+        <Sonner position="bottom-left" />
         <BrowserRouter>
           <CustomCursor />
           <AnimatedBackground />

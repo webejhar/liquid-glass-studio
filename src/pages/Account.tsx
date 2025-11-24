@@ -147,36 +147,41 @@ export default function Account() {
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
-      .channel('order-updates')
+    const productOrdersChannel = supabase
+      .channel('user-product-orders')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'product_orders',
-          filter: `user_id=eq.${user.id}`
+          table: 'product_orders'
         },
         () => {
+          console.log('Product order changed, reloading...');
           loadOrders(user.id);
         }
       )
+      .subscribe();
+
+    const domainOrdersChannel = supabase
+      .channel('user-domain-orders')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'domain_orders',
-          filter: `user_id=eq.${user.id}`
+          table: 'domain_orders'
         },
         () => {
+          console.log('Domain order changed, reloading...');
           loadOrders(user.id);
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(productOrdersChannel);
+      supabase.removeChannel(domainOrdersChannel);
     };
   }, [user]);
 
@@ -234,6 +239,8 @@ export default function Account() {
         return;
       }
 
+      console.log('Loading orders for user:', userId, 'email:', userEmail);
+
       // Fetch orders by user_id OR by email
       const [{ data: productOrders, error: productError }, { data: domainOrders, error: domainError }] = await Promise.all([
         supabase
@@ -248,8 +255,17 @@ export default function Account() {
           .order('created_at', { ascending: false })
       ]);
 
-      if (productError) console.error("Error loading product orders:", productError);
-      if (domainError) console.error("Error loading domain orders:", domainError);
+      if (productError) {
+        console.error("Error loading product orders:", productError);
+        toast.error("Failed to load product orders");
+      }
+      if (domainError) {
+        console.error("Error loading domain orders:", domainError);
+        toast.error("Failed to load domain orders");
+      }
+
+      console.log('Product orders loaded:', productOrders?.length || 0);
+      console.log('Domain orders loaded:', domainOrders?.length || 0);
 
       const allOrders: Order[] = [
         ...(productOrders || []).map(order => ({
@@ -282,9 +298,11 @@ export default function Account() {
       }))
       ];
 
+      console.log('Total orders:', allOrders.length);
       setOrders(sortOrders(allOrders, sortBy));
     } catch (error) {
       console.error("Error loading orders:", error);
+      toast.error("Failed to load orders");
     }
   };
 

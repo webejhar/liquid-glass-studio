@@ -5,9 +5,11 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, ShoppingBag, Calendar, Mail } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
   const { isLoading } = useAdminAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalOrders: 0,
@@ -47,10 +49,10 @@ const AdminDashboard = () => {
   }
 
   const statCards = [
-    { title: "Total Users", value: stats.totalUsers, icon: Users, color: "text-blue-500" },
-    { title: "Total Orders", value: stats.totalOrders, icon: ShoppingBag, color: "text-green-500" },
-    { title: "Total Bookings", value: stats.totalBookings, icon: Calendar, color: "text-purple-500" },
-    { title: "Total Contacts", value: stats.totalContacts, icon: Mail, color: "text-orange-500" },
+    { title: "Total Users", value: stats.totalUsers, icon: Users, color: "text-blue-500", path: "/admin/users" },
+    { title: "Total Orders", value: stats.totalOrders, icon: ShoppingBag, color: "text-green-500", path: "/admin/orders" },
+    { title: "Total Bookings", value: stats.totalBookings, icon: Calendar, color: "text-purple-500", path: "/admin/meetings" },
+    { title: "Total Contacts", value: stats.totalContacts, icon: Mail, color: "text-orange-500", path: "/admin/contacts" },
   ];
 
   return (
@@ -71,7 +73,10 @@ const AdminDashboard = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="backdrop-blur-xl bg-background/60 border-border/50">
+                <Card 
+                  className="backdrop-blur-xl bg-background/60 border-border/50 cursor-pointer hover:bg-background/80 transition-colors"
+                  onClick={() => navigate(stat.path)}
+                >
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
                     <Icon className={`w-4 h-4 ${stat.color}`} />
