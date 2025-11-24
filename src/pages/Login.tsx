@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSessionTracking } from "@/hooks/useSessionTracking";
+import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -148,6 +149,15 @@ export default function Login() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.8 }}
+            className="mt-6"
+          >
+            <SocialLoginButtons />
+          </motion.div>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.9 }}
             className="mt-6 text-center"
           >
             <p className="text-muted-foreground">

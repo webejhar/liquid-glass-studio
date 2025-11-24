@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
 import { useNavigate } from "react-router-dom";
+import { PaymentConfirmationDialog } from "@/components/PaymentConfirmationDialog";
 
 interface CartCheckoutModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const CartCheckoutModal = ({ isOpen, onClose }: CartCheckoutModalProps) =
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<'binance' | 'bkash'>('binance');
   const navigate = useNavigate();
@@ -60,12 +62,16 @@ export const CartCheckoutModal = ({ isOpen, onClose }: CartCheckoutModalProps) =
     toast.success("Copied to clipboard!");
   };
 
-  const handleBinanceSubmit = async () => {
+  const handleBinanceSubmit = () => {
     if (!binanceId.trim() || !email.trim()) {
       toast.error("Please fill in all required fields");
       return;
     }
+    setShowPaymentConfirm(true);
+  };
 
+  const completeBinancePayment = async () => {
+    setShowPaymentConfirm(false);
     setIsSubmitting(true);
     try {
       // Get current user
@@ -125,12 +131,16 @@ export const CartCheckoutModal = ({ isOpen, onClose }: CartCheckoutModalProps) =
     }
   };
 
-  const handleBkashSubmit = async () => {
+  const handleBkashSubmit = () => {
     if (!bkashTrxId.trim() || !email.trim()) {
       toast.error("Please fill in all required fields");
       return;
     }
+    setShowPaymentConfirm(true);
+  };
 
+  const completeBkashPayment = async () => {
+    setShowPaymentConfirm(false);
     setIsSubmitting(true);
     try {
       // Get current user
@@ -205,8 +215,15 @@ export const CartCheckoutModal = ({ isOpen, onClose }: CartCheckoutModalProps) =
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-premium max-w-md max-h-[90vh] overflow-y-auto mx-4">
+    <>
+      <PaymentConfirmationDialog
+        isOpen={showPaymentConfirm}
+        onConfirm={selectedPayment === 'binance' ? completeBinancePayment : completeBkashPayment}
+        onCancel={() => setShowPaymentConfirm(false)}
+      />
+      
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="glass-premium max-w-md max-h-[90vh] overflow-y-auto mx-4">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl text-glow">
             Complete Your Purchase
@@ -360,5 +377,6 @@ export const CartCheckoutModal = ({ isOpen, onClose }: CartCheckoutModalProps) =
         </Tabs>
       </DialogContent>
     </Dialog>
+    </>
   );
 };

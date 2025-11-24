@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell } from "lucide-react";
+import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -76,7 +76,7 @@ interface Order {
 
 export default function Account() {
   const navigate = useNavigate();
-  const { cart, clearCart } = useCart();
+  const { cart, clearCart, addToCart, removeFromCart } = useCart();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -373,6 +373,22 @@ export default function Account() {
       console.error("Error removing favorite:", error);
       toast.error("Failed to remove favorite");
     }
+  };
+
+  const handleAddToCartFromFavorites = (favorite: any) => {
+    addToCart({
+      id: favorite.product_id,
+      name: favorite.product_name,
+      price: favorite.product_price,
+      category: favorite.product_category,
+      description: favorite.product_description
+    });
+    toast.success(`${favorite.product_name} added to cart!`);
+  };
+
+  const handleRemoveFromCart = (itemId: number) => {
+    removeFromCart(itemId);
+    toast.success("Item removed from cart");
   };
 
   const sortOrders = (ordersList: Order[], sortType: string) => {
@@ -976,8 +992,16 @@ export default function Account() {
                           <h3 className="font-semibold text-sm sm:text-base truncate">{item.name}</h3>
                           <p className="text-xs sm:text-sm text-muted-foreground truncate">{item.category}</p>
                         </div>
-                        <div className="text-right shrink-0">
+                        <div className="flex items-center gap-2 shrink-0">
                           <p className="font-bold text-primary text-sm sm:text-base">${item.price}</p>
+                          <Button
+                            onClick={() => handleRemoveFromCart(item.id)}
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-500 hover:text-red-600 h-8 w-8"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -1140,17 +1164,28 @@ export default function Account() {
                         <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-2">
                           {favorite.product_description}
                         </p>
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-lg sm:text-xl font-bold text-primary">
-                            ${favorite.product_price}
-                          </span>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg sm:text-xl font-bold text-primary">
+                              ${favorite.product_price}
+                            </span>
+                            <Button
+                              onClick={() => handleRemoveFavorite(favorite.product_id)}
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-500 hover:text-red-600 shrink-0 h-8 w-8"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
                           <Button
-                            onClick={() => handleRemoveFavorite(favorite.product_id)}
-                            variant="ghost"
-                            size="icon"
-                            className="text-red-500 hover:text-red-600 shrink-0 h-8 w-8 sm:h-9 sm:w-9"
+                            onClick={() => handleAddToCartFromFavorites(favorite)}
+                            variant="liquid"
+                            size="sm"
+                            className="w-full text-xs sm:text-sm"
                           >
-                            <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
+                            <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                            Add to Cart
                           </Button>
                         </div>
                       </motion.div>

@@ -31,6 +31,7 @@ export default function Shop() {
   const [sortBy, setSortBy] = useState<"name" | "price-low" | "price-high">("name");
   const [searchQuery, setSearchQuery] = useState("");
   const [displayCount, setDisplayCount] = useState(15); // 3 rows × 5 items = 15
+  const [mobileDisplayCount, setMobileDisplayCount] = useState(4); // Start with 4 on mobile
   const [isMobile, setIsMobile] = useState(false);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -87,8 +88,8 @@ export default function Shop() {
     return a.name.localeCompare(b.name);
   });
 
-  // Paginated products - limit to 4 on mobile, use displayCount on desktop
-  const displayedProducts = sortedProducts.slice(0, isMobile ? 4 : displayCount);
+  // Paginated products - use mobileDisplayCount on mobile, displayCount on desktop
+  const displayedProducts = sortedProducts.slice(0, isMobile ? mobileDisplayCount : displayCount);
 
   const handleAddToCart = (product: typeof products[0]) => {
     addToCart(product);
@@ -147,6 +148,10 @@ export default function Shop() {
 
   const loadMore = () => {
     setDisplayCount(prev => prev + 15); // Load 3 more rows (3 rows × 5 items = 15)
+  };
+
+  const loadMoreMobile = () => {
+    setMobileDisplayCount(prev => prev + 8); // Load 8 more products on mobile
   };
 
   return (
@@ -279,11 +284,19 @@ export default function Shop() {
           </div>
         )}
         
-        {/* Mobile View All Link */}
-        {isMobile && sortedProducts.length > 4 && (
+        {/* Mobile "See Product" Button */}
+        {isMobile && mobileDisplayCount < sortedProducts.length && (
           <div className="mt-8 text-center">
-            <p className="text-muted-foreground text-sm">
-              Showing 4 of {sortedProducts.length} products. Switch to desktop view to see all products.
+            <Button
+              onClick={loadMoreMobile}
+              variant="hero"
+              size="lg"
+              className="px-12"
+            >
+              See Product
+            </Button>
+            <p className="text-muted-foreground text-sm mt-4">
+              Showing {mobileDisplayCount} of {sortedProducts.length} products
             </p>
           </div>
         )}
