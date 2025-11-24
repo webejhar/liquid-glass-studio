@@ -34,6 +34,46 @@ const AdminOrders = () => {
     fetchOrders();
   }, []);
 
+  // Realtime subscriptions for orders
+  useEffect(() => {
+    // Subscribe to product orders changes
+    const productOrdersChannel = supabase
+      .channel('admin-product-orders-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'product_orders'
+        },
+        () => {
+          fetchOrders();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to domain orders changes
+    const domainOrdersChannel = supabase
+      .channel('admin-domain-orders-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'domain_orders'
+        },
+        () => {
+          fetchOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(productOrdersChannel);
+      supabase.removeChannel(domainOrdersChannel);
+    };
+  }, []);
+
   const fetchOrders = async () => {
     try {
       const [products, domains] = await Promise.all([

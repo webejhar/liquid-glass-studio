@@ -106,13 +106,16 @@ export const ProductPurchaseModal = ({ isOpen, onClose, product }: ProductPurcha
 
       if (emailError) console.error("Email error:", emailError);
 
+      toast.success("Order placed successfully!");
       setShowConfirmation(true);
       setTimeout(() => {
         onClose();
         setShowConfirmation(false);
         setBinanceId("");
         setEmail("");
-      }, 3000);
+        // Trigger a page reload to refresh orders
+        window.location.reload();
+      }, 2000);
     } catch (error: any) {
       console.error("Purchase error:", error);
       toast.error("Failed to process order. Please try again.");
@@ -161,13 +164,16 @@ export const ProductPurchaseModal = ({ isOpen, onClose, product }: ProductPurcha
 
       if (emailError) console.error("Email error:", emailError);
 
+      toast.success("Order placed successfully!");
       setShowConfirmation(true);
       setTimeout(() => {
         onClose();
         setShowConfirmation(false);
         setBkashTrxId("");
         setEmail("");
-      }, 3000);
+        // Trigger a page reload to refresh orders
+        window.location.reload();
+      }, 2000);
     } catch (error: any) {
       console.error("Purchase error:", error);
       toast.error("Failed to process order. Please try again.");
