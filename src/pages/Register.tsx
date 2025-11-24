@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { EmailVerificationDialog } from "@/components/EmailVerificationDialog";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
+import { CaptchaSlider } from "@/components/CaptchaSlider";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
+  const [captchaVerified, setCaptchaVerified] = useState(false);
 
   const getPasswordStrength = (password: string) => {
     if (password.length === 0) return { strength: "", color: "" };
@@ -159,6 +161,15 @@ export default function Register() {
             Create your account to get started
           </motion.p>
 
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.35 }}
+            className="mb-6"
+          >
+            <SocialLoginButtons />
+          </motion.div>
+
           <form onSubmit={handleRegister} className="space-y-6">
             <motion.div
               initial={{ x: -20, opacity: 0 }}
@@ -273,25 +284,24 @@ export default function Register() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.8 }}
             >
+              <CaptchaSlider onVerified={setCaptchaVerified} />
+            </motion.div>
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.9 }}
+            >
               <Button
                 type="submit"
                 variant="liquid"
                 className="w-full"
-                disabled={isLoading}
+                disabled={isLoading || !captchaVerified}
               >
                 {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </motion.div>
           </form>
-
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.9 }}
-            className="mt-6"
-          >
-            <SocialLoginButtons />
-          </motion.div>
 
           <motion.div
             initial={{ y: 20, opacity: 0 }}

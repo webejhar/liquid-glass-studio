@@ -98,6 +98,9 @@ export default function Account() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [isRefreshingOrders, setIsRefreshingOrders] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   
   useSessionTracking();
 
@@ -646,9 +649,49 @@ export default function Account() {
       toast.success("Verification request submitted! We'll review it shortly.");
       await loadProfile(user.id);
     } catch (error: any) {
-      toast.error(error.message || "Failed to submit verification");
+      toast.error(error.message || "Failed to submit verification request");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deleteReason.trim()) {
+      toast.error("Please provide a reason for deleting your account");
+      return;
+    }
+
+    setShowDeleteDialog(false);
+    setShowDeleteConfirmation(true);
+  };
+
+  const confirmDeleteAccount = async () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      // Delete user's data from profiles table
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (profileError) throw profileError;
+
+      // Delete the user account
+      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
+      
+      if (authError) throw authError;
+
+      toast.success("Account deleted successfully");
+      await supabase.auth.signOut();
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete account");
+    } finally {
+      setIsLoading(false);
+      setShowDeleteConfirmation(false);
+      setDeleteReason("");
     }
   };
 
@@ -958,6 +1001,23 @@ export default function Account() {
                       className="text-sm sm:text-base w-full sm:w-auto"
                     >
                       Cancel
+                    </Button>
+                  </div>
+                )}
+
+                {/* Delete Account Section */}
+                {!isEditing && (
+                  <div className="mt-8 pt-8 border-t border-border/20">
+                    <h3 className="text-lg font-semibold mb-2 text-red-400">Danger Zone</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Once you delete your account, there is no going back. Please be certain.
+                    </p>
+                    <Button
+                      onClick={() => setShowDeleteDialog(true)}
+                      variant="destructive"
+                      className="text-sm"
+                    >
+                      Delete Account
                     </Button>
                   </div>
                 )}
@@ -1366,6 +1426,82 @@ export default function Account() {
           </Button>
         </a>
       </div>
+
+      {/* Delete Account Reason Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="glass-premium">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Delete Account</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              We're sorry to see you go. Please tell us why you want to delete your account.
+            </p>
+            <Textarea
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+              placeholder="Enter your reason here..."
+              rows={4}
+              className="resize-none"
+            />
+            <div className="flex gap-3">
+              <Button
+                onClick={handleDeleteAccount}
+                variant="destructive"
+                className="flex-1"
+                disabled={!deleteReason.trim()}
+              >
+                Delete
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowDeleteDialog(false);
+                  setDeleteReason("");
+                }}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
+        <DialogContent className="glass-premium">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-red-400">Are you sure?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              This action cannot be undone. Your account and all associated data will be permanently deleted.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                onClick={confirmDeleteAccount}
+                variant="destructive"
+                className="flex-1"
+                disabled={isLoading}
+              >
+                {isLoading ? "Deleting..." : "Yes, Delete"}
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowDeleteConfirmation(false);
+                  setDeleteReason("");
+                }}
+                variant="outline"
+                className="flex-1"
+                disabled={isLoading}
+              >
+                No, Keep Account
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
