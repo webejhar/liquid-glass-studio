@@ -76,17 +76,32 @@ const AdminOrders = () => {
 
   const fetchOrders = async () => {
     try {
+      console.log('Admin: Fetching all orders...');
+      
       const [products, domains] = await Promise.all([
         supabase.from("product_orders").select("*").order("created_at", { ascending: false }),
         supabase.from("domain_orders").select("*").order("created_at", { ascending: false }),
       ]);
 
+      if (products.error) {
+        console.error('Error fetching product orders:', products.error);
+        throw products.error;
+      }
+      if (domains.error) {
+        console.error('Error fetching domain orders:', domains.error);
+        throw domains.error;
+      }
+
+      console.log('Admin: Product orders loaded:', products.data?.length || 0);
+      console.log('Admin: Domain orders loaded:', domains.data?.length || 0);
+
       setProductOrders(products.data || []);
       setDomainOrders(domains.data || []);
     } catch (error: any) {
+      console.error('Admin: Error fetching orders:', error);
       toast({
         title: "Error fetching orders",
-        description: error.message,
+        description: error.message || "Failed to load orders. Please check your admin permissions.",
         variant: "destructive",
       });
     }

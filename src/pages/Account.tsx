@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw } from "lucide-react";
+import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,7 @@ import { ImageCropper } from "@/components/ImageCropper";
 import { VerificationModal } from "@/components/VerificationModal";
 import { SessionManager } from "@/components/SessionManager";
 import { useSessionTracking } from "@/hooks/useSessionTracking";
+import { NotificationsList } from "@/components/NotificationsList";
 
 const professions = [
   "Developer",
@@ -261,11 +262,9 @@ export default function Account() {
 
       if (productError) {
         console.error("Error loading product orders:", productError);
-        toast.error("Failed to load product orders");
       }
       if (domainError) {
         console.error("Error loading domain orders:", domainError);
-        toast.error("Failed to load domain orders");
       }
 
       console.log('Product orders loaded:', productOrders?.length || 0);
@@ -304,9 +303,13 @@ export default function Account() {
 
       console.log('Total orders:', allOrders.length);
       setOrders(sortOrders(allOrders, sortBy));
+      
+      if (allOrders.length === 0) {
+        console.log('No orders found for this user');
+      }
     } catch (error) {
       console.error("Error loading orders:", error);
-      toast.error("Failed to load orders");
+      toast.error("Failed to load orders. Please try refreshing.");
     }
   };
 
@@ -682,7 +685,7 @@ export default function Account() {
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8 text-glow">My Account</h1>
 
           <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-5 gap-1">
+            <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-3 sm:grid-cols-6 gap-1">
               <TabsTrigger value="profile" className="gap-1 sm:gap-2 text-xs sm:text-sm">
                 <User className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Profile</span>
@@ -698,6 +701,10 @@ export default function Account() {
               <TabsTrigger value="favorites" className="gap-1 sm:gap-2 text-xs sm:text-sm">
                 <Heart className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Fav</span> ({favorites.length})
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Bell className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">Notify</span>
               </TabsTrigger>
               <TabsTrigger value="sessions" className="gap-1 sm:gap-2 text-xs sm:text-sm">
                 <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -1131,6 +1138,18 @@ export default function Account() {
                     ))}
                   </div>
                 )}
+              </motion.div>
+            </TabsContent>
+
+            {/* Notifications Tab */}
+            <TabsContent value="notifications">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="glass-premium p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl"
+              >
+                <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Notifications</h2>
+                <NotificationsList />
               </motion.div>
             </TabsContent>
 
