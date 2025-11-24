@@ -52,30 +52,38 @@ export default function Contact() {
 
       if (dbError) {
         console.error('Database error:', dbError);
+        toast.error(`Database error: ${dbError.message}`);
         throw dbError;
       }
 
       console.log('Contact saved successfully:', insertedData);
 
       // Send email notification
-      const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
-        body: data
-      });
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
+          body: data
+        });
 
-      if (emailError) {
-        console.error("Email error:", emailError);
-        // Don't throw - contact was saved
+        if (emailError) {
+          console.error("Email error:", emailError);
+          // Don't throw - contact was saved, email is secondary
+          toast.success("Message received! (Email notification pending)");
+        } else {
+          toast.success("Thank you! We'll get back to you soon.");
+        }
+      } catch (emailErr) {
+        console.error("Email function error:", emailErr);
+        // Contact was still saved successfully
+        toast.success("Message received!");
       }
-
-      toast.success("Thank you! We'll get back to you soon.");
       
-      // Redirect to home after 1 second
+      // Redirect to home after 1.5 seconds
       setTimeout(() => {
         navigate('/');
-      }, 1000);
+      }, 1500);
     } catch (error: any) {
       console.error("Error submitting contact form:", error);
-      toast.error("Sorry, something went wrong. Please try again.");
+      toast.error(`Failed to send message: ${error.message || 'Please try again'}`);
     } finally {
       setIsSubmitting(false);
     }
