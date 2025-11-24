@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface EmailVerificationDialogProps {
   isOpen: boolean;
@@ -21,6 +21,27 @@ export const EmailVerificationDialog = ({
   isLoading
 }: EmailVerificationDialogProps) => {
   const [code, setCode] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (isOpen && resendCooldown === 0) {
+      setResendCooldown(30);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => {
+        setResendCooldown(resendCooldown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+
+  const handleResend = () => {
+    onResend();
+    setResendCooldown(30);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,10 +92,10 @@ export const EmailVerificationDialog = ({
               type="button"
               variant="ghost"
               className="w-full"
-              onClick={onResend}
-              disabled={isLoading}
+              onClick={handleResend}
+              disabled={isLoading || resendCooldown > 0}
             >
-              Resend Code
+              {resendCooldown > 0 ? `Resend Code (${resendCooldown}s)` : "Resend Code"}
             </Button>
           </form>
         </div>
