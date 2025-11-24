@@ -44,6 +44,12 @@ export const Footer = () => {
             </p>
           </div>
           <div className="text-right space-y-2">
+            <Link
+              to="/image-generator"
+              className="text-muted-foreground hover:text-primary transition text-sm underline-offset-4 hover:underline block ml-auto"
+            >
+              Image Generator
+            </Link>
             <button
               onClick={() => setShowAdminDialog(true)}
               className="text-muted-foreground hover:text-primary transition text-sm underline-offset-4 hover:underline block ml-auto"
@@ -68,6 +74,12 @@ export const Footer = () => {
             <p className="text-muted-foreground mb-2">
               Creative Digital Designer & Developer
             </p>
+            <Link
+              to="/image-generator"
+              className="text-muted-foreground hover:text-primary transition text-sm underline-offset-4 hover:underline block mb-2"
+            >
+              Image Generator
+            </Link>
             <button
               onClick={() => setShowAdminDialog(true)}
               className="text-muted-foreground hover:text-primary transition text-sm underline-offset-4 hover:underline"
