@@ -386,6 +386,33 @@ export type Database = {
         }
         Relationships: []
       }
+      temp_images: {
+        Row: {
+          bucket_name: string
+          created_at: string
+          expires_at: string
+          file_path: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          bucket_name?: string
+          created_at?: string
+          expires_at?: string
+          file_path: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          bucket_name?: string
+          created_at?: string
+          expires_at?: string
+          file_path?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_notifications: {
         Row: {
           created_at: string | null
