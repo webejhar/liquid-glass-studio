@@ -30,3 +30,6 @@ verify_jwt = false
 [functions.admin-change-password]
 verify_jwt = true
 
+[functions.generate-image]
+verify_jwt = false
+
