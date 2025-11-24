@@ -43,8 +43,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: "/admin/orders", label: "Orders", icon: ShoppingBag },
     { path: "/admin/meetings", label: "Meetings", icon: Calendar },
     { path: "/admin/verification", label: "Verification", icon: CheckSquare },
-    { path: "/admin/roles", label: "Roles", icon: Shield },
     { path: "/admin/contacts", label: "Contacts", icon: Mail },
+    { path: "/admin/roles", label: "Roles", icon: Shield },
   ];
 
   return (

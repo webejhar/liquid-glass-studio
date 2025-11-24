@@ -59,18 +59,46 @@ const AdminContacts = () => {
 
   useEffect(() => {
     fetchContacts();
+
+    // Real-time subscription for new contacts
+    const channel = supabase
+      .channel('admin-contacts-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'contacts'
+        },
+        (payload) => {
+          console.log('Contact change detected:', payload);
+          fetchContacts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchContacts = async () => {
     try {
+      console.log('Fetching contacts...');
       const { data, error } = await supabase
         .from("contacts")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching contacts:', error);
+        throw error;
+      }
+
+      console.log('Contacts fetched:', data?.length || 0);
       setContacts(data || []);
     } catch (error: any) {
+      console.error('Failed to fetch contacts:', error);
       toast({
         title: "Error fetching contacts",
         description: error.message,
@@ -172,7 +200,14 @@ const AdminContacts = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {contacts.map((contact) => (
+                {contacts.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      No contact messages yet
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  contacts.map((contact) => (
                   <TableRow key={contact.id}>
                     <TableCell className="font-medium">{contact.name}</TableCell>
                     <TableCell>{contact.email}</TableCell>
@@ -216,7 +251,8 @@ const AdminContacts = () => {
                       </Button>
                     </TableCell>
                   </TableRow>
-                ))}
+                  ))
+                )}
               </TableBody>
             </Table>
             </div>

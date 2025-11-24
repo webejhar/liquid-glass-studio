@@ -30,8 +30,10 @@ export default function Contact() {
     };
 
     try {
+      console.log('Submitting contact form...', data);
+      
       // Save to database
-      const { error: dbError } = await supabase
+      const { data: insertedData, error: dbError } = await supabase
         .from('contacts')
         .insert({
           name: data.name,
@@ -45,9 +47,15 @@ export default function Contact() {
           behance_url: data.behanceUrl,
           website_url: data.websiteUrl,
           category: data.category,
-        });
+        })
+        .select();
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error('Database error:', dbError);
+        throw dbError;
+      }
+
+      console.log('Contact saved successfully:', insertedData);
 
       // Send email notification
       const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
