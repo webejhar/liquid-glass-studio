@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
 import { ImageCropper } from "@/components/ImageCropper";
 import { VerificationModal } from "@/components/VerificationModal";
+import { SessionManager } from "@/components/SessionManager";
+import { useSessionTracking } from "@/hooks/useSessionTracking";
 
 const professions = [
   "Developer",
@@ -95,6 +97,8 @@ export default function Account() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [isRefreshingOrders, setIsRefreshingOrders] = useState(false);
+  
+  useSessionTracking();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -678,7 +682,7 @@ export default function Account() {
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8 text-glow">My Account</h1>
 
           <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-4 gap-1">
+            <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-5 gap-1">
               <TabsTrigger value="profile" className="gap-1 sm:gap-2 text-xs sm:text-sm">
                 <User className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Profile</span>
@@ -694,6 +698,10 @@ export default function Account() {
               <TabsTrigger value="favorites" className="gap-1 sm:gap-2 text-xs sm:text-sm">
                 <Heart className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Fav</span> ({favorites.length})
+              </TabsTrigger>
+              <TabsTrigger value="sessions" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">Sessions</span>
               </TabsTrigger>
             </TabsList>
 
@@ -1123,6 +1131,17 @@ export default function Account() {
                     ))}
                   </div>
                 )}
+              </motion.div>
+            </TabsContent>
+
+            {/* Sessions Tab */}
+            <TabsContent value="sessions">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-6"
+              >
+                <SessionManager />
               </motion.div>
             </TabsContent>
           </Tabs>
