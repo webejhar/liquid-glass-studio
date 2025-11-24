@@ -241,20 +241,29 @@ const AdminVerification = () => {
 
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-2">NID Document</p>
+                  <p className="text-sm text-muted-foreground mb-2">NID Documents</p>
                   {selectedVerification.nid_url ? (
-                    <a 
-                      href={selectedVerification.nid_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="block"
-                    >
-                      <img 
-                        src={selectedVerification.nid_url} 
-                        alt="NID" 
-                        className="max-w-full h-auto rounded-lg border border-border/50 hover:opacity-80 transition-opacity"
-                      />
-                    </a>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {selectedVerification.nid_url.split('|').map((url, index) => (
+                        <div key={index}>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            {index === 0 ? 'Front Side' : 'Back Side'}
+                          </p>
+                          <a 
+                            href={url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="block"
+                          >
+                            <img 
+                              src={url} 
+                              alt={`NID ${index === 0 ? 'Front' : 'Back'}`} 
+                              className="max-w-full h-auto rounded-lg border border-border/50 hover:opacity-80 transition-opacity"
+                            />
+                          </a>
+                        </div>
+                      ))}
+                    </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">No NID uploaded</p>
                   )}
