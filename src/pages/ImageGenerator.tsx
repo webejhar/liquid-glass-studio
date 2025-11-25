@@ -42,12 +42,6 @@ export default function ImageGenerator() {
   const [dressPrompt, setDressPrompt] = useState("");
   const [isChangingDress, setIsChangingDress] = useState(false);
 
-  // Enhancement feature
-  const [enhancingIndex, setEnhancingIndex] = useState<number | null>(null);
-  const [selectedResolution, setSelectedResolution] = useState<'HD' | '2K' | '4K'>('HD');
-  const [faceClean, setFaceClean] = useState(false);
-  const [showEnhanceDialog, setShowEnhanceDialog] = useState<number | null>(null);
-
   const generateImages = async () => {
     if (!prompt.trim()) {
       toast.error("Please enter a prompt");
@@ -323,36 +317,6 @@ export default function ImageGenerator() {
     }
   };
 
-  const enhanceImage = async (imageUrl: string, index: number) => {
-    try {
-      setEnhancingIndex(index);
-      toast.info(`Enhancing to ${selectedResolution}...`);
-
-      const { data, error } = await supabase.functions.invoke('enhance-image', {
-        body: {
-          imageUrl,
-          resolution: selectedResolution,
-          faceClean
-        }
-      });
-
-      if (error) throw error;
-
-      if (data?.imageUrl) {
-        const updatedImages = [...images];
-        updatedImages[index] = { ...updatedImages[index], url: data.imageUrl };
-        setImages(updatedImages);
-        toast.success(`Image enhanced to ${selectedResolution}!`);
-        setShowEnhanceDialog(null);
-      }
-    } catch (error: any) {
-      console.error('Enhancement error:', error);
-      toast.error(error.message || 'Failed to enhance image');
-    } finally {
-      setEnhancingIndex(null);
-    }
-  };
-
   return (
     <div className="min-h-screen pt-8 px-4 pb-20">
       <div className="max-w-7xl mx-auto">
@@ -413,14 +377,6 @@ export default function ImageGenerator() {
           >
             <Shirt className="w-5 h-5" />
             <span>Change Dress</span>
-          </Button>
-          <Button
-            onClick={() => navigate('/image-enhancer')}
-            variant="outline"
-            className="glass-button py-6 flex items-center gap-3"
-          >
-            <Sparkles className="w-5 h-5" />
-            <span>Image Enhancer</span>
           </Button>
         </motion.div>
 
@@ -492,29 +448,12 @@ export default function ImageGenerator() {
                     <Button
                       size="icon"
                       variant="secondary"
-                      onClick={() => setShowEnhanceDialog(index)}
-                      className="glass-button"
-                      disabled={enhancingIndex === index}
-                    >
-                      <Sparkles className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="secondary"
                       onClick={() => downloadImage(image.url, index)}
                       className="glass-button"
                     >
                       <Download className="w-4 h-4" />
                     </Button>
                   </div>
-                  {enhancingIndex === index && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg">
-                      <div className="text-center">
-                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-                        <p className="text-sm">Enhancing...</p>
-                      </div>
-                    </div>
-                  )}
                 </div>
                 <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
                   {image.prompt}
@@ -726,70 +665,6 @@ export default function ImageGenerator() {
                   Cancel
                 </Button>
               </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Enhancement Dialog */}
-        <Dialog open={showEnhanceDialog !== null} onOpenChange={(open) => !open && setShowEnhanceDialog(null)}>
-          <DialogContent className="glass-premium max-w-md">
-            <DialogHeader>
-              <DialogTitle>Enhance Image Quality</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label className="block mb-3">Select Resolution</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['HD', '2K', '4K'] as const).map((res) => (
-                    <Button
-                      key={res}
-                      variant={selectedResolution === res ? 'default' : 'outline'}
-                      onClick={() => setSelectedResolution(res)}
-                      className="glass-button"
-                    >
-                      {res}
-                    </Button>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {selectedResolution === 'HD' && 'HD: 1920x1080 crystal clear quality'}
-                  {selectedResolution === '2K' && '2K: 2560x1440 exceptional sharpness'}
-                  {selectedResolution === '4K' && '4K: 3840x2160 ultra-high definition'}
-                </p>
-              </div>
-              <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/50">
-                <div>
-                  <Label className="font-medium">Face Clean</Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Remove blemishes while preserving facial structure
-                  </p>
-                </div>
-                <Button
-                  variant={faceClean ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFaceClean(!faceClean)}
-                  className="ml-3"
-                >
-                  {faceClean ? 'ON' : 'OFF'}
-                </Button>
-              </div>
-              <Button
-                onClick={() => showEnhanceDialog !== null && enhanceImage(images[showEnhanceDialog].url, showEnhanceDialog)}
-                disabled={enhancingIndex !== null}
-                className="w-full glass-button"
-              >
-                {enhancingIndex !== null ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Enhancing to {selectedResolution}...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Enhance to {selectedResolution}
-                  </>
-                )}
-              </Button>
             </div>
           </DialogContent>
         </Dialog>
