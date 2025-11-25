@@ -1,306 +1,309 @@
-import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { ShoppingCart, Search, Heart } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCart } from "@/contexts/CartContext";
+import { motion } from "framer-motion";
+import { Search, Heart, ShoppingCart } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { PluginDetailsModal } from "@/components/PluginDetailsModal";
+import { ProductPurchaseModal } from "@/components/ProductPurchaseModal";
+import elementorImage from "@/assets/elementor-pro.png";
+import dokanImage from "@/assets/dokan-pro.png";
 import { useNavigate } from "react-router-dom";
 
-const products = [
-  ...Array(20).fill(null).map((_, i) => ({
-    id: i + 1,
-    name: `Premium Elementor Plugin ${i + 1}`,
-    price: 29 + (i * 5),
+// Plugin products data
+const plugins = [
+  {
+    id: 1,
+    name: "Elementor Pro",
+    price: 59,
     category: "Plugin",
-    description: "Advanced features for Elementor Pro",
-  })),
-  ...Array(20).fill(null).map((_, i) => ({
-    id: i + 21,
-    name: `Premium Theme ${i + 1}`,
-    price: 49 + (i * 10),
-    category: "Theme",
-    description: "Beautiful WordPress theme",
-  })),
+    description: "The most advanced WordPress website builder. Create high-end, pixel perfect websites at record speeds. Any theme, any page, any design.",
+    image: elementorImage,
+    version: "3.25.0",
+    features: [
+      "90+ Professional Widgets - Form Widget, Slider Widget, WooCommerce Builder, and more",
+      "Theme Builder - Design your entire WordPress theme visually including headers, footers, single posts, archives",
+      "WooCommerce Builder - Create custom product pages, shop pages, and checkout pages",
+      "Popup Builder - Design custom popups for any marketing campaign or engagement",
+      "Dynamic Content - Display custom fields, post information, and site data anywhere",
+      "Global Widgets - Save and reuse widgets across your entire website",
+      "Motion Effects - Add parallax scrolling, mouse effects, and advanced animations",
+      "Custom CSS - Add custom CSS to any element for full design control",
+      "Role Manager - Control access to features based on user roles"
+    ],
+    benefits: [
+      "Save Time - Build websites 10x faster with drag and drop editing",
+      "No Coding Required - Visual design means anyone can build professional sites",
+      "Mobile Responsive - All designs automatically work perfectly on mobile devices",
+      "SEO Friendly - Clean code and fast loading times improve search rankings",
+      "Regular Updates - Constant new features and improvements added monthly",
+      "World-Class Support - Access to expert support team and extensive documentation",
+      "Unlimited Websites - Use on as many sites as you need with one license"
+    ],
+    requirements: [
+      "WordPress 6.0 or higher",
+      "PHP 7.4 or higher (8.0+ recommended)",
+      "MySQL 5.6 or higher",
+      "At least 128MB of memory allocated to PHP",
+      "Modern web browser (Chrome, Firefox, Safari, Edge)"
+    ]
+  },
+  {
+    id: 2,
+    name: "Dokan Pro",
+    price: 149,
+    category: "Plugin",
+    description: "Transform your WordPress site into a fully-featured multi-vendor marketplace. Empower vendors to run their own stores while you earn commission on every sale.",
+    image: dokanImage,
+    version: "3.12.0",
+    features: [
+      "Multi-Vendor Marketplace - Allow unlimited vendors to sell on your platform",
+      "Commission Management - Set global or per-vendor commission rates automatically",
+      "Vendor Dashboard - Complete storefront management for each vendor",
+      "Product Management - Vendors can add, edit, and manage their own products",
+      "Order Management - Vendors receive and process their own orders",
+      "Withdrawal System - Automated vendor payment withdrawals and requests",
+      "Coupon Management - Vendors can create their own discount coupons",
+      "Shipping Management - Multiple shipping methods and vendor-specific shipping",
+      "Review System - Customer reviews and ratings for products and vendors",
+      "Vendor Verification - Admin approval system for new vendor applications",
+      "Reports & Analytics - Detailed sales reports and analytics for vendors",
+      "Frontend Vendor Registration - Easy vendor signup from the frontend"
+    ],
+    benefits: [
+      "Passive Income - Earn commission on every sale without managing inventory",
+      "Scalable Platform - Grow from 10 to 10,000 vendors seamlessly",
+      "Automated Operations - Vendors manage their own products, orders, and customers",
+      "Multiple Revenue Streams - Commission, subscription fees, and featured listings",
+      "Vendor Independence - Each vendor has their own branded storefront",
+      "Built-in Trust - Review system and verification builds marketplace credibility",
+      "WooCommerce Integration - Leverages the power of WooCommerce ecosystem"
+    ],
+    requirements: [
+      "WordPress 6.0 or higher",
+      "WooCommerce 8.0 or higher",
+      "PHP 7.4 or higher (8.0+ recommended)",
+      "MySQL 5.6 or higher",
+      "At least 256MB of memory allocated to PHP",
+      "HTTPS/SSL certificate recommended for payment processing"
+    ]
+  }
 ];
 
 export default function Shop() {
-  const [selectedCategory, setSelectedCategory] = useState<"All" | "Plugin" | "Theme">("All");
-  const [sortBy, setSortBy] = useState<"name" | "price-low" | "price-high">("name");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [displayCount, setDisplayCount] = useState(15); // 3 rows × 5 items = 15
-  const [mobileDisplayCount, setMobileDisplayCount] = useState(4); // Start with 4 on mobile
-  const [isMobile, setIsMobile] = useState(false);
-  const [favorites, setFavorites] = useState<number[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
-  const { addToCart } = useCart();
+  const { toast } = useToast();
   const navigate = useNavigate();
+  const [selectedPlugin, setSelectedPlugin] = useState<any>(null);
+  const [purchasePlugin, setPurchasePlugin] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
 
-  // Detect mobile screen size
+  // Load user favorites
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Load user and favorites
-  useEffect(() => {
-    const loadFavorites = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUserId(user?.id || null);
-
-      if (user) {
-        const { data } = await supabase
-          .from('favorites')
-          .select('product_id')
-          .eq('user_id', user.id);
-
-        if (data) {
-          setFavorites(data.map(f => f.product_id));
-        }
-      }
-    };
-
     loadFavorites();
   }, []);
 
-  // Filter by category
-  const filteredByCategory = selectedCategory === "All" 
-    ? products 
-    : products.filter(p => p.category === selectedCategory);
+  const loadFavorites = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-  // Filter by search
-  const filteredProducts = filteredByCategory.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('product_id')
+      .eq('user_id', user.id);
 
-  // Sort products
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortBy === "price-low") return a.price - b.price;
-    if (sortBy === "price-high") return b.price - a.price;
-    return a.name.localeCompare(b.name);
-  });
-
-  // Paginated products - use mobileDisplayCount on mobile, displayCount on desktop
-  const displayedProducts = sortedProducts.slice(0, isMobile ? mobileDisplayCount : displayCount);
-
-  const handleAddToCart = (product: typeof products[0]) => {
-    addToCart(product);
-    toast.success(`${product.name} added to cart!`);
+    if (!error && data) {
+      setFavoriteIds(data.map(fav => fav.product_id));
+    }
   };
 
-  const handleToggleFavorite = async (product: typeof products[0]) => {
-    if (!userId) {
-      toast.error("Please login to add favorites");
+  // Filter plugins
+  const filteredPlugins = plugins.filter(plugin => {
+    const matchesSearch = plugin.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         plugin.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
+  });
+
+  const handlePurchase = (plugin: any) => {
+    setSelectedPlugin(null);
+    setPurchasePlugin(plugin);
+  };
+
+  const handleToggleFavorite = async (plugin: any) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please login to add favorites",
+        variant: "destructive",
+      });
       navigate("/login");
       return;
     }
 
-    const isFavorite = favorites.includes(product.id);
+    const isFavorite = favoriteIds.includes(plugin.id);
 
     try {
       if (isFavorite) {
-        // Remove from favorites
         const { error } = await supabase
           .from('favorites')
           .delete()
-          .eq('user_id', userId)
-          .eq('product_id', product.id);
+          .eq('user_id', user.id)
+          .eq('product_id', plugin.id);
 
         if (error) throw error;
-        setFavorites(favorites.filter(id => id !== product.id));
-        toast.success("Removed from favorites");
+        
+        setFavoriteIds(favoriteIds.filter(id => id !== plugin.id));
+        toast({
+          title: "Removed from favorites",
+        });
       } else {
-        // Add to favorites
         const { error } = await supabase
           .from('favorites')
           .insert({
-            user_id: userId,
-            product_id: product.id,
-            product_name: product.name,
-            product_price: product.price,
-            product_category: product.category,
-            product_description: product.description
+            user_id: user.id,
+            product_id: plugin.id,
+            product_name: plugin.name,
+            product_price: plugin.price,
+            product_category: plugin.category,
+            product_description: plugin.description
           });
 
-        if (error) {
-          if (error.code === '23505') {
-            toast.info("Already in favorites");
-            return;
-          }
-          throw error;
-        }
-        setFavorites([...favorites, product.id]);
-        toast.success("Added to favorites");
+        if (error) throw error;
+        
+        setFavoriteIds([...favoriteIds, plugin.id]);
+        toast({
+          title: "Added to favorites",
+        });
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
-      toast.error("Failed to update favorites");
+      toast({
+        title: "Error",
+        description: "Failed to update favorites",
+        variant: "destructive",
+      });
     }
-  };
-
-  const loadMore = () => {
-    setDisplayCount(prev => prev + 15); // Load 3 more rows (3 rows × 5 items = 15)
-  };
-
-  const loadMoreMobile = () => {
-    setMobileDisplayCount(prev => prev + 8); // Load 8 more products on mobile
   };
 
   return (
     <div className="min-h-screen pt-32 px-4 pb-20">
       <div className="max-w-7xl mx-auto">
-        <motion.h1
-          className="text-5xl font-bold mb-4 text-center"
+        {/* Header */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          className="mb-12"
         >
-          Premium <span className="text-primary">Shop</span>
-        </motion.h1>
-        <motion.p
-          className="text-center text-muted-foreground mb-12 text-lg"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          High-quality themes and plugins for WordPress
-        </motion.p>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Premium <span className="text-primary">Plugins</span>
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Professional WordPress plugins to power your business
+          </p>
+        </motion.div>
 
         {/* Search Bar */}
-        <div className="mb-8">
-          <div className="relative max-w-2xl mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
+        <div className="mb-12">
+          <div className="relative glass-card p-1 rounded-full max-w-2xl mx-auto">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+            <input
               type="text"
-              placeholder="Search products, themes, plugins..."
+              placeholder="Search plugins..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="glass-card pl-12 pr-4 py-6 text-lg"
+              className="w-full bg-transparent px-14 py-4 outline-none"
             />
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-12">
-          <div className="flex flex-wrap justify-center gap-4">
-            {["All", "Plugin", "Theme"].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat as any)}
-                className={`glass-card px-6 py-2 rounded-full transition ${
-                  selectedCategory === cat ? "bg-primary/20 border-primary" : ""
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Sort by:</span>
-            <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-              <SelectTrigger className="w-[180px] glass-card">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="price-low">Price: Low to High</SelectItem>
-                <SelectItem value="price-high">Price: High to Low</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
-          {displayedProducts.map((product, i) => (
+        {/* Plugins Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          {filteredPlugins.map((plugin, index) => (
             <motion.div
-              key={product.id}
-              className="glass-card rounded-xl sm:rounded-2xl overflow-hidden hover:scale-105 transition relative"
+              key={plugin.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
+              transition={{ delay: index * 0.1 }}
+              className="glass-card rounded-2xl overflow-hidden hover:scale-105 transition-transform cursor-pointer relative group"
+              onClick={() => setSelectedPlugin(plugin)}
             >
-              {/* Favorite Button */}
-              <button
-                onClick={() => handleToggleFavorite(product)}
-                className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 glass-button p-1.5 sm:p-2 rounded-full hover:scale-110 transition"
-              >
-                <Heart
-                  className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                    favorites.includes(product.id)
-                      ? "fill-red-500 text-red-500"
-                      : "text-foreground"
-                  }`}
+              <div className="relative h-64">
+                <img 
+                  src={plugin.image} 
+                  alt={plugin.name}
+                  className="w-full h-full object-cover"
                 />
-              </button>
-
-              <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                <span className="text-4xl sm:text-6xl font-bold opacity-50">
-                  {product.category === "Plugin" ? "P" : "T"}
-                </span>
+                
+                {/* Favorite Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleFavorite(plugin);
+                  }}
+                  className="absolute top-4 right-4 glass-button p-3 rounded-full hover:scale-110 transition z-10"
+                >
+                  <Heart
+                    className={`w-5 h-5 ${
+                      favoriteIds.includes(plugin.id)
+                        ? "fill-red-500 text-red-500"
+                        : "text-foreground"
+                    }`}
+                  />
+                </button>
               </div>
-              <div className="p-3 sm:p-4">
-                <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base truncate">{product.name}</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">
-                  {product.description}
+              
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-2xl font-bold">{plugin.name}</h3>
+                  <span className="text-3xl font-bold text-primary">${plugin.price}</span>
+                </div>
+                <p className="text-muted-foreground mb-4 line-clamp-2">
+                  {plugin.description}
                 </p>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
-                  <span className="text-xl sm:text-2xl font-bold text-primary">
-                    ${product.price}
-                  </span>
-                  <Button
-                    onClick={() => handleAddToCart(product)}
-                    variant="liquid"
-                    size="sm"
-                    className="w-full sm:w-auto text-xs sm:text-sm"
+                
+                <div className="flex gap-3">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePurchase(plugin);
+                    }}
+                    className="glass-button flex-1 px-6 py-3 rounded-lg hover:scale-105 transition flex items-center justify-center gap-2"
                   >
-                    <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">Add to Cart</span>
-                    <span className="sm:hidden">Add</span>
-                  </Button>
+                    <ShoppingCart className="w-5 h-5" />
+                    Buy Now
+                  </button>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Load More Button - hide on mobile */}
-        {!isMobile && displayCount < sortedProducts.length && (
-          <div className="mt-12 text-center">
-            <Button
-              onClick={loadMore}
-              variant="hero"
-              size="lg"
-              className="px-12"
-            >
-              See More Products
-            </Button>
-          </div>
-        )}
-        
-        {/* Mobile "See Product" Button */}
-        {isMobile && mobileDisplayCount < sortedProducts.length && (
-          <div className="mt-8 text-center">
-            <Button
-              onClick={loadMoreMobile}
-              variant="hero"
-              size="lg"
-              className="px-12"
-            >
-              See Product
-            </Button>
-            <p className="text-muted-foreground text-sm mt-4">
-              Showing {mobileDisplayCount} of {sortedProducts.length} products
-            </p>
+        {filteredPlugins.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground text-lg">No plugins found matching your search.</p>
           </div>
         )}
       </div>
+
+      {/* Plugin Details Modal */}
+      {selectedPlugin && (
+        <PluginDetailsModal
+          isOpen={!!selectedPlugin}
+          onClose={() => setSelectedPlugin(null)}
+          plugin={selectedPlugin}
+          onPurchase={() => handlePurchase(selectedPlugin)}
+        />
+      )}
+
+      {/* Purchase Modal */}
+      {purchasePlugin && (
+        <ProductPurchaseModal
+          isOpen={!!purchasePlugin}
+          onClose={() => setPurchasePlugin(null)}
+          product={purchasePlugin}
+        />
+      )}
     </div>
   );
 }

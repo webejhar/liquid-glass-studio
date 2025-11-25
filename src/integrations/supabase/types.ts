@@ -290,6 +290,7 @@ export type Database = {
           order_id: string | null
           payment_method: string
           payment_reference: string
+          plugin_file_path: string | null
           product_category: string
           product_id: number
           product_name: string
@@ -305,6 +306,7 @@ export type Database = {
           order_id?: string | null
           payment_method: string
           payment_reference: string
+          plugin_file_path?: string | null
           product_category: string
           product_id: number
           product_name: string
@@ -320,6 +322,7 @@ export type Database = {
           order_id?: string | null
           payment_method?: string
           payment_reference?: string
+          plugin_file_path?: string | null
           product_category?: string
           product_id?: number
           product_name?: string
