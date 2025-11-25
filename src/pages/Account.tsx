@@ -73,6 +73,7 @@ interface Order {
   category?: string;
   buyer_name?: string;
   buyer_email: string;
+  plugin_file_path?: string;
 }
 
 export default function Account() {
@@ -307,7 +308,8 @@ export default function Account() {
           quantity: 1,
           category: order.product_category,
           buyer_name: order.buyer_name,
-          buyer_email: order.buyer_email
+          buyer_email: order.buyer_email,
+          plugin_file_path: order.plugin_file_path
         })),
       ...(domainOrders || []).map(order => ({
         id: order.id,
@@ -1396,6 +1398,20 @@ export default function Account() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                {/* Download Button for Completed Plugin Orders */}
+                {selectedOrder.status === 'completed' && selectedOrder.type === 'product' && selectedOrder.plugin_file_path && (
+                  <a
+                    href={selectedOrder.plugin_file_path}
+                    download
+                    className="w-full"
+                  >
+                    <Button variant="liquid" className="w-full text-sm sm:text-base gap-2">
+                      <Package className="w-4 h-4" />
+                      Download Plugin
+                    </Button>
+                  </a>
+                )}
+                
                 <Button
                   onClick={() => setShowOrderDetails(false)}
                   variant="outline"

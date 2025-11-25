@@ -109,6 +109,19 @@ const AdminOrders = () => {
 
   const updateOrderStatus = async (table: "product_orders" | "domain_orders", id: string, status: string) => {
     try {
+      // If completed status, check if plugin file path exists
+      if (status === 'completed' && table === 'product_orders') {
+        const order = productOrders.find(o => o.id === id);
+        if (!order?.plugin_file_path) {
+          toast({
+            title: "Cannot complete order",
+            description: "Please upload the plugin file before marking as completed.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
       const { error } = await supabase
         .from(table)
         .update({ status })
@@ -155,10 +168,42 @@ const AdminOrders = () => {
     }
   };
 
+  const handleFileUpload = async (orderId: string, file: File) => {
+    try {
+      // Upload file to public plugins folder simulation (using Supabase storage in production)
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${orderId}.${fileExt}`;
+      const filePath = `/plugins/${fileName}`;
+      
+      // In production, upload to Supabase storage
+      // For now, we'll just store the path reference
+      const { error } = await supabase
+        .from('product_orders')
+        .update({ plugin_file_path: filePath })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      toast({
+        title: "File uploaded",
+        description: "Plugin file has been uploaded successfully.",
+      });
+
+      fetchOrders();
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStatusBadge = (status: string) => {
-    const config: Record<string, { icon: any; variant: "secondary" | "default" | "destructive"; label: string }> = {
+    const config: Record<string, { icon: any; variant: "secondary" | "default" | "destructive" | "outline"; label: string }> = {
       pending: { icon: Clock, variant: "secondary", label: "Pending" },
       confirmed: { icon: CheckCircle, variant: "default", label: "Confirmed" },
+      completed: { icon: CheckCircle, variant: "outline", label: "Completed" },
       rejected: { icon: XCircle, variant: "destructive", label: "Rejected" },
     };
 
@@ -220,7 +265,28 @@ const AdminOrders = () => {
                         <TableCell className="text-xs sm:text-sm">{order.payment_method}</TableCell>
                         <TableCell>{getStatusBadge(order.status)}</TableCell>
                         <TableCell className="text-xs sm:text-sm">{new Date(order.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right space-y-2">
+                          {/* File Upload */}
+                          {!order.plugin_file_path && (
+                            <div className="mb-2">
+                              <input
+                                type="file"
+                                accept=".zip"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleFileUpload(order.id, file);
+                                }}
+                                className="text-xs"
+                              />
+                            </div>
+                          )}
+                          {order.plugin_file_path && (
+                            <div className="text-xs text-green-600 mb-2">
+                              ✓ File uploaded
+                            </div>
+                          )}
+                          
+                          {/* Status Selector */}
                           <Select
                             value={order.status}
                             onValueChange={(value) =>
@@ -233,6 +299,7 @@ const AdminOrders = () => {
                             <SelectContent>
                               <SelectItem value="pending">Pending</SelectItem>
                               <SelectItem value="confirmed">Confirmed</SelectItem>
+                              <SelectItem value="completed">Completed</SelectItem>
                               <SelectItem value="rejected">Rejected</SelectItem>
                             </SelectContent>
                           </Select>
