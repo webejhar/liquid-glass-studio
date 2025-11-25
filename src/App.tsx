@@ -18,7 +18,6 @@ import Contact from "./pages/Contact";
 import Meeting from "./pages/Meeting";
 import EmailGenerator from "./pages/EmailGenerator";
 import ImageGenerator from "./pages/ImageGenerator";
-import ImageEnhancer from "./pages/ImageEnhancer";
 import Blog from "./pages/Blog";
 import Testimonials from "./pages/Testimonials";
 import Login from "./pages/Login";
@@ -58,7 +57,6 @@ const App = () => (
               <Route path="/meeting" element={<Meeting />} />
               <Route path="/email-generator" element={<EmailGenerator />} />
               <Route path="/image-generator" element={<ImageGenerator />} />
-              <Route path="/image-enhancer" element={<ImageEnhancer />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/testimonials" element={<Testimonials />} />
               <Route path="/login" element={<Login />} />
