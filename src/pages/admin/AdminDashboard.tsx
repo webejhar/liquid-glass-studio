@@ -64,10 +64,6 @@ const AdminDashboard = () => {
   }
 
   const statCards = [
-    { title: "General Users", value: stats.totalGeneralUsers, icon: Users, color: "text-blue-500", path: "/admin/users" },
-    { title: "Service Providers", value: stats.totalServiceProviders, icon: UserCheck, color: "text-purple-500", path: "/admin/users" },
-    { title: "Clients", value: stats.totalClients, icon: Users, color: "text-green-500", path: "/admin/users" },
-    { title: "Pending Approvals", value: stats.pendingApprovals, icon: AlertCircle, color: "text-orange-500", path: "/admin/users" },
     { title: "Total Orders", value: stats.totalOrders, icon: ShoppingBag, color: "text-cyan-500", path: "/admin/orders" },
     { title: "Total Bookings", value: stats.totalBookings, icon: Calendar, color: "text-pink-500", path: "/admin/meetings" },
     { title: "Total Contacts", value: stats.totalContacts, icon: Mail, color: "text-yellow-500", path: "/admin/contacts" },
