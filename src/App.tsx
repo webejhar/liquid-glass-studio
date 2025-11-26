@@ -28,7 +28,7 @@ import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
-import AdminPendingApproval from "./pages/admin/AdminPendingApproval";
+import AdminUserEdit from "./pages/admin/AdminUserEdit";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminMeetings from "./pages/admin/AdminMeetings";
 import AdminVerification from "./pages/admin/AdminVerification";
@@ -69,7 +69,7 @@ const App = () => (
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/pending-approval" element={<AdminPendingApproval />} />
+              <Route path="/admin/users/:userId" element={<AdminUserEdit />} />
               <Route path="/admin/orders" element={<AdminOrders />} />
               <Route path="/admin/meetings" element={<AdminMeetings />} />
               <Route path="/admin/verification" element={<AdminVerification />} />
