@@ -41,20 +41,30 @@ const AdminUsers = () => {
   const [users, setUsers] = useState<Profile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<Profile[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilter, setActiveFilter] = useState<'all' | 'general' | 'service_provider' | 'client'>('all');
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
   useEffect(() => {
-    const filtered = users.filter(
+    let filtered = users;
+
+    // Apply type filter
+    if (activeFilter !== 'all') {
+      filtered = filtered.filter(user => user.account_type === activeFilter);
+    }
+
+    // Apply search filter
+    filtered = filtered.filter(
       (user) =>
         user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.account_number?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
     setFilteredUsers(filtered);
-  }, [searchTerm, users]);
+  }, [searchTerm, users, activeFilter]);
 
   const fetchUsers = async () => {
     try {
@@ -79,23 +89,24 @@ const AdminUsers = () => {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  const generalUsers = filteredUsers.filter(u => u.account_type === 'general');
-  const serviceProviders = filteredUsers.filter(u => u.account_type === 'service_provider');
-  const clients = filteredUsers.filter(u => u.account_type === 'client');
-  const pendingUsers = filteredUsers.filter(u => 
+  const generalUsers = users.filter(u => u.account_type === 'general');
+  const serviceProviders = users.filter(u => u.account_type === 'service_provider');
+  const clients = users.filter(u => u.account_type === 'client');
+  const pendingUsers = users.filter(u => 
     (u.account_type === 'service_provider' || u.account_type === 'client') && 
     u.approval_status === 'pending'
   );
 
-  const renderUserTable = (usersList: Profile[], categoryTitle: string) => (
+  const filterButtons = [
+    { key: 'all' as const, label: 'All', count: users.length },
+    { key: 'general' as const, label: 'General', count: generalUsers.length },
+    { key: 'service_provider' as const, label: 'Provider', count: serviceProviders.length },
+    { key: 'client' as const, label: 'Client', count: clients.length },
+  ];
+
+  const renderUserTable = (usersList: Profile[]) => (
     <Card className="backdrop-blur-xl bg-background/60 border-border/50 mb-6">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>{categoryTitle}</span>
-          <Badge variant="outline">{usersList.length} users</Badge>
-        </CardTitle>
-      </CardHeader>
-      <div className="px-6 pb-6">
+      <div className="px-6 py-6">
         <div className="rounded-lg border border-border/50 overflow-x-auto">
           <div className="min-w-[800px]">
             <Table>
@@ -104,6 +115,7 @@ const AdminUsers = () => {
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Account ID</TableHead>
+                  <TableHead>Account Type</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Registered</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -116,6 +128,12 @@ const AdminUsers = () => {
                     <TableCell>{user.email || "N/A"}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{user.account_number || "N/A"}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {user.account_type === 'general' ? 'General' : 
+                         user.account_type === 'service_provider' ? 'Provider' : 'Client'}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -160,12 +178,12 @@ const AdminUsers = () => {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl sm:text-4xl font-bold mb-2">All Users</h1>
-          <p className="text-muted-foreground">Total registered users: {filteredUsers.length}</p>
+          <p className="text-muted-foreground">Total registered users: {users.length}</p>
         </div>
 
         <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-6 mb-6">
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search by name, email, or account ID..."
@@ -173,6 +191,22 @@ const AdminUsers = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {filterButtons.map((filter) => (
+                <Button
+                  key={filter.key}
+                  variant={activeFilter === filter.key ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setActiveFilter(filter.key)}
+                  className="gap-2"
+                >
+                  {filter.label}
+                  <Badge variant={activeFilter === filter.key ? "secondary" : "outline"}>
+                    {filter.count}
+                  </Badge>
+                </Button>
+              ))}
             </div>
           </div>
         </Card>
@@ -238,9 +272,7 @@ const AdminUsers = () => {
           </Card>
         )}
 
-        {renderUserTable(generalUsers, "General Users")}
-        {renderUserTable(serviceProviders, "Service Providers")}
-        {renderUserTable(clients, "Clients")}
+        {renderUserTable(filteredUsers)}
       </div>
     </AdminLayout>
   );
