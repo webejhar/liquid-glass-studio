@@ -39,6 +39,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { path: "/admin/users", label: "All Users", icon: Users },
+    { path: "/admin/pending-approval", label: "Pending Approval", icon: CheckSquare },
     { path: "/admin/orders", label: "Orders", icon: ShoppingBag },
     { path: "/admin/meetings", label: "Meetings", icon: Calendar },
     { path: "/admin/verification", label: "Verification", icon: CheckSquare },
