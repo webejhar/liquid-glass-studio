@@ -41,19 +41,15 @@ const AdminUsers = () => {
   const [users, setUsers] = useState<Profile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<Profile[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeFilter, setActiveFilter] = useState<'all' | 'general' | 'service_provider' | 'client'>('all');
+  const [activeFilter, setActiveFilter] = useState<'general' | 'service_provider' | 'client'>('general');
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
   useEffect(() => {
-    let filtered = users;
-
     // Apply type filter
-    if (activeFilter !== 'all') {
-      filtered = filtered.filter(user => user.account_type === activeFilter);
-    }
+    let filtered = users.filter(user => user.account_type === activeFilter);
 
     // Apply search filter
     filtered = filtered.filter(
@@ -98,7 +94,6 @@ const AdminUsers = () => {
   );
 
   const filterButtons = [
-    { key: 'all' as const, label: 'All', count: users.length },
     { key: 'general' as const, label: 'General', count: generalUsers.length },
     { key: 'service_provider' as const, label: 'Provider', count: serviceProviders.length },
     { key: 'client' as const, label: 'Client', count: clients.length },
@@ -179,6 +174,11 @@ const AdminUsers = () => {
         <div>
           <h1 className="text-3xl sm:text-4xl font-bold mb-2">All Users</h1>
           <p className="text-muted-foreground">Total registered users: {users.length}</p>
+          {pendingUsers.length > 0 && (
+            <p className="text-orange-500 font-medium mt-1">
+              Pending Approval: {pendingUsers.length} users waiting for approval
+            </p>
+          )}
         </div>
 
         <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-6 mb-6">
@@ -210,67 +210,6 @@ const AdminUsers = () => {
             </div>
           </div>
         </Card>
-
-        {pendingUsers.length > 0 && (
-          <Card className="backdrop-blur-xl bg-background/60 border-border/50 mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-orange-500" />
-                <span>Pending Approval</span>
-                <Badge variant="destructive">{pendingUsers.length}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <div className="px-6 pb-6">
-              <div className="rounded-lg border border-border/50 overflow-x-auto">
-                <div className="min-w-[800px]">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Account Type</TableHead>
-                        <TableHead>Account ID</TableHead>
-                        <TableHead>Registered</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pendingUsers.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.name || "N/A"}</TableCell>
-                          <TableCell>{user.email || "N/A"}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">
-                              {user.account_type === 'service_provider' ? 'Provider' : 'Client'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{user.account_number || "N/A"}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            {user.created_at
-                              ? new Date(user.created_at).toLocaleDateString()
-                              : "N/A"}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => navigate(`/admin/users/${user.user_id}`)}
-                              title="Edit User"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            </div>
-          </Card>
-        )}
 
         {renderUserTable(filteredUsers)}
       </div>
