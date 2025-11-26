@@ -75,7 +75,8 @@ const AdminUserEdit = () => {
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      // Update user profile with approval status
+      const { error: updateError } = await supabase
         .from("profiles")
         .update({
           name: user.name,
@@ -87,24 +88,35 @@ const AdminUserEdit = () => {
         })
         .eq("user_id", userId);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      // Send email notification if approval status changed
+      // Send email notification if approval status was changed to approved or rejected
       if (user.approval_status === 'approved' || user.approval_status === 'rejected') {
-        await supabase.functions.invoke('send-approval-notification', {
-          body: {
-            userEmail: user.email,
-            userName: user.name,
-            accountType: user.account_type === 'service_provider' ? 'Service Provider' : 
-                        user.account_type === 'client' ? 'Client' : 'General User',
-            status: user.approval_status,
-          },
-        });
+        try {
+          await supabase.functions.invoke('send-approval-notification', {
+            body: {
+              userEmail: user.email,
+              userName: user.name,
+              accountType: user.account_type === 'service_provider' ? 'Service Provider' : 
+                          user.account_type === 'client' ? 'Client' : 'General User',
+              status: user.approval_status,
+            },
+          });
+        } catch (emailError) {
+          console.error("Email notification failed:", emailError);
+          // Don't block the success flow if email fails
+        }
       }
+
+      const statusMessage = user.approval_status === 'approved' 
+        ? "User approved successfully. They can now log in immediately."
+        : user.approval_status === 'rejected'
+        ? "User rejected successfully."
+        : "User information has been saved.";
 
       toast({
         title: "User updated successfully",
-        description: "User information has been saved.",
+        description: statusMessage,
       });
 
       navigate("/admin/users");
