@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Heart, ShoppingCart, Bell, Shield, Package, Menu, X, LogOut } from "lucide-react";
+import { User, Heart, ShoppingCart, Bell, Shield, Package, Menu, X, LogOut, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -55,6 +55,13 @@ export const AccountToggleBar = ({
       value: "orders",
       color: "text-purple-400",
       bgColor: "bg-purple-500/20"
+    },
+    {
+      icon: MessageSquare,
+      label: "Live Chat",
+      value: "chat",
+      color: "text-cyan-400",
+      bgColor: "bg-cyan-500/20"
     },
     {
       icon: Bell,

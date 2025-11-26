@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell, X, ArrowRight } from "lucide-react";
+import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell, X, ArrowRight, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,8 @@ import { SessionManager } from "@/components/SessionManager";
 import { useSessionTracking } from "@/hooks/useSessionTracking";
 import { NotificationsList } from "@/components/NotificationsList";
 import { AccountToggleBar } from "@/components/AccountToggleBar";
+import { UserListChat } from "@/components/chat/UserListChat";
+import { ChatInterface } from "@/components/chat/ChatInterface";
 
 const professions = [
   "Developer",
@@ -110,6 +112,12 @@ export default function Account() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [selectedChatUser, setSelectedChatUser] = useState<{
+    userId: string;
+    userName: string;
+    avatarUrl: string | null;
+  } | null>(null);
   
   useSessionTracking();
 
@@ -768,13 +776,16 @@ export default function Account() {
               cartCount={cart.length}
               favoritesCount={favorites.length}
               verificationStatus={formData.verification_status}
-              onNavigate={(tab) => setActiveTab(tab)}
+              onNavigate={(tab) => {
+                setActiveTab(tab);
+                setSelectedChatUser(null); // Reset chat when switching tabs
+              }}
               onLogout={handleLogout}
             />
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-3 sm:grid-cols-6 gap-1 hidden md:grid">
+            <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-3 sm:grid-cols-7 gap-1 hidden md:grid">
               <TabsTrigger value="profile" className="gap-1 sm:gap-2 text-xs sm:text-sm">
                 <User className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Profile</span>
@@ -790,6 +801,10 @@ export default function Account() {
               <TabsTrigger value="favorites" className="gap-1 sm:gap-2 text-xs sm:text-sm">
                 <Heart className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Fav</span> ({favorites.length})
+              </TabsTrigger>
+              <TabsTrigger value="chat" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+                <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">Chat</span>
               </TabsTrigger>
               <TabsTrigger value="notifications" className="gap-1 sm:gap-2 text-xs sm:text-sm">
                 <Bell className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -1393,6 +1408,34 @@ export default function Account() {
                 className="space-y-6"
               >
                 <SessionManager />
+              </motion.div>
+            </TabsContent>
+
+            {/* Chat Tab */}
+            <TabsContent value="chat">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="glass-premium rounded-xl sm:rounded-2xl overflow-hidden"
+              >
+                <div className="h-[600px] sm:h-[700px]">
+                  {selectedChatUser ? (
+                    <ChatInterface
+                      currentUserId={user?.id || ""}
+                      selectedUserId={selectedChatUser.userId}
+                      selectedUserName={selectedChatUser.userName}
+                      selectedUserAvatar={selectedChatUser.avatarUrl}
+                      onBack={() => setSelectedChatUser(null)}
+                    />
+                  ) : (
+                    <UserListChat
+                      currentUserId={user?.id || ""}
+                      onSelectUser={(userId, userName, avatarUrl) =>
+                        setSelectedChatUser({ userId, userName, avatarUrl })
+                      }
+                    />
+                  )}
+                </div>
               </motion.div>
             </TabsContent>
           </Tabs>
