@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -26,6 +26,27 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    fetchPendingCount();
+  }, []);
+
+  const fetchPendingCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .in("account_type", ["service_provider", "client"])
+        .eq("approval_status", "pending");
+
+      if (!error && count !== null) {
+        setPendingCount(count);
+      }
+    } catch (error) {
+      console.error("Error fetching pending count:", error);
+    }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -37,14 +58,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   };
 
   const navItems = [
-    { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/admin/users", label: "All Users", icon: Users },
-    { path: "/admin/pending-approval", label: "Pending Approval", icon: CheckSquare },
-    { path: "/admin/orders", label: "Orders", icon: ShoppingBag },
-    { path: "/admin/meetings", label: "Meetings", icon: Calendar },
-    { path: "/admin/verification", label: "Verification", icon: CheckSquare },
-    { path: "/admin/contacts", label: "Contacts", icon: Mail },
-    { path: "/admin/roles", label: "Roles", icon: Shield },
+    { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard, badge: null },
+    { path: "/admin/users", label: "All Users", icon: Users, badge: null },
+    { path: "/admin/pending-approval", label: "Pending Approval", icon: CheckSquare, badge: pendingCount > 0 ? pendingCount : null },
+    { path: "/admin/orders", label: "Orders", icon: ShoppingBag, badge: null },
+    { path: "/admin/meetings", label: "Meetings", icon: Calendar, badge: null },
+    { path: "/admin/verification", label: "Verification", icon: CheckSquare, badge: null },
+    { path: "/admin/contacts", label: "Contacts", icon: Mail, badge: null },
+    { path: "/admin/roles", label: "Roles", icon: Shield, badge: null },
   ];
 
   return (
@@ -95,6 +116,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                   >
                     <Icon className="w-4 h-4" />
                     {item.label}
+                    {item.badge && (
+                      <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2 py-0.5">
+                        {item.badge}
+                      </span>
+                    )}
                   </Button>
                 </Link>
               );
@@ -136,6 +162,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                         >
                           <Icon className="w-4 h-4" />
                           {item.label}
+                          {item.badge && (
+                            <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2 py-0.5">
+                              {item.badge}
+                            </span>
+                          )}
                         </Button>
                       </Link>
                     );

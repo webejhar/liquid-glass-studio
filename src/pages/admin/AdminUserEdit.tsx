@@ -75,6 +75,12 @@ const AdminUserEdit = () => {
 
     setSaving(true);
     try {
+      console.log("Updating user approval status:", {
+        userId: user.user_id,
+        currentStatus: user.approval_status,
+        accountType: user.account_type
+      });
+
       // Update user profile with approval status
       const { error: updateError } = await supabase
         .from("profiles")
@@ -88,7 +94,21 @@ const AdminUserEdit = () => {
         })
         .eq("user_id", userId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("Error updating approval status:", updateError);
+        throw updateError;
+      }
+
+      console.log("User approval status updated successfully");
+
+      // Verify the update
+      const { data: verifyData } = await supabase
+        .from("profiles")
+        .select("approval_status")
+        .eq("user_id", userId)
+        .single();
+
+      console.log("Verified approval status in database:", verifyData?.approval_status);
 
       // Send email notification if approval status was changed to approved or rejected
       if (user.approval_status === 'approved' || user.approval_status === 'rejected') {
@@ -121,6 +141,7 @@ const AdminUserEdit = () => {
 
       navigate("/admin/users");
     } catch (error: any) {
+      console.error("Error in handleSave:", error);
       toast({
         title: "Error updating user",
         description: error.message,
