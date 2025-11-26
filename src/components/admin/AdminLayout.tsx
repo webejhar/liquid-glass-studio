@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -10,11 +10,12 @@ import {
   Menu,
   Mail,
   Calendar,
-  CheckSquare
+  CheckSquare,
+  Clock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { AdminNotifications } from "./AdminNotifications";
 
@@ -27,6 +28,46 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    fetchPendingCount();
+    
+    // Subscribe to changes in profiles table
+    const channel = supabase
+      .channel('pending-approvals')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        () => {
+          fetchPendingCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchPendingCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from("profiles")
+        .select("*", { count: 'exact', head: true })
+        .in('account_type', ['service_provider', 'client'])
+        .eq('approval_status', 'pending');
+
+      if (error) throw error;
+      setPendingCount(count || 0);
+    } catch (error) {
+      console.error("Error fetching pending count:", error);
+    }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -39,7 +80,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   const navItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/admin/users", label: "Users", icon: Users },
+    { path: "/admin/users", label: "All Users", icon: Users },
+    { path: "/admin/pending-approval", label: "Pending Approval", icon: Clock, badge: pendingCount },
     { path: "/admin/orders", label: "Orders", icon: ShoppingBag },
     { path: "/admin/meetings", label: "Meetings", icon: Calendar },
     { path: "/admin/verification", label: "Verification", icon: CheckSquare },
@@ -95,6 +137,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                   >
                     <Icon className="w-4 h-4" />
                     {item.label}
+                    {item.badge !== undefined && item.badge > 0 && (
+                      <Badge variant="destructive" className="ml-auto">
+                        {item.badge}
+                      </Badge>
+                    )}
                   </Button>
                 </Link>
               );
@@ -136,6 +183,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                         >
                           <Icon className="w-4 h-4" />
                           {item.label}
+                          {item.badge !== undefined && item.badge > 0 && (
+                            <Badge variant="destructive" className="ml-auto">
+                              {item.badge}
+                            </Badge>
+                          )}
                         </Button>
                       </Link>
                     );
