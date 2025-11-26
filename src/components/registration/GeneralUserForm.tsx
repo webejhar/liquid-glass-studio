@@ -86,6 +86,16 @@ export const GeneralUserForm = ({ onSuccess }: GeneralUserFormProps) => {
 
         if (profileError) throw profileError;
 
+        // Send approval notification for general users (instant approval)
+        await supabase.functions.invoke('send-approval-notification', {
+          body: {
+            userEmail: email,
+            userName: name,
+            accountType: 'general',
+            status: 'approved',
+          },
+        });
+
         toast({
           title: "Success!",
           description: "Account created successfully. You can now login.",
