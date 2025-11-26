@@ -58,6 +58,12 @@ interface Profile {
   verification_status: string | null;
   verification_notes: string | null;
   face_verification_url: string | null;
+  account_type: 'general' | 'service_provider' | 'client' | null;
+  account_number: string | null;
+  category: string | null;
+  cv_url: string | null;
+  social_media_links: any;
+  approval_status: string | null;
 }
 
 interface Order {

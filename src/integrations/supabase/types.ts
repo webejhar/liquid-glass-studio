@@ -334,54 +334,75 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_number: string | null
+          account_type: Database["public"]["Enums"]["account_type"] | null
           address: string | null
+          approval_status: string | null
           avatar_url: string | null
           bio: string | null
+          category: string | null
           created_at: string | null
+          cv_url: string | null
           date_of_birth: string | null
           email: string | null
           face_verification_url: string | null
           id: string
           name: string | null
           nid_url: string | null
+          payment_policy_accepted: boolean | null
           phone: string | null
           profession: string | null
+          social_media_links: Json | null
           updated_at: string | null
           user_id: string
           verification_notes: string | null
           verification_status: string | null
         }
         Insert: {
+          account_number?: string | null
+          account_type?: Database["public"]["Enums"]["account_type"] | null
           address?: string | null
+          approval_status?: string | null
           avatar_url?: string | null
           bio?: string | null
+          category?: string | null
           created_at?: string | null
+          cv_url?: string | null
           date_of_birth?: string | null
           email?: string | null
           face_verification_url?: string | null
           id?: string
           name?: string | null
           nid_url?: string | null
+          payment_policy_accepted?: boolean | null
           phone?: string | null
           profession?: string | null
+          social_media_links?: Json | null
           updated_at?: string | null
           user_id: string
           verification_notes?: string | null
           verification_status?: string | null
         }
         Update: {
+          account_number?: string | null
+          account_type?: Database["public"]["Enums"]["account_type"] | null
           address?: string | null
+          approval_status?: string | null
           avatar_url?: string | null
           bio?: string | null
+          category?: string | null
           created_at?: string | null
+          cv_url?: string | null
           date_of_birth?: string | null
           email?: string | null
           face_verification_url?: string | null
           id?: string
           name?: string | null
           nid_url?: string | null
+          payment_policy_accepted?: boolean | null
           phone?: string | null
           profession?: string | null
+          social_media_links?: Json | null
           updated_at?: string | null
           user_id?: string
           verification_notes?: string | null
@@ -494,6 +515,10 @@ export type Database = {
         }
         Returns: string
       }
+      generate_account_number: {
+        Args: { acc_type: Database["public"]["Enums"]["account_type"] }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -503,6 +528,7 @@ export type Database = {
       }
     }
     Enums: {
+      account_type: "general" | "service_provider" | "client"
       app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
@@ -631,6 +657,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_type: ["general", "service_provider", "client"],
       app_role: ["admin", "moderator", "user"],
     },
   },

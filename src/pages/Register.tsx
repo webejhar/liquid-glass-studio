@@ -1,302 +1,120 @@
-import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Mail, Lock, User, Check, X } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { EmailVerificationDialog } from "@/components/EmailVerificationDialog";
+import { AccountTypeModal } from "@/components/AccountTypeModal";
+import { GeneralUserForm } from "@/components/registration/GeneralUserForm";
+import { ServiceProviderForm } from "@/components/registration/ServiceProviderForm";
+import { ClientForm } from "@/components/registration/ClientForm";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
-import { CaptchaSlider } from "@/components/CaptchaSlider";
+import { ArrowLeft } from "lucide-react";
+
+type AccountType = 'general' | 'service_provider' | 'client' | null;
 
 export default function Register() {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  // Email verification disabled by default
-  // const [showVerification, setShowVerification] = useState(false);
-  // const [verificationCode, setVerificationCode] = useState("");
-  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [showTypeModal, setShowTypeModal] = useState(true);
+  const [selectedType, setSelectedType] = useState<AccountType>(null);
 
-  const getPasswordStrength = (password: string) => {
-    if (password.length === 0) return { strength: "", color: "" };
-    if (password.length < 6) return { strength: "Low", color: "text-red-500" };
-    if (password.length < 10) return { strength: "Medium", color: "text-yellow-500" };
-    if (password.length >= 10 && /[A-Z]/.test(password) && /[0-9]/.test(password)) {
-      return { strength: "Strong", color: "text-green-500" };
-    }
-    return { strength: "Medium", color: "text-yellow-500" };
+  const handleTypeSelect = (type: AccountType) => {
+    setSelectedType(type);
+    setShowTypeModal(false);
   };
 
-  const passwordStrength = getPasswordStrength(password);
-  const passwordsMatch = password && confirmPassword && password === confirmPassword;
+  const handleSuccess = () => {
+    navigate("/login");
+  };
 
-  // Email verification functions disabled
-  // const sendVerificationCode = async () => { ... };
-  // const handleVerifyCode = async (inputCode: string) => { ... };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-
-    if (!captchaVerified) {
-      toast.error("Please complete the captcha verification");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const redirectUrl = `${window.location.origin}/`;
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: name,
-          },
-        },
-      });
-
-      if (error) throw error;
-
-      // Create profile for the new user
-      if (data.user) {
-        await supabase.from('profiles').insert({
-          user_id: data.user.id,
-          name,
-          email
-        });
-      }
-
-      // Send notification email to admins
-      await supabase.functions.invoke("send-registration-notification", {
-        body: {
-          userName: name,
-          userEmail: email,
-          timestamp: new Date().toISOString(),
-        },
-      });
-
-      toast.success("Registration successful! Welcome to Webejhar");
-      navigate("/account");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to register");
-    } finally {
-      setIsLoading(false);
-    }
+  const getAccountTypeTitle = () => {
+    if (selectedType === 'service_provider') return 'Service Provider Registration';
+    if (selectedType === 'client') return 'Client Registration';
+    return 'General User Registration';
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-20">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, rotateY: -10 }}
-        animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-        transition={{ duration: 0.6, type: "spring" }}
-        className="w-full max-w-md"
-      >
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-6"
+    <>
+      <AccountTypeModal
+        open={showTypeModal}
+        onClose={() => navigate("/")}
+        onSelectType={handleTypeSelect}
+      />
+
+      <div className="min-h-screen flex items-center justify-center px-4 py-20">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, type: "spring" }}
+          className="w-full max-w-md"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-
-        <div className="glass-premium p-8 rounded-2xl">
-          <motion.h1
-            className="text-4xl font-bold mb-2 text-glow"
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            Join Webejhar
-          </motion.h1>
-          <motion.p
-            className="text-muted-foreground mb-8"
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            Create your account to get started
-          </motion.p>
-
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.35 }}
+          <Button
+            variant="ghost"
+            onClick={() => {
+              if (selectedType) {
+                setSelectedType(null);
+                setShowTypeModal(true);
+              } else {
+                navigate(-1);
+              }
+            }}
             className="mb-6"
           >
-            <SocialLoginButtons />
-          </motion.div>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
 
-          <form onSubmit={handleRegister} className="space-y-6">
-            <motion.div
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              <Label htmlFor="name" className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                Full Name
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="John Doe"
-                required
-                className="mt-2"
-              />
-            </motion.div>
-
-            <motion.div
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              <Label htmlFor="email" className="flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                required
-                className="mt-2"
-              />
-            </motion.div>
-
-            <motion.div
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              <Label htmlFor="password" className="flex items-center gap-2">
-                <Lock className="w-4 h-4" />
-                Password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="mt-2"
-              />
-              {password && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className={`text-sm mt-2 ${passwordStrength.color}`}
-                >
-                  Password Strength: {passwordStrength.strength}
-                </motion.p>
-              )}
-            </motion.div>
-
-            <motion.div
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.7 }}
-            >
-              <Label htmlFor="confirm-password" className="flex items-center gap-2">
-                <Lock className="w-4 h-4" />
-                Confirm Password
-              </Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="mt-2"
-              />
-              {confirmPassword && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center gap-2 mt-2"
-                >
-                  {passwordsMatch ? (
-                    <>
-                      <Check className="w-4 h-4 text-green-500" />
-                      <span className="text-sm text-green-500">Passwords match</span>
-                    </>
-                  ) : (
-                    <>
-                      <X className="w-4 h-4 text-red-500" />
-                      <span className="text-sm text-red-500">Passwords don't match</span>
-                    </>
-                  )}
-                </motion.div>
-              )}
-            </motion.div>
-
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.8 }}
-            >
-              <CaptchaSlider onVerified={setCaptchaVerified} />
-            </motion.div>
-
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.9 }}
-            >
-              <Button
-                type="submit"
-                variant="liquid"
-                className="w-full"
-                disabled={isLoading || !captchaVerified}
+          {selectedType && (
+            <div className="glass-premium p-8 rounded-2xl">
+              <motion.h1
+                className="text-4xl font-bold mb-2 text-glow"
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
               >
-                {isLoading ? "Creating Account..." : "Create Account"}
-              </Button>
-            </motion.div>
-          </form>
+                {getAccountTypeTitle()}
+              </motion.h1>
+              <motion.p
+                className="text-muted-foreground mb-8"
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                Create your account to get started
+              </motion.p>
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1.0 }}
-            className="mt-6 text-center"
-          >
-            <p className="text-muted-foreground">
-              Already have an account?{" "}
-              <Link to="/login" className="text-primary hover:underline font-semibold">
-                Login
-              </Link>
-            </p>
-          </motion.div>
-        </div>
-      </motion.div>
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.35 }}
+                className="mb-6"
+              >
+                <SocialLoginButtons />
+              </motion.div>
 
-      {/* Email verification disabled */}
-    </div>
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+
+              {selectedType === 'general' && <GeneralUserForm onSuccess={handleSuccess} />}
+              {selectedType === 'service_provider' && <ServiceProviderForm onSuccess={handleSuccess} />}
+              {selectedType === 'client' && <ClientForm onSuccess={handleSuccess} />}
+
+              <div className="mt-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Already have an account?{" "}
+                  <Link to="/login" className="text-primary hover:underline font-medium">
+                    Login here
+                  </Link>
+                </p>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      </div>
+    </>
   );
 }
