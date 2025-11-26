@@ -22,7 +22,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Eye, ExternalLink, Check, X } from "lucide-react";
 
@@ -42,7 +41,7 @@ interface Profile {
   created_at: string | null;
 }
 
-const AdminUsers = () => {
+const AdminPendingApproval = () => {
   const { isLoading } = useAdminAuth();
   const { toast } = useToast();
   const [users, setUsers] = useState<Profile[]>([]);
@@ -51,10 +50,30 @@ const AdminUsers = () => {
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState("service_provider");
 
   useEffect(() => {
-    fetchUsers();
+    fetchPendingUsers();
+    
+    // Subscribe to changes in profiles table
+    const channel = supabase
+      .channel('pending-users-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        () => {
+          fetchPendingUsers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -67,11 +86,13 @@ const AdminUsers = () => {
     setFilteredUsers(filtered);
   }, [searchTerm, users]);
 
-  const fetchUsers = async () => {
+  const fetchPendingUsers = async () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
+        .in('account_type', ['service_provider', 'client'])
+        .eq('approval_status', 'pending')
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -79,7 +100,7 @@ const AdminUsers = () => {
       setFilteredUsers(data || []);
     } catch (error: any) {
       toast({
-        title: "Error fetching users",
+        title: "Error fetching pending users",
         description: error.message,
         variant: "destructive",
       });
@@ -123,7 +144,7 @@ const AdminUsers = () => {
         description: `User account has been ${status}. Email notification sent.`,
       });
 
-      fetchUsers();
+      fetchPendingUsers();
     } catch (error: any) {
       toast({
         title: "Error updating status",
@@ -139,11 +160,10 @@ const AdminUsers = () => {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  const generalUsers = filteredUsers.filter(u => u.account_type === 'general');
   const serviceProviders = filteredUsers.filter(u => u.account_type === 'service_provider');
   const clients = filteredUsers.filter(u => u.account_type === 'client');
 
-  const renderUserTable = (usersList: Profile[], showApproval: boolean) => (
+  const renderUserTable = (usersList: Profile[]) => (
     <div className="rounded-lg border border-border/50 overflow-x-auto">
       <div className="min-w-[800px]">
         <Table>
@@ -152,94 +172,74 @@ const AdminUsers = () => {
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Account ID</TableHead>
-              {showApproval && <TableHead>Status</TableHead>}
+              <TableHead>Status</TableHead>
               <TableHead>Registered</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {usersList.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.name || "N/A"}</TableCell>
-                <TableCell>{user.email || "N/A"}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">{user.account_number || "N/A"}</Badge>
+            {usersList.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  No pending approvals
                 </TableCell>
-                {showApproval && (
+              </TableRow>
+            ) : (
+              usersList.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.name || "N/A"}</TableCell>
+                  <TableCell>{user.email || "N/A"}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={
-                        user.approval_status === "approved"
-                          ? "default"
-                          : user.approval_status === "pending"
-                          ? "secondary"
-                          : "destructive"
-                      }
-                    >
+                    <Badge variant="outline">{user.account_number || "N/A"}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">
                       {user.approval_status || "N/A"}
                     </Badge>
                   </TableCell>
-                )}
-                <TableCell>
-                  {user.created_at
-                    ? new Date(user.created_at).toLocaleDateString()
-                    : "N/A"}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setShowDetailsDialog(true);
-                      }}
-                      title="View Details"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    {showApproval && (
-                      <>
-                        {user.approval_status === 'approved' && (
-                          <div className="flex items-center justify-center text-green-500" title="Approved">
-                            <Check className="w-5 h-5" />
-                          </div>
-                        )}
-                        {user.approval_status === 'rejected' && (
-                          <div className="flex items-center justify-center text-red-500" title="Rejected">
-                            <X className="w-5 h-5" />
-                          </div>
-                        )}
-                        {user.approval_status === 'pending' && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleApproveReject(user.user_id, 'approved')}
-                              disabled={loading}
-                              title="Approve"
-                              className="text-green-500 hover:text-green-600 hover:bg-green-50"
-                            >
-                              <Check className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleApproveReject(user.user_id, 'rejected')}
-                              disabled={loading}
-                              title="Reject"
-                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+                  <TableCell>
+                    {user.created_at
+                      ? new Date(user.created_at).toLocaleDateString()
+                      : "N/A"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setShowDetailsDialog(true);
+                        }}
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleApproveReject(user.user_id, 'approved')}
+                        disabled={loading}
+                        title="Approve"
+                        className="text-green-500 hover:text-green-600 hover:bg-green-50"
+                      >
+                        <Check className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleApproveReject(user.user_id, 'rejected')}
+                        disabled={loading}
+                        title="Reject"
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
@@ -250,8 +250,8 @@ const AdminUsers = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">User Management</h1>
-          <p className="text-muted-foreground">Manage all registered users by type</p>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Pending Approval</h1>
+          <p className="text-muted-foreground">Review and approve pending user accounts</p>
         </div>
 
         <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-6">
@@ -268,28 +268,21 @@ const AdminUsers = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3 mb-6">
-              <TabsTrigger value="general">
-                General ({generalUsers.length})
-              </TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="service_provider">
-                Provider ({serviceProviders.length})
+                Service Providers ({serviceProviders.length})
               </TabsTrigger>
               <TabsTrigger value="client">
-                Client ({clients.length})
+                Clients ({clients.length})
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="general">
-              {renderUserTable(generalUsers, false)}
-            </TabsContent>
-
             <TabsContent value="service_provider">
-              {renderUserTable(serviceProviders, true)}
+              {renderUserTable(serviceProviders)}
             </TabsContent>
 
             <TabsContent value="client">
-              {renderUserTable(clients, true)}
+              {renderUserTable(clients)}
             </TabsContent>
           </Tabs>
         </Card>
@@ -390,22 +383,12 @@ const AdminUsers = () => {
                 </div>
               )}
 
-              {(selectedUser.account_type === 'service_provider' || selectedUser.account_type === 'client') && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Approval Status</p>
-                  <Badge
-                    variant={
-                      selectedUser.approval_status === "approved"
-                        ? "default"
-                        : selectedUser.approval_status === "pending"
-                        ? "secondary"
-                        : "destructive"
-                    }
-                  >
-                    {selectedUser.approval_status || "N/A"}
-                  </Badge>
-                </div>
-              )}
+              <div>
+                <p className="text-sm text-muted-foreground">Approval Status</p>
+                <Badge variant="secondary">
+                  {selectedUser.approval_status || "N/A"}
+                </Badge>
+              </div>
             </div>
           )}
         </DialogContent>
@@ -414,4 +397,4 @@ const AdminUsers = () => {
   );
 };
 
-export default AdminUsers;
+export default AdminPendingApproval;
