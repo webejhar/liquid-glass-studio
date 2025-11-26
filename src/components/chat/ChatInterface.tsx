@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ export function ChatInterface({
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadMessages();
@@ -159,15 +161,20 @@ export function ChatInterface({
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <Avatar className="w-10 h-10">
-          <AvatarImage src={selectedUserAvatar || undefined} />
-          <AvatarFallback className="bg-primary/20 text-primary">
-            {selectedUserName?.charAt(0)?.toUpperCase() || 'U'}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold truncate">{selectedUserName}</p>
-          <p className="text-xs text-muted-foreground">Click to view profile</p>
+        <div
+          onClick={() => navigate(`/profile/${selectedUserId}`)}
+          className="flex items-center gap-3 flex-1 cursor-pointer hover:bg-accent/10 rounded-lg p-2 -m-2 transition-colors"
+        >
+          <Avatar className="w-10 h-10">
+            <AvatarImage src={selectedUserAvatar || undefined} />
+            <AvatarFallback className="bg-primary/20 text-primary">
+              {selectedUserName?.charAt(0)?.toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold truncate">{selectedUserName}</p>
+            <p className="text-xs text-muted-foreground">Click to view profile</p>
+          </div>
         </div>
       </div>
 
