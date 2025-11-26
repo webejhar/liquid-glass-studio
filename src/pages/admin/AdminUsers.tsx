@@ -182,8 +182,8 @@ const AdminUsers = () => {
         </div>
 
         <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-6 mb-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="relative flex-1 w-full">
+          <div className="flex flex-col gap-4">
+            <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search by name, email, or account ID..."
@@ -192,14 +192,14 @@ const AdminUsers = () => {
                 className="pl-10"
               />
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2">
               {filterButtons.map((filter) => (
                 <Button
                   key={filter.key}
                   variant={activeFilter === filter.key ? "default" : "outline"}
                   size="sm"
                   onClick={() => setActiveFilter(filter.key)}
-                  className="gap-2"
+                  className="gap-2 whitespace-nowrap flex-shrink-0"
                 >
                   {filter.label}
                   <Badge variant={activeFilter === filter.key ? "secondary" : "outline"}>
