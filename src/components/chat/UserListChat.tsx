@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadUsers();
@@ -114,23 +116,36 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="p-4 hover:bg-accent/10 cursor-pointer transition-colors"
-                onClick={() => onSelectUser(user.user_id, user.name || 'User', user.avatar_url)}
+                className="p-4 hover:bg-accent/10 transition-colors group relative"
               >
                 <div className="flex items-center gap-3">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={user.avatar_url || undefined} />
-                    <AvatarFallback className="bg-primary/20 text-primary">
-                      {user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold truncate">{user.name || 'Unnamed User'}</p>
-                      {getAccountTypeBadge(user.account_type)}
+                  <div
+                    onClick={() => onSelectUser(user.user_id, user.name || 'User', user.avatar_url)}
+                    className="flex items-center gap-3 flex-1 cursor-pointer"
+                  >
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={user.avatar_url || undefined} />
+                      <AvatarFallback className="bg-primary/20 text-primary">
+                        {user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold truncate">{user.name || 'Unnamed User'}</p>
+                        {getAccountTypeBadge(user.account_type)}
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                     </div>
-                    <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                   </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/profile/${user.user_id}`);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 text-xs font-semibold"
+                  >
+                    View Profile
+                  </button>
                 </div>
               </motion.div>
             ))}

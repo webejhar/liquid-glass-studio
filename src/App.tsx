@@ -24,6 +24,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import Account from "./pages/Account";
+import UserProfile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/account" element={<Account />} />
+              <Route path="/profile/:userId" element={<UserProfile />} />
               
               {/* Admin Routes */}
               <Route path="/admin/login" element={<AdminLogin />} />

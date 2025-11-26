@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell, X, ArrowRight, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,6 +86,7 @@ interface Order {
 
 export default function Account() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { cart, clearCart, addToCart, removeFromCart } = useCart();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -120,6 +121,21 @@ export default function Account() {
   } | null>(null);
   
   useSessionTracking();
+
+  // Handle navigation from UserProfile with chat state
+  useEffect(() => {
+    if (location.state) {
+      const { activeTab, selectedUser } = location.state as any;
+      if (activeTab) {
+        setActiveTab(activeTab);
+      }
+      if (selectedUser) {
+        setSelectedChatUser(selectedUser);
+      }
+      // Clear the location state after using it
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state]);
 
   // Form state
   const [formData, setFormData] = useState({
