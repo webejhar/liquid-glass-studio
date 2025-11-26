@@ -81,8 +81,8 @@ const AdminUserEdit = () => {
         accountType: user.account_type
       });
 
-      // Update user profile with approval status
-      const { error: updateError } = await supabase
+      // Update user profile with approval status - using user_id directly
+      const { data: updateData, error: updateError } = await supabase
         .from("profiles")
         .update({
           name: user.name,
@@ -92,23 +92,28 @@ const AdminUserEdit = () => {
           profession: user.profession,
           approval_status: user.approval_status,
         })
-        .eq("user_id", userId);
+        .eq("user_id", user.user_id)
+        .select();
 
       if (updateError) {
         console.error("Error updating approval status:", updateError);
         throw updateError;
       }
 
-      console.log("User approval status updated successfully");
+      console.log("User approval status updated successfully:", updateData);
 
       // Verify the update
-      const { data: verifyData } = await supabase
+      const { data: verifyData, error: verifyError } = await supabase
         .from("profiles")
-        .select("approval_status")
-        .eq("user_id", userId)
+        .select("approval_status, account_type, name, email")
+        .eq("user_id", user.user_id)
         .single();
 
-      console.log("Verified approval status in database:", verifyData?.approval_status);
+      if (verifyError) {
+        console.error("Error verifying update:", verifyError);
+      } else {
+        console.log("Verified approval status in database:", verifyData);
+      }
 
       // Send email notification if approval status was changed to approved or rejected
       if (user.approval_status === 'approved' || user.approval_status === 'rejected') {
