@@ -35,7 +35,8 @@ export const ClientForm = ({ onSuccess }: ClientFormProps) => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [nidFile, setNidFile] = useState<File | null>(null);
+  const [nidFrontFile, setNidFrontFile] = useState<File | null>(null);
+  const [nidBackFile, setNidBackFile] = useState<File | null>(null);
   const [socialLinks, setSocialLinks] = useState<Array<{ platform: string; url: string }>>([
     { platform: "", url: "" }
   ]);
@@ -134,21 +135,36 @@ export const ClientForm = ({ onSuccess }: ClientFormProps) => {
       if (authData.user) {
         let nidUrl = "";
         
-        if (nidFile) {
-          const fileExt = nidFile.name.split('.').pop();
-          const filePath = `${authData.user.id}/nid.${fileExt}`;
+        if (nidFrontFile && nidBackFile) {
+          // Upload front NID
+          const frontExt = nidFrontFile.name.split('.').pop();
+          const frontPath = `${authData.user.id}/nid-front.${frontExt}`;
           
-          const { error: uploadError } = await supabase.storage
+          const { error: frontUploadError } = await supabase.storage
             .from('nid-documents')
-            .upload(filePath, nidFile);
+            .upload(frontPath, nidFrontFile);
 
-          if (uploadError) throw uploadError;
+          if (frontUploadError) throw frontUploadError;
 
-          const { data: { publicUrl } } = supabase.storage
+          const { data: { publicUrl: frontUrl } } = supabase.storage
             .from('nid-documents')
-            .getPublicUrl(filePath);
+            .getPublicUrl(frontPath);
 
-          nidUrl = publicUrl;
+          // Upload back NID
+          const backExt = nidBackFile.name.split('.').pop();
+          const backPath = `${authData.user.id}/nid-back.${backExt}`;
+          
+          const { error: backUploadError } = await supabase.storage
+            .from('nid-documents')
+            .upload(backPath, nidBackFile);
+
+          if (backUploadError) throw backUploadError;
+
+          const { data: { publicUrl: backUrl } } = supabase.storage
+            .from('nid-documents')
+            .getPublicUrl(backPath);
+
+          nidUrl = `${frontUrl}|${backUrl}`;
         }
 
         const { error: profileError } = await supabase
@@ -206,8 +222,8 @@ export const ClientForm = ({ onSuccess }: ClientFormProps) => {
       }
       setStep(2);
     } else if (step === 2) {
-      if (!nidFile) {
-        toast({ title: "Error", description: "Please upload your NID", variant: "destructive" });
+      if (!nidFrontFile || !nidBackFile) {
+        toast({ title: "Error", description: "Please upload both front and back of your NID", variant: "destructive" });
         return;
       }
       setStep(3);
@@ -262,19 +278,37 @@ export const ClientForm = ({ onSuccess }: ClientFormProps) => {
         {step === 2 && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Upload NID</Label>
-              <div className="border-2 border-dashed border-primary/20 rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
+              <Label>Upload NID Front Side</Label>
+              <div className="border-2 border-dashed border-primary/20 rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
                 <Input
                   type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={(e) => setNidFile(e.target.files?.[0] || null)}
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  onChange={(e) => setNidFrontFile(e.target.files?.[0] || null)}
                   className="hidden"
-                  id="nid-upload"
+                  id="nid-front-upload"
                 />
-                <label htmlFor="nid-upload" className="cursor-pointer flex flex-col items-center gap-2">
-                  <Upload className="w-10 h-10 text-muted-foreground" />
+                <label htmlFor="nid-front-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                  <Upload className="w-8 h-8 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    {nidFile ? nidFile.name : "Click to upload NID (JPG, PNG, PDF)"}
+                    {nidFrontFile ? nidFrontFile.name : "Click to upload NID front (JPG, PNG, PDF)"}
+                  </span>
+                </label>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Upload NID Back Side</Label>
+              <div className="border-2 border-dashed border-primary/20 rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+                <Input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  onChange={(e) => setNidBackFile(e.target.files?.[0] || null)}
+                  className="hidden"
+                  id="nid-back-upload"
+                />
+                <label htmlFor="nid-back-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                  <Upload className="w-8 h-8 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {nidBackFile ? nidBackFile.name : "Click to upload NID back (JPG, PNG, PDF)"}
                   </span>
                 </label>
               </div>

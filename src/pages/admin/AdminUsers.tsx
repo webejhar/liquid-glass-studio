@@ -89,6 +89,16 @@ const AdminUsers = () => {
   const handleApproveReject = async (userId: string, status: 'approved' | 'rejected') => {
     setLoading(true);
     try {
+      // Get user details first
+      const { data: userProfile, error: fetchError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Update approval status
       const { error } = await supabase
         .from("profiles")
         .update({ approval_status: status })
@@ -96,9 +106,21 @@ const AdminUsers = () => {
 
       if (error) throw error;
 
+      // Send email notification
+      if (userProfile) {
+        await supabase.functions.invoke('send-approval-notification', {
+          body: {
+            userEmail: userProfile.email,
+            userName: userProfile.name,
+            accountType: userProfile.account_type === 'service_provider' ? 'Service Provider' : 'Client',
+            status: status,
+          },
+        });
+      }
+
       toast({
         title: status === 'approved' ? "Account Approved" : "Account Rejected",
-        description: `User account has been ${status}`,
+        description: `User account has been ${status}. Email notification sent.`,
       });
 
       fetchUsers();
