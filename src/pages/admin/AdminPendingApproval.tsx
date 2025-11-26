@@ -68,7 +68,9 @@ const AdminPendingApproval = () => {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl sm:text-4xl font-bold mb-2">Pending Approval</h1>
-          <p className="text-muted-foreground">Users waiting for approval: {pendingUsers.length}</p>
+          <p className="text-muted-foreground">
+            <span className="font-semibold text-orange-500 text-lg">{pendingUsers.length}</span> users waiting for approval
+          </p>
         </div>
 
         <Card className="backdrop-blur-xl bg-background/60 border-border/50">
