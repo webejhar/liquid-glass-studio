@@ -96,6 +96,30 @@ export const ClientForm = ({ onSuccess }: ClientFormProps) => {
     setLoading(true);
 
     try {
+      // Check for duplicate email
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id, approval_status")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (existingProfile) {
+        if (existingProfile.approval_status === 'pending') {
+          toast({
+            title: "Account Exists",
+            description: "An account with this email already exists and is waiting for admin approval. Please wait for your approval.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Account Exists",
+            description: "An account with this email already exists. Please login instead.",
+            variant: "destructive",
+          });
+        }
+        return;
+      }
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -147,14 +171,14 @@ export const ClientForm = ({ onSuccess }: ClientFormProps) => {
           body: {
             userEmail: email,
             userName: name,
-            accountType: 'client',
+            accountType: 'Client',
             status: 'pending',
           },
         });
 
         toast({
           title: "Success!",
-          description: "Your account is pending for approval. You will receive an email once approved.",
+          description: "Your Client account is pending admin approval. Please wait for review.",
         });
 
         onSuccess();

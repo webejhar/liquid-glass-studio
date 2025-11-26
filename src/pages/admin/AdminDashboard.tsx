@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, ShoppingBag, Calendar, Mail } from "lucide-react";
+import { Users, ShoppingBag, Calendar, Mail, UserCheck, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
@@ -11,7 +11,10 @@ const AdminDashboard = () => {
   const { isLoading } = useAdminAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
-    totalUsers: 0,
+    totalGeneralUsers: 0,
+    totalServiceProviders: 0,
+    totalClients: 0,
+    pendingApprovals: 0,
     totalOrders: 0,
     totalBookings: 0,
     totalContacts: 0,
@@ -24,17 +27,29 @@ const AdminDashboard = () => {
   const fetchStats = async () => {
     try {
       const [profilesData, productOrdersData, domainOrdersData, bookingsData, contactsData] = await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("profiles").select("account_type, approval_status"),
         supabase.from("product_orders").select("id", { count: "exact", head: true }),
         supabase.from("domain_orders").select("id", { count: "exact", head: true }),
         supabase.from("meeting_bookings").select("id", { count: "exact", head: true }),
         supabase.from("contacts").select("id", { count: "exact", head: true }),
       ]);
 
+      const profiles = profilesData.data || [];
+      const totalGeneralUsers = profiles.filter(p => p.account_type === 'general').length;
+      const totalServiceProviders = profiles.filter(p => p.account_type === 'service_provider').length;
+      const totalClients = profiles.filter(p => p.account_type === 'client').length;
+      const pendingApprovals = profiles.filter(p => 
+        (p.account_type === 'service_provider' || p.account_type === 'client') && 
+        p.approval_status === 'pending'
+      ).length;
+
       const totalOrders = (productOrdersData.count || 0) + (domainOrdersData.count || 0);
 
       setStats({
-        totalUsers: profilesData.count || 0,
+        totalGeneralUsers,
+        totalServiceProviders,
+        totalClients,
+        pendingApprovals,
         totalOrders,
         totalBookings: bookingsData.count || 0,
         totalContacts: contactsData.count || 0,
@@ -49,10 +64,13 @@ const AdminDashboard = () => {
   }
 
   const statCards = [
-    { title: "Total Users", value: stats.totalUsers, icon: Users, color: "text-blue-500", path: "/admin/users" },
-    { title: "Total Orders", value: stats.totalOrders, icon: ShoppingBag, color: "text-green-500", path: "/admin/orders" },
-    { title: "Total Bookings", value: stats.totalBookings, icon: Calendar, color: "text-purple-500", path: "/admin/meetings" },
-    { title: "Total Contacts", value: stats.totalContacts, icon: Mail, color: "text-orange-500", path: "/admin/contacts" },
+    { title: "General Users", value: stats.totalGeneralUsers, icon: Users, color: "text-blue-500", path: "/admin/users" },
+    { title: "Service Providers", value: stats.totalServiceProviders, icon: UserCheck, color: "text-purple-500", path: "/admin/users" },
+    { title: "Clients", value: stats.totalClients, icon: Users, color: "text-green-500", path: "/admin/users" },
+    { title: "Pending Approvals", value: stats.pendingApprovals, icon: AlertCircle, color: "text-orange-500", path: "/admin/users" },
+    { title: "Total Orders", value: stats.totalOrders, icon: ShoppingBag, color: "text-cyan-500", path: "/admin/orders" },
+    { title: "Total Bookings", value: stats.totalBookings, icon: Calendar, color: "text-pink-500", path: "/admin/meetings" },
+    { title: "Total Contacts", value: stats.totalContacts, icon: Mail, color: "text-yellow-500", path: "/admin/contacts" },
   ];
 
   return (

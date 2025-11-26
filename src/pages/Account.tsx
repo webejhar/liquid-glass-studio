@@ -246,6 +246,15 @@ export default function Account() {
     }
 
     if (data) {
+      // Check if Service Provider or Client with pending status - block access
+      if ((data.account_type === 'service_provider' || data.account_type === 'client') && 
+          data.approval_status === 'pending') {
+        toast.error("Your account is pending admin approval. You cannot access the dashboard until approved.");
+        await supabase.auth.signOut();
+        navigate("/login");
+        return;
+      }
+
       setProfile(data);
       setFormData({
         name: data.name || "",
@@ -831,6 +840,32 @@ export default function Account() {
                   <div className="flex-1 min-w-0 text-center sm:text-left w-full">
                     <h2 className="text-lg sm:text-xl lg:text-2xl font-bold break-words mb-2 sm:mb-3">{formData.name || "User"}</h2>
                     
+                    {/* Account Type and Account Number */}
+                    <div className="flex flex-col sm:flex-row gap-2 mb-3 justify-center sm:justify-start">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs sm:text-sm font-semibold">
+                        {profile?.account_type === 'general' && 'General User'}
+                        {profile?.account_type === 'service_provider' && 'Service Provider'}
+                        {profile?.account_type === 'client' && 'Client'}
+                      </div>
+                      {profile?.account_number && (
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs sm:text-sm font-semibold">
+                          ID: {profile.account_number}
+                        </div>
+                      )}
+                      {(profile?.account_type === 'service_provider' || profile?.account_type === 'client') && profile?.approval_status && (
+                        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold ${
+                          profile.approval_status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                          profile.approval_status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-red-500/20 text-red-400'
+                        }`}>
+                          {profile.approval_status === 'approved' && <CheckCircle className="w-3 h-3" />}
+                          {profile.approval_status === 'pending' && <Clock className="w-3 h-3" />}
+                          {profile.approval_status === 'rejected' && <XCircle className="w-3 h-3" />}
+                          {profile.approval_status.charAt(0).toUpperCase() + profile.approval_status.slice(1)}
+                        </div>
+                      )}
+                    </div>
+                    
                     <div className="mb-2 sm:mb-3 flex justify-center sm:justify-start">
                       {formData.verification_status === 'verified' ? (
                         <div className="inline-flex items-center gap-1 sm:gap-1.5 lg:gap-2 px-2 sm:px-2.5 lg:px-3 py-1 rounded-full bg-green-500/20 text-green-400">
@@ -967,6 +1002,73 @@ export default function Account() {
                     />
                   </div>
                 </div>
+
+                {/* Service Provider CV */}
+                {profile?.account_type === 'service_provider' && profile?.cv_url && (
+                  <div className="mt-6 p-4 rounded-lg border border-border/50 bg-muted/10">
+                    <Label className="text-xs sm:text-sm mb-2 block">CV Document</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(profile.cv_url!, '_blank')}
+                      className="gap-2"
+                    >
+                      <FileText className="w-4 h-4" />
+                      View CV
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2">CV cannot be edited after upload</p>
+                  </div>
+                )}
+
+                {/* Client NID */}
+                {profile?.account_type === 'client' && profile?.nid_url && (
+                  <div className="mt-6 p-4 rounded-lg border border-border/50 bg-muted/10">
+                    <Label className="text-xs sm:text-sm mb-2 block">NID Document</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(profile.nid_url!, '_blank')}
+                      className="gap-2"
+                    >
+                      <FileText className="w-4 h-4" />
+                      View NID
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2">NID cannot be edited after upload</p>
+                  </div>
+                )}
+
+                {/* Service Provider Category */}
+                {profile?.account_type === 'service_provider' && profile?.category && (
+                  <div className="mt-6 p-4 rounded-lg border border-border/50 bg-muted/10">
+                    <Label className="text-xs sm:text-sm mb-2 block">Service Category</Label>
+                    <p className="font-medium">{profile.category}</p>
+                  </div>
+                )}
+
+                {/* Social Media Links for Service Providers and Clients */}
+                {(profile?.account_type === 'service_provider' || profile?.account_type === 'client') && 
+                 profile?.social_media_links && Array.isArray(profile.social_media_links) && profile.social_media_links.length > 0 && (
+                  <div className="mt-6 p-4 rounded-lg border border-border/50 bg-muted/10">
+                    <Label className="text-xs sm:text-sm mb-3 block">Social Media Links</Label>
+                    <div className="space-y-2">
+                      {profile.social_media_links.map((link: any, index: number) => (
+                        <div key={index} className="flex items-center gap-2 p-2 rounded bg-background/50">
+                          <div className="px-2 py-1 rounded bg-primary/20 text-primary text-xs font-medium">
+                            {link.platform}
+                          </div>
+                          <a 
+                            href={link.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-sm text-primary hover:underline truncate flex-1"
+                          >
+                            {link.url}
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {isEditing && (
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 sm:mt-8">

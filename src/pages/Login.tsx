@@ -32,6 +32,27 @@ export default function Login() {
 
       if (error) throw error;
 
+      // Check approval status for Service Providers and Clients
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("approval_status, account_type")
+          .eq("user_id", data.user.id)
+          .single();
+
+        if (profile && (profile.account_type === 'service_provider' || profile.account_type === 'client')) {
+          if (profile.approval_status === 'pending') {
+            await supabase.auth.signOut();
+            toast.error("Your account is pending admin approval. Please wait until the admin approves your account.");
+            return;
+          } else if (profile.approval_status === 'rejected') {
+            await supabase.auth.signOut();
+            toast.error("Your account has been rejected. Please contact support.");
+            return;
+          }
+        }
+      }
+
       toast.success("Welcome back!");
       navigate("/account");
     } catch (error: any) {
