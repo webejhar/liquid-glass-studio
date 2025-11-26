@@ -71,18 +71,12 @@ const AdminUserEdit = () => {
   };
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user || !userId) return;
 
     setSaving(true);
     try {
-      console.log("Updating user approval status:", {
-        userId: user.user_id,
-        currentStatus: user.approval_status,
-        accountType: user.account_type
-      });
-
-      // Update user profile with approval status - using user_id directly
-      const { data: updateData, error: updateError } = await supabase
+      // Step 1: Update the database
+      const { error: updateError } = await supabase
         .from("profiles")
         .update({
           name: user.name,
@@ -92,64 +86,67 @@ const AdminUserEdit = () => {
           profession: user.profession,
           approval_status: user.approval_status,
         })
-        .eq("user_id", user.user_id)
-        .select();
+        .eq("user_id", userId);
 
       if (updateError) {
-        console.error("Error updating approval status:", updateError);
-        throw updateError;
+        throw new Error(`Database update failed: ${updateError.message}`);
       }
 
-      console.log("User approval status updated successfully:", updateData);
-
-      // Verify the update
-      const { data: verifyData, error: verifyError } = await supabase
+      // Step 2: Verify the update worked
+      const { data: verifiedData, error: verifyError } = await supabase
         .from("profiles")
-        .select("approval_status, account_type, name, email")
-        .eq("user_id", user.user_id)
+        .select("approval_status, name, email, account_type")
+        .eq("user_id", userId)
         .single();
 
-      if (verifyError) {
-        console.error("Error verifying update:", verifyError);
-      } else {
-        console.log("Verified approval status in database:", verifyData);
+      if (verifyError || !verifiedData) {
+        throw new Error("Failed to verify database update");
       }
 
-      // Send email notification if approval status was changed to approved or rejected
+      if (verifiedData.approval_status !== user.approval_status) {
+        throw new Error("Approval status did not update correctly in database");
+      }
+
+      // Step 3: Send email notification for approval/rejection
       if (user.approval_status === 'approved' || user.approval_status === 'rejected') {
         try {
+          const accountTypeLabel = 
+            user.account_type === 'service_provider' ? 'Service Provider' : 
+            user.account_type === 'client' ? 'Client' : 'General User';
+
           await supabase.functions.invoke('send-approval-notification', {
             body: {
-              userEmail: user.email,
-              userName: user.name,
-              accountType: user.account_type === 'service_provider' ? 'Service Provider' : 
-                          user.account_type === 'client' ? 'Client' : 'General User',
+              userEmail: verifiedData.email,
+              userName: verifiedData.name,
+              accountType: accountTypeLabel,
               status: user.approval_status,
             },
           });
         } catch (emailError) {
-          console.error("Email notification failed:", emailError);
-          // Don't block the success flow if email fails
+          console.error("Email notification failed (non-critical):", emailError);
         }
       }
 
-      const statusMessage = user.approval_status === 'approved' 
-        ? "User approved successfully. They can now log in immediately."
-        : user.approval_status === 'rejected'
-        ? "User rejected successfully."
-        : "User information has been saved.";
+      // Step 4: Show success message
+      const successMessage = 
+        user.approval_status === 'approved' 
+          ? "User has been approved successfully. They can now log in to their account."
+          : user.approval_status === 'rejected'
+          ? "User has been rejected."
+          : "User information has been updated.";
 
       toast({
-        title: "User updated successfully",
-        description: statusMessage,
+        title: "Success",
+        description: successMessage,
       });
 
+      // Step 5: Navigate back to users list
       navigate("/admin/users");
     } catch (error: any) {
-      console.error("Error in handleSave:", error);
+      console.error("Save error:", error);
       toast({
-        title: "Error updating user",
-        description: error.message,
+        title: "Update Failed",
+        description: error.message || "Failed to update user information",
         variant: "destructive",
       });
     } finally {
