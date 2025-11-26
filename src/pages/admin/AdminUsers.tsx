@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -15,16 +14,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Eye, ExternalLink, Check, X } from "lucide-react";
+import { Search, Edit } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Profile {
   id: string;
@@ -45,13 +37,10 @@ interface Profile {
 const AdminUsers = () => {
   const { isLoading } = useAdminAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<Profile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<Profile[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("general");
 
   useEffect(() => {
     fetchUsers();
@@ -86,64 +75,11 @@ const AdminUsers = () => {
     }
   };
 
-  const handleApproveReject = async (userId: string, status: 'approved' | 'rejected') => {
-    setLoading(true);
-    try {
-      // Get user details first
-      const { data: userProfile, error: fetchError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      // Update approval status
-      const { error } = await supabase
-        .from("profiles")
-        .update({ approval_status: status })
-        .eq("user_id", userId);
-
-      if (error) throw error;
-
-      // Send email notification
-      if (userProfile) {
-        await supabase.functions.invoke('send-approval-notification', {
-          body: {
-            userEmail: userProfile.email,
-            userName: userProfile.name,
-            accountType: userProfile.account_type === 'service_provider' ? 'Service Provider' : 'Client',
-            status: status,
-          },
-        });
-      }
-
-      toast({
-        title: status === 'approved' ? "Account Approved" : "Account Rejected",
-        description: `User account has been ${status}. Email notification sent.`,
-      });
-
-      fetchUsers();
-    } catch (error: any) {
-      toast({
-        title: "Error updating status",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  const generalUsers = filteredUsers.filter(u => u.account_type === 'general');
-  const serviceProviders = filteredUsers.filter(u => u.account_type === 'service_provider');
-  const clients = filteredUsers.filter(u => u.account_type === 'client');
-
-  const renderUserTable = (usersList: Profile[], showApproval: boolean) => (
+  const renderUserTable = () => (
     <div className="rounded-lg border border-border/50 overflow-x-auto">
       <div className="min-w-[800px]">
         <Table>
@@ -151,92 +87,55 @@ const AdminUsers = () => {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Account Type</TableHead>
               <TableHead>Account ID</TableHead>
-              {showApproval && <TableHead>Status</TableHead>}
+              <TableHead>Status</TableHead>
               <TableHead>Registered</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {usersList.map((user) => (
+            {filteredUsers.map((user) => (
               <TableRow key={user.id}>
                 <TableCell className="font-medium">{user.name || "N/A"}</TableCell>
                 <TableCell>{user.email || "N/A"}</TableCell>
                 <TableCell>
+                  <Badge variant="outline">
+                    {user.account_type === 'general' ? 'General' : 
+                     user.account_type === 'service_provider' ? 'Provider' : 
+                     'Client'}
+                  </Badge>
+                </TableCell>
+                <TableCell>
                   <Badge variant="outline">{user.account_number || "N/A"}</Badge>
                 </TableCell>
-                {showApproval && (
-                  <TableCell>
-                    <Badge
-                      variant={
-                        user.approval_status === "approved"
-                          ? "default"
-                          : user.approval_status === "pending"
-                          ? "secondary"
-                          : "destructive"
-                      }
-                    >
-                      {user.approval_status || "N/A"}
-                    </Badge>
-                  </TableCell>
-                )}
+                <TableCell>
+                  <Badge
+                    variant={
+                      user.approval_status === "approved"
+                        ? "default"
+                        : user.approval_status === "pending"
+                        ? "secondary"
+                        : "destructive"
+                    }
+                  >
+                    {user.approval_status || "N/A"}
+                  </Badge>
+                </TableCell>
                 <TableCell>
                   {user.created_at
                     ? new Date(user.created_at).toLocaleDateString()
                     : "N/A"}
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setShowDetailsDialog(true);
-                      }}
-                      title="View Details"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    {showApproval && (
-                      <>
-                        {user.approval_status === 'approved' && (
-                          <div className="flex items-center justify-center text-green-500" title="Approved">
-                            <Check className="w-5 h-5" />
-                          </div>
-                        )}
-                        {user.approval_status === 'rejected' && (
-                          <div className="flex items-center justify-center text-red-500" title="Rejected">
-                            <X className="w-5 h-5" />
-                          </div>
-                        )}
-                        {user.approval_status === 'pending' && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleApproveReject(user.user_id, 'approved')}
-                              disabled={loading}
-                              title="Approve"
-                              className="text-green-500 hover:text-green-600 hover:bg-green-50"
-                            >
-                              <Check className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleApproveReject(user.user_id, 'rejected')}
-                              disabled={loading}
-                              title="Reject"
-                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate(`/admin/users/${user.user_id}`)}
+                    title="Edit User"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -250,8 +149,8 @@ const AdminUsers = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">User Management</h1>
-          <p className="text-muted-foreground">Manage all registered users by type</p>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">All Users</h1>
+          <p className="text-muted-foreground">Total registered users: {filteredUsers.length}</p>
         </div>
 
         <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-6">
@@ -267,149 +166,9 @@ const AdminUsers = () => {
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3 mb-6">
-              <TabsTrigger value="general">
-                General ({generalUsers.length})
-              </TabsTrigger>
-              <TabsTrigger value="service_provider">
-                Provider ({serviceProviders.length})
-              </TabsTrigger>
-              <TabsTrigger value="client">
-                Client ({clients.length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="general">
-              {renderUserTable(generalUsers, false)}
-            </TabsContent>
-
-            <TabsContent value="service_provider">
-              {renderUserTable(serviceProviders, true)}
-            </TabsContent>
-
-            <TabsContent value="client">
-              {renderUserTable(clients, true)}
-            </TabsContent>
-          </Tabs>
+          {renderUserTable()}
         </Card>
       </div>
-
-      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
-          <DialogHeader>
-            <DialogTitle>User Details</DialogTitle>
-            <DialogDescription>Complete user information</DialogDescription>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Name</p>
-                  <p className="font-medium">{selectedUser.name || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{selectedUser.email || "N/A"}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Phone</p>
-                  <p className="font-medium">{selectedUser.phone || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Account ID</p>
-                  <Badge variant="outline">{selectedUser.account_number || "N/A"}</Badge>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Account Type</p>
-                  <Badge>{selectedUser.account_type}</Badge>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Registration Date</p>
-                  <p className="font-medium">
-                    {selectedUser.created_at
-                      ? new Date(selectedUser.created_at).toLocaleDateString()
-                      : "N/A"}
-                  </p>
-                </div>
-              </div>
-
-              {selectedUser.account_type === 'service_provider' && (
-                <>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Category</p>
-                    <p className="font-medium">{selectedUser.category || "N/A"}</p>
-                  </div>
-                  {selectedUser.cv_url && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">CV Document</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(selectedUser.cv_url!, '_blank')}
-                      >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        View CV
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {selectedUser.account_type === 'client' && selectedUser.nid_url && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">NID Document</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(selectedUser.nid_url!, '_blank')}
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    View NID
-                  </Button>
-                </div>
-              )}
-
-              {(selectedUser.account_type === 'service_provider' || selectedUser.account_type === 'client') && selectedUser.social_media_links && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Social Media Links</p>
-                  <div className="space-y-2">
-                    {Array.isArray(selectedUser.social_media_links) && selectedUser.social_media_links.map((link: any, index: number) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <Badge variant="outline">{link.platform}</Badge>
-                        <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate">
-                          {link.url}
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {(selectedUser.account_type === 'service_provider' || selectedUser.account_type === 'client') && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Approval Status</p>
-                  <Badge
-                    variant={
-                      selectedUser.approval_status === "approved"
-                        ? "default"
-                        : selectedUser.approval_status === "pending"
-                        ? "secondary"
-                        : "destructive"
-                    }
-                  >
-                    {selectedUser.approval_status || "N/A"}
-                  </Badge>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </AdminLayout>
   );
 };
