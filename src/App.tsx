@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CustomCursor } from "@/components/CustomCursor";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Cart } from "@/components/Cart";
@@ -46,6 +47,7 @@ const App = () => (
         <Toaster />
         <Sonner position="bottom-left" />
         <BrowserRouter>
+          <LoadingScreen />
           <CustomCursor />
           <AnimatedBackground />
           <div className="relative z-10">
