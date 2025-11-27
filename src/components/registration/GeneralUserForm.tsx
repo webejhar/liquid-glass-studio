@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { CustomPhoneInput } from "@/components/PhoneInput";
 
 interface GeneralUserFormProps {
   onSuccess: () => void;
@@ -140,13 +141,10 @@ export const GeneralUserForm = ({ onSuccess }: GeneralUserFormProps) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="phone">Phone</Label>
-        <Input
-          id="phone"
-          type="tel"
+        <Label htmlFor="phone">Phone Number</Label>
+        <CustomPhoneInput
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="Enter your phone number"
+          onChange={setPhone}
           required
         />
       </div>

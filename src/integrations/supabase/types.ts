@@ -388,7 +388,7 @@ export type Database = {
       }
       profiles: {
         Row: {
-          account_number: string | null
+          account_number: string
           account_type: Database["public"]["Enums"]["account_type"] | null
           address: string | null
           approval_status: string | null
@@ -413,7 +413,7 @@ export type Database = {
           verification_status: string | null
         }
         Insert: {
-          account_number?: string | null
+          account_number?: string
           account_type?: Database["public"]["Enums"]["account_type"] | null
           address?: string | null
           approval_status?: string | null
@@ -438,7 +438,7 @@ export type Database = {
           verification_status?: string | null
         }
         Update: {
-          account_number?: string | null
+          account_number?: string
           account_type?: Database["public"]["Enums"]["account_type"] | null
           address?: string | null
           approval_status?: string | null

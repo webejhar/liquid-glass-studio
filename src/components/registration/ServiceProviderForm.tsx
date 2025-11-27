@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, X, Upload } from "lucide-react";
+import { CustomPhoneInput } from "@/components/PhoneInput";
 
 interface ServiceProviderFormProps {
   onSuccess: () => void;
@@ -256,8 +257,12 @@ export const ServiceProviderForm = ({ onSuccess }: ServiceProviderFormProps) => 
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
-            <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+            <Label htmlFor="phone">Phone Number</Label>
+            <CustomPhoneInput
+              value={phone}
+              onChange={setPhone}
+              required
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
