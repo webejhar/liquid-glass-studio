@@ -216,6 +216,13 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
 
   const sendFriendRequest = async (receiverId: string) => {
     try {
+      // Get sender's name for notification
+      const { data: senderProfile } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('user_id', currentUserId)
+        .single();
+
       const { error } = await supabase
         .from('friend_requests')
         .insert({
@@ -234,6 +241,15 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
         }
         throw error;
       }
+
+      // Create notification for receiver
+      const senderName = senderProfile?.name || 'Someone';
+      await supabase.rpc('create_user_notification', {
+        p_user_id: receiverId,
+        p_title: 'New Friend Request',
+        p_message: `${senderName} sent you a friend request`,
+        p_type: 'friend_request'
+      });
 
       toast({
         title: 'Friend request sent',
@@ -274,11 +290,19 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold flex items-center gap-2">
+          <button
+            onClick={() => {
+              setShowSearch(false);
+              setShowRequests(false);
+              setSearchQuery("");
+              setSearchResults([]);
+            }}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <MessageCircle className="w-5 h-5 text-primary" />
-            Chat
-          </h2>
-          <div className="flex gap-2">
+            <h2 className="text-xl font-bold">Chat</h2>
+          </button>
+          <div className="flex gap-2 flex-wrap">
             <Button
               onClick={() => {
                 setShowSearch(!showSearch);
@@ -288,8 +312,9 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
               }}
               variant={showSearch ? "default" : "outline"}
               size="sm"
+              className="text-xs sm:text-sm"
             >
-              <UserPlus className="w-4 h-4 mr-1" />
+              <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
               Add Friend
             </Button>
             <Button
@@ -299,9 +324,9 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
               }}
               variant={showRequests ? "default" : "outline"}
               size="sm"
-              className="relative"
+              className="relative text-xs sm:text-sm"
             >
-              {showRequests ? "Chat" : "Requests"}
+              Requests
               {!showRequests && pendingRequestsCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                   {pendingRequestsCount}
@@ -314,7 +339,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name, account number..."
+              placeholder="Search by name or account number..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -335,9 +360,9 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
         ) : displayUsers.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
             <MessageCircle className="w-12 h-12 mb-2 opacity-50" />
-            <p className="text-center">
+            <p className="text-center text-sm sm:text-base">
               {showSearch && searchQuery.trim() 
-                ? "No users found. Search by name or account number."
+                ? "No users found. Try searching by name or account number."
                 : showSearch
                 ? "Use the search box to find users and send friend requests."
                 : "No friends yet. Click 'Add Friend' to search for users."}
@@ -353,25 +378,26 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="p-4 hover:bg-accent/10 transition-colors group relative"
+                  className="p-3 sm:p-4 hover:bg-accent/10 transition-colors group relative"
                 >
-                  <div className="flex items-center gap-3">
-                  <div
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div
                       onClick={() => {
-                        // Allow messaging if accepted friends or any user
-                        onSelectUser(user.user_id, user.name || 'User', user.avatar_url);
+                        if (!showSearch && status === 'accepted') {
+                          onSelectUser(user.user_id, user.name || 'User', user.avatar_url);
+                        }
                       }}
-                      className="flex items-center gap-3 flex-1 cursor-pointer"
+                      className={`flex items-center gap-2 sm:gap-3 flex-1 min-w-0 ${!showSearch && status === 'accepted' ? 'cursor-pointer' : ''}`}
                     >
-                      <Avatar className="w-12 h-12">
+                      <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                         <AvatarImage src={user.avatar_url || undefined} />
-                        <AvatarFallback className="bg-primary/20 text-primary">
+                        <AvatarFallback className="bg-primary/20 text-primary text-sm">
                           {user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-semibold truncate">{user.name || 'User'}</p>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <p className="font-semibold truncate text-sm sm:text-base">{user.name || 'User'}</p>
                           {getAccountTypeBadge(user.account_type)}
                         </div>
                         <p className="text-xs text-muted-foreground truncate">
@@ -379,38 +405,43 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
                         </p>
                       </div>
                       {!showSearch && unreadCounts[user.user_id] > 0 && (
-                        <div className="bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
+                        <div className="bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 sm:h-6 sm:w-6 flex items-center justify-center flex-shrink-0">
                           {unreadCounts[user.user_id]}
                         </div>
                       )}
                     </div>
 
-                    <div className="flex gap-2 items-center">
-                      {status === 'none' && showSearch && (
-                        <Button
-                          size="sm"
-                          onClick={() => sendFriendRequest(user.user_id)}
-                          variant="default"
-                        >
-                          <UserPlus className="w-4 h-4 mr-1" />
-                          Add
-                        </Button>
-                      )}
-                      {status === 'pending_sent' && (
-                        <Badge variant="secondary" className="text-xs">Sent</Badge>
-                      )}
-                      {status === 'pending_received' && (
-                        <Badge variant="secondary" className="text-xs">Pending</Badge>
-                      )}
-                      {status === 'accepted' && !showSearch && (
-                        <Badge variant="default" className="bg-green-500 text-xs">
-                          <Check className="w-3 h-3 mr-1" />
-                          Friends
-                        </Badge>
+                    <div className="flex gap-1 sm:gap-2 items-center flex-shrink-0">
+                      {showSearch && (
+                        <>
+                          {status === 'none' && (
+                            <Button
+                              size="sm"
+                              onClick={() => sendFriendRequest(user.user_id)}
+                              variant="default"
+                              className="text-xs h-8"
+                            >
+                              <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                              <span className="hidden sm:inline">Add</span>
+                            </Button>
+                          )}
+                          {status === 'pending_sent' && (
+                            <Badge variant="secondary" className="text-xs">Sent</Badge>
+                          )}
+                          {status === 'pending_received' && (
+                            <Badge variant="secondary" className="text-xs">Pending</Badge>
+                          )}
+                          {status === 'accepted' && (
+                            <Badge variant="default" className="bg-green-500 text-xs">
+                              <Check className="w-3 h-3 mr-1" />
+                              Friends
+                            </Badge>
+                          )}
+                        </>
                       )}
                       <button
                         onClick={() => navigate(`/profile/${user.user_id}`)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 text-xs font-semibold"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity px-2 sm:px-3 py-1 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 text-xs font-semibold whitespace-nowrap"
                       >
                         Profile
                       </button>
