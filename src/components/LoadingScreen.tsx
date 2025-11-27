@@ -31,34 +31,19 @@ export const LoadingScreen = () => {
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.6, ease: "easeOut" }}
                 >
-                  <h1 className="text-6xl md:text-7xl font-bold text-foreground relative">
-                    <span className="relative inline-block">
-                      <span className="relative z-10">dor</span>
-                      <motion.span
-                        className="absolute inset-0 bg-gradient-to-r from-primary via-liquid-blue to-liquid-cyan bg-clip-text text-transparent"
-                        initial={{ x: "-100%" }}
-                        animate={{ x: "200%" }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "linear",
-                        }}
-                      >
-                        dor
-                      </motion.span>
-                    </span>
-                    {" "}
+                  <h1 className="text-8xl md:text-9xl font-black text-foreground relative tracking-tighter">
                     <span className="relative inline-block">
                       <span className="relative z-10">RI</span>
                       <motion.span
                         className="absolute inset-0 bg-gradient-to-r from-primary via-liquid-blue to-liquid-cyan bg-clip-text text-transparent"
-                        initial={{ x: "-100%" }}
-                        animate={{ x: "200%" }}
+                        animate={{ 
+                          x: ["-100%", "100%"],
+                        }}
                         transition={{
-                          duration: 2,
+                          duration: 1.5,
                           repeat: Infinity,
-                          ease: "linear",
-                          delay: 0.2,
+                          ease: "easeInOut",
+                          repeatDelay: 0.3,
                         }}
                       >
                         RI
@@ -70,12 +55,15 @@ export const LoadingScreen = () => {
                 {/* Liquid wave effect */}
                 <motion.div
                   className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent"
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: [0, 1, 0] }}
+                  animate={{ 
+                    scaleX: [0, 1, 0],
+                    x: ["-100%", "0%", "100%"]
+                  }}
                   transition={{
-                    duration: 2,
+                    duration: 1.5,
                     repeat: Infinity,
                     ease: "easeInOut",
+                    repeatDelay: 0.3,
                   }}
                 />
               </div>
