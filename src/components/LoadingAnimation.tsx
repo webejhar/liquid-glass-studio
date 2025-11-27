@@ -3,456 +3,490 @@ import { useEffect, useState } from "react";
 
 export const LoadingAnimation = () => {
   const [show, setShow] = useState(true);
+  const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setShow(false);
-    }, 2500);
+      setIsExiting(true);
+      setTimeout(() => setShow(false), 800);
+    }, 3500);
 
     return () => clearTimeout(timer);
   }, []);
 
   if (!show) return null;
 
+  // Fragment positions for R letter (scattered pieces)
+  const rFragments = [
+    { d: "M20 20 L20 60", x: -30, y: -20, delay: 0 },
+    { d: "M20 60 L20 120", x: -20, y: 30, delay: 0.1 },
+    { d: "M20 20 L45 20", x: 20, y: -30, delay: 0.15 },
+    { d: "M45 20 L70 20", x: 40, y: -25, delay: 0.2 },
+    { d: "M70 20 C90 20 90 35 90 35", x: 50, y: -15, delay: 0.25 },
+    { d: "M90 35 C90 50 70 50 70 50", x: 45, y: 10, delay: 0.3 },
+    { d: "M70 50 L45 50", x: 30, y: 15, delay: 0.35 },
+    { d: "M45 50 L20 50", x: 15, y: 20, delay: 0.4 },
+    { d: "M70 50 L80 85", x: 40, y: 35, delay: 0.45 },
+    { d: "M80 85 L90 120", x: 35, y: 50, delay: 0.5 },
+  ];
+
+  // Fragment positions for I letter
+  const iFragments = [
+    { d: "M20 20 L35 20", x: -25, y: -30, delay: 0.1 },
+    { d: "M35 20 L50 20", x: 25, y: -35, delay: 0.15 },
+    { d: "M50 20 L60 20", x: 30, y: -28, delay: 0.2 },
+    { d: "M40 20 L40 50", x: 20, y: -15, delay: 0.25 },
+    { d: "M40 50 L40 80", x: -15, y: 10, delay: 0.3 },
+    { d: "M40 80 L40 120", x: -20, y: 30, delay: 0.35 },
+    { d: "M20 120 L35 120", x: -30, y: 40, delay: 0.4 },
+    { d: "M35 120 L50 120", x: 20, y: 45, delay: 0.45 },
+    { d: "M50 120 L60 120", x: 35, y: 38, delay: 0.5 },
+  ];
+
   return (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 1 }}
+        animate={{ opacity: isExiting ? 0 : 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.8, ease: "easeInOut" }}
         className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-background via-primary/10 to-background overflow-hidden"
       >
-        {/* Animated Background Blobs */}
-        <motion.div
-          animate={{
-            scale: [1, 1.5, 1.2, 1],
-            x: [-100, 100, -50, -100],
-            y: [100, -100, 50, 100],
-            opacity: [0.3, 0.6, 0.4, 0.3],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute w-[500px] h-[500px] bg-primary/30 rounded-full blur-3xl"
-          style={{ top: '20%', left: '10%' }}
-        />
-        
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.5, 1.2],
-            x: [100, -100, 50, 100],
-            y: [-100, 100, -50, -100],
-            opacity: [0.4, 0.7, 0.5, 0.4],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5
-          }}
-          className="absolute w-[400px] h-[400px] bg-white/20 rounded-full blur-3xl"
-          style={{ bottom: '20%', right: '10%' }}
-        />
+        {/* Animated Background Waves */}
+        {[...Array(5)].map((_, i) => (
+          <motion.div
+            key={`wave-${i}`}
+            animate={{
+              x: [-1000, 1000],
+              opacity: [0.1, 0.3, 0.1],
+            }}
+            transition={{
+              x: {
+                duration: 8 + i * 2,
+                repeat: Infinity,
+                ease: "linear",
+              },
+              opacity: {
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }
+            }}
+            className="absolute w-[200%] h-2"
+            style={{
+              top: `${20 + i * 15}%`,
+              background: i % 2 === 0 
+                ? 'linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent)'
+                : 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+              transform: `rotate(${i * 2}deg)`,
+            }}
+          />
+        ))}
+
+        {/* Floating Particles Background */}
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={`particle-bg-${i}`}
+            className="absolute rounded-full"
+            style={{
+              width: Math.random() * 8 + 4,
+              height: Math.random() * 8 + 4,
+              background: i % 2 === 0 ? 'hsl(var(--primary))' : 'white',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, -100, 0],
+              opacity: [0, 1, 0],
+              scale: [0, 1, 0],
+            }}
+            transition={{
+              duration: 3 + Math.random() * 2,
+              repeat: Infinity,
+              delay: Math.random() * 2,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
 
         {/* Main Content Container */}
-        <div className="relative flex items-center justify-center gap-4">
-          {/* Dynamic Shadow Layers */}
+        <div className="relative flex items-center justify-center gap-8">
+          {/* Dynamic Shadow Pulses */}
           <motion.div
             animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0, 0.6, 0],
+              scale: [1, 2, 1],
+              opacity: [0.2, 0.5, 0.2],
               rotate: [0, 180, 360],
             }}
             transition={{
-              duration: 2,
+              duration: 3,
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="absolute inset-0 -m-16"
+            className="absolute inset-0 -m-24 rounded-full"
             style={{
-              background: 'radial-gradient(circle, hsl(var(--primary) / 0.4), transparent 70%)',
-              filter: 'blur(20px)'
+              background: 'radial-gradient(circle, hsl(var(--primary) / 0.6), transparent 70%)',
+              filter: 'blur(40px)',
             }}
           />
 
           <motion.div
             animate={{
-              scale: [1.3, 1, 1.3],
-              opacity: [0.6, 0, 0.6],
+              scale: [2, 1, 2],
+              opacity: [0.5, 0.2, 0.5],
               rotate: [360, 180, 0],
             }}
             transition={{
-              duration: 2,
+              duration: 3,
               repeat: Infinity,
               ease: "easeInOut",
-              delay: 1
+              delay: 1.5
             }}
-            className="absolute inset-0 -m-16"
+            className="absolute inset-0 -m-24 rounded-full"
             style={{
-              background: 'radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent 70%)',
-              filter: 'blur(20px)'
+              background: 'radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 70%)',
+              filter: 'blur(40px)',
             }}
           />
 
-          {/* Letter R - Unique Design */}
-          <motion.div
-            initial={{ x: -200, opacity: 0, rotate: -180 }}
-            animate={{ 
-              x: 0, 
-              opacity: 1, 
-              rotate: 0,
-            }}
-            transition={{
-              duration: 1,
-              ease: [0.6, 0.05, 0.01, 0.9],
-            }}
-            className="relative"
-          >
-            {/* R Letter - Stylized Design */}
-            <motion.div
-              animate={{
-                rotateY: [0, 360],
-                scale: [1, 1.05, 1],
-              }}
-              transition={{
-                rotateY: {
-                  duration: 4,
+          {/* Letter R - Fragmented Assembly */}
+          <motion.div className="relative">
+            <svg width="120" height="140" viewBox="0 0 120 140" className="drop-shadow-2xl">
+              <defs>
+                <filter id="glow-strong">
+                  <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                <linearGradient id="rGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="hsl(var(--primary))">
+                    <animate attributeName="stopColor" 
+                      values="hsl(var(--primary));white;hsl(var(--primary))" 
+                      dur="2s" repeatCount="indefinite" />
+                  </stop>
+                  <stop offset="50%" stopColor="white">
+                    <animate attributeName="stopColor" 
+                      values="white;hsl(var(--primary));white" 
+                      dur="2s" repeatCount="indefinite" />
+                  </stop>
+                  <stop offset="100%" stopColor="hsl(var(--primary))">
+                    <animate attributeName="stopColor" 
+                      values="hsl(var(--primary));white;hsl(var(--primary))" 
+                      dur="2s" repeatCount="indefinite" />
+                  </stop>
+                </linearGradient>
+              </defs>
+
+              {/* R Letter Fragments */}
+              {rFragments.map((fragment, i) => (
+                <motion.path
+                  key={`r-frag-${i}`}
+                  d={fragment.d}
+                  stroke="url(#rGrad)"
+                  strokeWidth="10"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  filter="url(#glow-strong)"
+                  initial={{
+                    x: fragment.x * 3,
+                    y: fragment.y * 3,
+                    opacity: 0,
+                    scale: 0,
+                    rotate: Math.random() * 360,
+                  }}
+                  animate={{
+                    x: 0,
+                    y: 0,
+                    opacity: 1,
+                    scale: 1,
+                    rotate: 0,
+                  }}
+                  transition={{
+                    duration: 1.2,
+                    delay: fragment.delay,
+                    ease: [0.6, 0.05, 0.01, 0.9],
+                  }}
+                />
+              ))}
+
+              {/* R Sparkle Effects */}
+              {[...Array(8)].map((_, i) => (
+                <motion.circle
+                  key={`r-sparkle-${i}`}
+                  r="2"
+                  fill="white"
+                  initial={{ opacity: 0 }}
+                  animate={{
+                    cx: [60, 60 + Math.cos((i * Math.PI * 2) / 8) * 40],
+                    cy: [70, 70 + Math.sin((i * Math.PI * 2) / 8) * 40],
+                    opacity: [0, 1, 0],
+                    scale: [0, 1.5, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: 1 + i * 0.15,
+                    ease: "easeOut"
+                  }}
+                />
+              ))}
+            </svg>
+
+            {/* R Orbital Particles */}
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={`r-orbit-${i}`}
+                className="absolute w-3 h-3 rounded-full"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(var(--primary)), white)',
+                  top: '50%',
+                  left: '50%',
+                  boxShadow: '0 0 10px hsl(var(--primary))',
+                }}
+                animate={{
+                  x: [0, Math.cos((i * Math.PI * 2) / 6) * 70],
+                  y: [0, Math.sin((i * Math.PI * 2) / 6) * 70],
+                  scale: [0, 1, 0.5, 0],
+                  opacity: [0, 1, 1, 0],
+                }}
+                transition={{
+                  duration: 3,
                   repeat: Infinity,
-                  ease: "linear",
-                },
-                scale: {
-                  duration: 2,
-                  repeat: Infinity,
+                  delay: 1.5 + i * 0.2,
                   ease: "easeInOut"
-                }
-              }}
-              className="relative"
-            >
-              {/* Main R with unique styling */}
-              <svg width="120" height="140" viewBox="0 0 120 140" className="drop-shadow-2xl">
-                {/* Outer glow */}
+                }}
+              />
+            ))}
+          </motion.div>
+
+          {/* Letter I - Fragmented Assembly */}
+          <motion.div className="relative">
+            <svg width="80" height="140" viewBox="0 0 80 140" className="drop-shadow-2xl">
+              <defs>
+                <linearGradient id="iGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="white">
+                    <animate attributeName="stopColor" 
+                      values="white;hsl(var(--primary));white" 
+                      dur="2s" repeatCount="indefinite" />
+                  </stop>
+                  <stop offset="50%" stopColor="hsl(var(--primary))">
+                    <animate attributeName="stopColor" 
+                      values="hsl(var(--primary));white;hsl(var(--primary))" 
+                      dur="2s" repeatCount="indefinite" />
+                  </stop>
+                  <stop offset="100%" stopColor="white">
+                    <animate attributeName="stopColor" 
+                      values="white;hsl(var(--primary));white" 
+                      dur="2s" repeatCount="indefinite" />
+                  </stop>
+                </linearGradient>
+              </defs>
+
+              {/* I Letter Fragments */}
+              {iFragments.map((fragment, i) => (
                 <motion.path
-                  d="M20 20 L20 120 M20 20 L70 20 C90 20 90 50 70 50 L20 50 M70 50 L90 120"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="12"
+                  key={`i-frag-${i}`}
+                  d={fragment.d}
+                  stroke="url(#iGrad)"
+                  strokeWidth="10"
                   fill="none"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  filter="url(#glow-strong)"
+                  initial={{
+                    x: fragment.x * 3,
+                    y: fragment.y * 3,
+                    opacity: 0,
+                    scale: 0,
+                    rotate: Math.random() * 360,
+                  }}
                   animate={{
-                    opacity: [0.3, 0.6, 0.3],
-                    strokeWidth: [12, 16, 12],
+                    x: 0,
+                    y: 0,
+                    opacity: 1,
+                    scale: 1,
+                    rotate: 0,
                   }}
                   transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  filter="url(#glow)"
-                />
-                
-                {/* Main body */}
-                <motion.path
-                  d="M20 20 L20 120 M20 20 L70 20 C90 20 90 50 70 50 L20 50 M70 50 L90 120"
-                  stroke="white"
-                  strokeWidth="8"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  animate={{
-                    opacity: [0.9, 1, 0.9],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: "easeInOut"
+                    duration: 1.2,
+                    delay: 0.3 + fragment.delay,
+                    ease: [0.6, 0.05, 0.01, 0.9],
                   }}
                 />
+              ))}
 
-                {/* Inner gradient fill */}
-                <defs>
-                  <linearGradient id="rGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.6">
-                      <animate attributeName="stopColor" values="hsl(var(--primary));white;hsl(var(--primary))" dur="3s" repeatCount="indefinite" />
-                    </stop>
-                    <stop offset="100%" stopColor="white" stopOpacity="0.8">
-                      <animate attributeName="stopColor" values="white;hsl(var(--primary));white" dur="3s" repeatCount="indefinite" />
-                    </stop>
-                  </linearGradient>
-                  <filter id="glow">
-                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
-              </svg>
-
-              {/* Floating particles around R */}
-              {[...Array(6)].map((_, i) => (
-                <motion.div
-                  key={`r-particle-${i}`}
-                  className="absolute w-2 h-2 rounded-full bg-primary"
-                  style={{
-                    top: '50%',
-                    left: '50%',
-                  }}
+              {/* I Sparkle Effects */}
+              {[...Array(8)].map((_, i) => (
+                <motion.circle
+                  key={`i-sparkle-${i}`}
+                  r="2"
+                  fill="hsl(var(--primary))"
+                  initial={{ opacity: 0 }}
                   animate={{
-                    x: [0, Math.cos((i * Math.PI * 2) / 6) * 60],
-                    y: [0, Math.sin((i * Math.PI * 2) / 6) * 60],
-                    scale: [0, 1, 0],
+                    cx: [40, 40 + Math.cos((i * Math.PI * 2) / 8 + Math.PI) * 35],
+                    cy: [70, 70 + Math.sin((i * Math.PI * 2) / 8 + Math.PI) * 35],
                     opacity: [0, 1, 0],
+                    scale: [0, 1.5, 0],
                   }}
                   transition={{
                     duration: 2,
                     repeat: Infinity,
-                    delay: i * 0.2,
+                    delay: 1.3 + i * 0.15,
                     ease: "easeOut"
                   }}
                 />
               ))}
-            </motion.div>
+            </svg>
+
+            {/* I Orbital Particles */}
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={`i-orbit-${i}`}
+                className="absolute w-3 h-3 rounded-full"
+                style={{
+                  background: 'linear-gradient(135deg, white, hsl(var(--primary)))',
+                  top: '50%',
+                  left: '50%',
+                  boxShadow: '0 0 10px white',
+                }}
+                animate={{
+                  x: [0, Math.cos((i * Math.PI * 2) / 6 + Math.PI) * 60],
+                  y: [0, Math.sin((i * Math.PI * 2) / 6 + Math.PI) * 60],
+                  scale: [0, 1, 0.5, 0],
+                  opacity: [0, 1, 1, 0],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  delay: 1.8 + i * 0.2,
+                  ease: "easeInOut"
+                }}
+              />
+            ))}
           </motion.div>
 
-          {/* Letter I - Unique Design */}
-          <motion.div
-            initial={{ x: 200, opacity: 0, rotate: 180 }}
-            animate={{ 
-              x: 0, 
-              opacity: 1, 
-              rotate: 0,
-            }}
-            transition={{
-              duration: 1,
-              ease: [0.6, 0.05, 0.01, 0.9],
-              delay: 0.2
-            }}
-            className="relative"
-          >
-            {/* I Letter - Stylized Design */}
-            <motion.div
-              animate={{
-                rotateY: [0, 360],
-                scale: [1, 1.05, 1],
-              }}
-              transition={{
-                rotateY: {
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "linear",
-                  delay: 0.5
-                },
-                scale: {
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.2
-                }
-              }}
-              className="relative"
-            >
-              {/* Main I with unique styling */}
-              <svg width="80" height="140" viewBox="0 0 80 140" className="drop-shadow-2xl">
-                {/* Outer glow */}
-                <motion.path
-                  d="M20 20 L60 20 M40 20 L40 120 M20 120 L60 120"
-                  stroke="white"
-                  strokeWidth="12"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  animate={{
-                    opacity: [0.3, 0.6, 0.3],
-                    strokeWidth: [12, 16, 12],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 0.3
-                  }}
-                  filter="url(#glow)"
-                />
-                
-                {/* Main body */}
-                <motion.path
-                  d="M20 20 L60 20 M40 20 L40 120 M20 120 L60 120"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="8"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  animate={{
-                    opacity: [0.9, 1, 0.9],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 0.2
-                  }}
-                />
-
-                {/* Inner gradient fill */}
-                <defs>
-                  <linearGradient id="iGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="white" stopOpacity="0.6">
-                      <animate attributeName="stopColor" values="white;hsl(var(--primary));white" dur="3s" repeatCount="indefinite" />
-                    </stop>
-                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.8">
-                      <animate attributeName="stopColor" values="hsl(var(--primary));white;hsl(var(--primary))" dur="3s" repeatCount="indefinite" />
-                    </stop>
-                  </linearGradient>
-                </defs>
-              </svg>
-
-              {/* Floating particles around I */}
-              {[...Array(6)].map((_, i) => (
-                <motion.div
-                  key={`i-particle-${i}`}
-                  className="absolute w-2 h-2 rounded-full bg-white"
-                  style={{
-                    top: '50%',
-                    left: '50%',
-                  }}
-                  animate={{
-                    x: [0, Math.cos((i * Math.PI * 2) / 6 + Math.PI) * 60],
-                    y: [0, Math.sin((i * Math.PI * 2) / 6 + Math.PI) * 60],
-                    scale: [0, 1, 0],
-                    opacity: [0, 1, 0],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: i * 0.2 + 0.3,
-                    ease: "easeOut"
-                  }}
-                />
-              ))}
-            </motion.div>
-          </motion.div>
-
-          {/* Orbiting Ring */}
+          {/* Rotating Rings */}
           <motion.div
             animate={{
               rotate: [0, 360],
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.6, 0.3],
+              scale: [1, 1.3, 1],
+              opacity: [0.4, 0.7, 0.4],
             }}
             transition={{
-              rotate: {
-                duration: 3,
-                repeat: Infinity,
-                ease: "linear"
-              },
-              scale: {
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              },
-              opacity: {
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }
+              rotate: { duration: 4, repeat: Infinity, ease: "linear" },
+              scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+              opacity: { duration: 2, repeat: Infinity, ease: "easeInOut" }
             }}
-            className="absolute inset-0 -m-12 border-4 border-primary/40 rounded-full"
+            className="absolute inset-0 -m-16 rounded-full"
             style={{
-              boxShadow: '0 0 30px hsl(var(--primary) / 0.5)',
+              border: '3px solid',
+              borderColor: 'hsl(var(--primary))',
+              borderStyle: 'dashed',
+              boxShadow: '0 0 30px hsl(var(--primary) / 0.6), inset 0 0 30px hsl(var(--primary) / 0.4)',
             }}
           />
 
-          {/* Counter-Orbiting Ring */}
           <motion.div
             animate={{
               rotate: [360, 0],
-              scale: [1.2, 1, 1.2],
-              opacity: [0.6, 0.3, 0.6],
+              scale: [1.3, 1, 1.3],
+              opacity: [0.7, 0.4, 0.7],
             }}
             transition={{
-              rotate: {
-                duration: 3,
-                repeat: Infinity,
-                ease: "linear"
-              },
-              scale: {
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              },
-              opacity: {
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }
+              rotate: { duration: 4, repeat: Infinity, ease: "linear" },
+              scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+              opacity: { duration: 2, repeat: Infinity, ease: "easeInOut" }
             }}
-            className="absolute inset-0 -m-16 border-4 border-white/30 rounded-full"
+            className="absolute inset-0 -m-20 rounded-full"
             style={{
-              boxShadow: '0 0 30px rgba(255, 255, 255, 0.3)',
+              border: '3px solid',
+              borderColor: 'white',
+              borderStyle: 'dashed',
+              boxShadow: '0 0 30px rgba(255, 255, 255, 0.6), inset 0 0 30px rgba(255, 255, 255, 0.4)',
             }}
           />
         </div>
 
-        {/* Loading Text */}
+        {/* Loading Progress Dots */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="absolute bottom-20"
+          transition={{ delay: 1 }}
+          className="absolute bottom-24 flex gap-3"
         >
-          <motion.p
-            animate={{ 
-              opacity: [0.5, 1, 0.5],
-            }}
-            transition={{ 
-              duration: 1.5, 
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="text-lg font-bold bg-gradient-to-r from-primary via-white to-primary bg-clip-text text-transparent"
-            style={{
-              backgroundSize: '200% auto',
-            }}
-          >
-            <motion.span
+          {[...Array(5)].map((_, i) => (
+            <motion.div
+              key={`dot-${i}`}
+              className="w-3 h-3 rounded-full"
+              style={{
+                background: i % 2 === 0 ? 'hsl(var(--primary))' : 'white',
+              }}
               animate={{
-                backgroundPosition: ['0% center', '200% center'],
+                scale: [1, 1.5, 1],
+                opacity: [0.3, 1, 0.3],
               }}
               transition={{
-                duration: 2,
+                duration: 1.5,
                 repeat: Infinity,
-                ease: "linear"
+                delay: i * 0.2,
+                ease: "easeInOut"
               }}
-              style={{
-                backgroundImage: 'linear-gradient(90deg, hsl(var(--primary)), white, hsl(var(--primary)))',
-                backgroundSize: '200% auto',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              Loading...
-            </motion.span>
-          </motion.p>
+            />
+          ))}
         </motion.div>
 
-        {/* Ambient Light Beams */}
-        {[...Array(4)].map((_, i) => (
-          <motion.div
-            key={`beam-${i}`}
-            className="absolute w-1 bg-gradient-to-b from-transparent via-primary/30 to-transparent"
+        {/* Loading Text */}
+        <motion.div
+          initial={{ opacity: 0, y: 60 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
+          className="absolute bottom-12"
+        >
+          <motion.p
+            className="text-xl font-bold"
             style={{
-              height: '100%',
-              left: `${25 * (i + 1)}%`,
-              transformOrigin: 'top',
+              background: 'linear-gradient(90deg, hsl(var(--primary)), white, hsl(var(--primary)))',
+              backgroundSize: '200% auto',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
             }}
             animate={{
-              scaleY: [0, 1, 0],
-              opacity: [0, 0.5, 0],
+              backgroundPosition: ['0% center', '200% center'],
             }}
             transition={{
               duration: 2,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+          >
+            Loading Amazing Experience...
+          </motion.p>
+        </motion.div>
+
+        {/* Corner Light Beams */}
+        {[...Array(4)].map((_, i) => (
+          <motion.div
+            key={`corner-${i}`}
+            className="absolute"
+            style={{
+              width: '200px',
+              height: '200px',
+              background: `radial-gradient(circle, ${i % 2 === 0 ? 'hsl(var(--primary) / 0.4)' : 'rgba(255, 255, 255, 0.3)'}, transparent)`,
+              [i === 0 || i === 1 ? 'top' : 'bottom']: 0,
+              [i === 0 || i === 2 ? 'left' : 'right']: 0,
+              filter: 'blur(30px)',
+            }}
+            animate={{
+              scale: [1, 1.5, 1],
+              opacity: [0.3, 0.6, 0.3],
+            }}
+            transition={{
+              duration: 3,
               repeat: Infinity,
               delay: i * 0.5,
               ease: "easeInOut"
