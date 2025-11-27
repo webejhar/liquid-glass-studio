@@ -120,6 +120,7 @@ export default function Account() {
     userName: string;
     avatarUrl: string | null;
   } | null>(null);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
   
   useSessionTracking();
 
@@ -239,10 +240,31 @@ export default function Account() {
       )
       .subscribe();
 
+    // Listen for chat messages to update unread count
+    const chatMessagesChannel = supabase
+      .channel('user-chat-messages')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `receiver_id=eq.${user.id}`
+        },
+        () => {
+          loadUnreadChatCount(user.id);
+        }
+      )
+      .subscribe();
+
+    // Load initial unread count
+    loadUnreadChatCount(user.id);
+
     return () => {
       supabase.removeChannel(productOrdersChannel);
       supabase.removeChannel(domainOrdersChannel);
       supabase.removeChannel(profileChannel);
+      supabase.removeChannel(chatMessagesChannel);
     };
   }, [user]);
 
@@ -399,6 +421,22 @@ export default function Account() {
       setFavorites(data || []);
     } catch (error) {
       console.error("Error loading favorites:", error);
+    }
+  };
+
+  const loadUnreadChatCount = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('id')
+        .eq('receiver_id', userId)
+        .eq('is_read', false);
+
+      if (error) throw error;
+      
+      setUnreadChatCount(data?.length || 0);
+    } catch (error) {
+      console.error('Error loading unread chat count:', error);
     }
   };
 
@@ -794,6 +832,7 @@ export default function Account() {
               <AccountToggleBar
                 cartCount={cart.length}
                 favoritesCount={favorites.length}
+                unreadChatCount={unreadChatCount}
                 verificationStatus={formData.verification_status}
                 onNavigate={(tab) => {
                   setActiveTab(tab);
