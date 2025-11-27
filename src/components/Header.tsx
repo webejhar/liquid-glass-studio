@@ -168,12 +168,18 @@ export const Header = () => {
       <AnimatePresence>
         {scrolled && (
           <motion.div
-            className="fixed right-2 sm:right-4 top-2 sm:top-4 z-50 flex items-center gap-2 sm:gap-3"
+            className="fixed right-2 sm:right-4 top-2 sm:top-4 z-50 flex flex-wrap items-center gap-2 sm:gap-3"
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 100, opacity: 0 }}
             transition={{ type: "spring", stiffness: 100 }}
           >
+            <Link
+              to="/meeting"
+              className="glass-card backdrop-blur-xl bg-background/30 px-3 sm:px-4 py-2 sm:py-3 rounded-full hover:scale-110 transition text-xs sm:text-sm font-medium"
+            >
+              Meeting
+            </Link>
             <motion.button
               onClick={handleLoginClick}
               className="glass-card backdrop-blur-xl bg-background/30 p-3 sm:p-4 rounded-full hover:scale-110 transition"
