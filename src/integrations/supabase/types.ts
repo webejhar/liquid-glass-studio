@@ -81,24 +81,30 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          image_url: string | null
           is_read: boolean | null
           message: string
+          message_type: string | null
           receiver_id: string
           sender_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          image_url?: string | null
           is_read?: boolean | null
           message: string
+          message_type?: string | null
           receiver_id: string
           sender_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          image_url?: string | null
           is_read?: boolean | null
           message?: string
+          message_type?: string | null
           receiver_id?: string
           sender_id?: string
         }
