@@ -8,8 +8,8 @@ export const LoadingAnimation = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsExiting(true);
-      setTimeout(() => setShow(false), 800);
-    }, 3500);
+      setTimeout(() => setShow(false), 1000);
+    }, 4000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -46,10 +46,13 @@ export const LoadingAnimation = () => {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 1 }}
-        animate={{ opacity: isExiting ? 0 : 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.8, ease: "easeInOut" }}
+        initial={{ opacity: 1, scale: 1 }}
+        animate={{ 
+          opacity: isExiting ? 0 : 1,
+          scale: isExiting ? 1.2 : 1,
+        }}
+        exit={{ opacity: 0, scale: 1.2 }}
+        transition={{ duration: 1, ease: "easeInOut" }}
         className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-background via-primary/10 to-background overflow-hidden"
       >
         {/* Animated Background Waves */}
@@ -206,7 +209,7 @@ export const LoadingAnimation = () => {
                     rotate: 0,
                   }}
                   transition={{
-                    duration: 1.2,
+                    duration: 1,
                     delay: fragment.delay,
                     ease: [0.6, 0.05, 0.01, 0.9],
                   }}
@@ -312,7 +315,7 @@ export const LoadingAnimation = () => {
                     rotate: 0,
                   }}
                   transition={{
-                    duration: 1.2,
+                    duration: 1,
                     delay: 0.3 + fragment.delay,
                     ease: [0.6, 0.05, 0.01, 0.9],
                   }}
@@ -371,15 +374,16 @@ export const LoadingAnimation = () => {
 
           {/* Rotating Rings */}
           <motion.div
+            initial={{ opacity: 0, scale: 0 }}
             animate={{
               rotate: [0, 360],
-              scale: [1, 1.3, 1],
-              opacity: [0.4, 0.7, 0.4],
+              scale: [0, 1, 1.3, 1],
+              opacity: [0, 0.4, 0.7, 0.4],
             }}
             transition={{
-              rotate: { duration: 4, repeat: Infinity, ease: "linear" },
-              scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-              opacity: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+              rotate: { duration: 4, repeat: Infinity, ease: "linear", delay: 1.5 },
+              scale: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1.5 },
+              opacity: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1.5 }
             }}
             className="absolute inset-0 -m-16 rounded-full"
             style={{
@@ -391,15 +395,16 @@ export const LoadingAnimation = () => {
           />
 
           <motion.div
+            initial={{ opacity: 0, scale: 0 }}
             animate={{
               rotate: [360, 0],
-              scale: [1.3, 1, 1.3],
-              opacity: [0.7, 0.4, 0.7],
+              scale: [0, 1.3, 1, 1.3],
+              opacity: [0, 0.7, 0.4, 0.7],
             }}
             transition={{
-              rotate: { duration: 4, repeat: Infinity, ease: "linear" },
-              scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-              opacity: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+              rotate: { duration: 4, repeat: Infinity, ease: "linear", delay: 1.5 },
+              scale: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1.5 },
+              opacity: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1.5 }
             }}
             className="absolute inset-0 -m-20 rounded-full"
             style={{
@@ -409,6 +414,27 @@ export const LoadingAnimation = () => {
               boxShadow: '0 0 30px rgba(255, 255, 255, 0.6), inset 0 0 30px rgba(255, 255, 255, 0.4)',
             }}
           />
+          
+          {/* Complete RI Text Display */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: [0, 0, 1, 1], scale: [0.8, 0.8, 1, 1] }}
+            transition={{ 
+              duration: 2,
+              times: [0, 0.4, 0.5, 1],
+              ease: "easeOut"
+            }}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          >
+            <div className="text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-primary via-white to-primary"
+              style={{
+                textShadow: '0 0 60px hsl(var(--primary) / 0.8), 0 0 30px white',
+                WebkitTextStroke: '2px hsl(var(--primary) / 0.3)',
+              }}
+            >
+              RI
+            </div>
+          </motion.div>
         </div>
 
         {/* Loading Progress Dots */}

@@ -10,14 +10,14 @@ function Root() {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
-    // Start showing content before animation fully ends for smooth blend
+    // Start showing content slightly before animation ends for smooth blend
     const contentTimer = setTimeout(() => {
       setShowContent(true);
-    }, 3300);
+    }, 3800);
 
     const loadingTimer = setTimeout(() => {
       setIsLoading(false);
-    }, 4300);
+    }, 5000);
 
     return () => {
       clearTimeout(contentTimer);
@@ -29,9 +29,13 @@ function Root() {
     <>
       {isLoading && <LoadingAnimation />}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: showContent ? 1 : 0 }}
-        transition={{ duration: 0.8, ease: "easeInOut" }}
+        initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
+        animate={{ 
+          opacity: showContent ? 1 : 0,
+          scale: showContent ? 1 : 0.95,
+          filter: showContent ? "blur(0px)" : "blur(10px)"
+        }}
+        transition={{ duration: 1, ease: "easeOut" }}
       >
         <App />
       </motion.div>
