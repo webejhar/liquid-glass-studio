@@ -35,6 +35,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
   const [isLoading, setIsLoading] = useState(true);
   const [friendStatus, setFriendStatus] = useState<FriendStatus>({});
   const [showRequests, setShowRequests] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -142,7 +143,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
         .from('profiles')
         .select('user_id, name, avatar_url, email, account_type, account_number')
         .neq('user_id', currentUserId)
-        .or(`email.ilike.%${query}%,account_number.ilike.%${query}%,name.ilike.%${query}%`);
+        .or(`account_number.ilike.%${query}%,name.ilike.%${query}%`);
 
       if (error) throw error;
 
@@ -206,7 +207,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
     );
   };
 
-  const displayUsers = searchQuery.trim() ? searchResults : friends;
+  const displayUsers = showSearch ? searchResults : friends;
 
   return (
     <div className="flex flex-col h-full">
@@ -216,23 +217,43 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
             <MessageCircle className="w-5 h-5 text-primary" />
             Live Chat
           </h2>
-          <Button
-            onClick={() => setShowRequests(!showRequests)}
-            variant={showRequests ? "default" : "outline"}
-            size="sm"
-          >
-            {showRequests ? "Chat" : "Requests"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => {
+                setShowSearch(!showSearch);
+                setShowRequests(false);
+                setSearchQuery("");
+                setSearchResults([]);
+              }}
+              variant={showSearch ? "default" : "outline"}
+              size="sm"
+            >
+              <UserPlus className="w-4 h-4 mr-1" />
+              {showSearch ? "Friends" : "Add Friend"}
+            </Button>
+            <Button
+              onClick={() => {
+                setShowRequests(!showRequests);
+                setShowSearch(false);
+              }}
+              variant={showRequests ? "default" : "outline"}
+              size="sm"
+            >
+              {showRequests ? "Chat" : "Requests"}
+            </Button>
+          </div>
         </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, account number, or email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        {showSearch && (
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name, account number..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -248,9 +269,11 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
             <MessageCircle className="w-12 h-12 mb-2 opacity-50" />
             <p className="text-center">
-              {searchQuery.trim() 
-                ? "No users found. Search by name, account number, or email."
-                : "No friends yet. Search for users to send friend requests."}
+              {showSearch && searchQuery.trim() 
+                ? "No users found. Search by name or account number."
+                : showSearch
+                ? "Use the search box to find users and send friend requests."
+                : "No friends yet. Click 'Add Friend' to search for users."}
             </p>
           </div>
         ) : (
@@ -291,7 +314,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
                     </div>
 
                     <div className="flex gap-2 items-center">
-                      {status === 'none' && searchQuery.trim() && (
+                      {status === 'none' && showSearch && (
                         <Button
                           size="sm"
                           onClick={() => sendFriendRequest(user.user_id)}
@@ -307,7 +330,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
                       {status === 'pending_received' && (
                         <Badge variant="secondary" className="text-xs">Pending</Badge>
                       )}
-                      {status === 'accepted' && (
+                      {status === 'accepted' && !showSearch && (
                         <Badge variant="default" className="bg-green-500 text-xs">
                           <Check className="w-3 h-3 mr-1" />
                           Friends
