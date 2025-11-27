@@ -23,6 +23,24 @@ export const Header = () => {
   
   // Hide header on these pages
   const hideHeader = ['/contact', '/meeting', '/about', '/email-generator', '/image-generator', '/login', '/register', '/forgot-password', '/account'].includes(location.pathname) || location.pathname.startsWith('/admin');
+  
+  // Also hide on mobile when chat is active
+  const [isChatActive, setIsChatActive] = useState(false);
+  
+  useEffect(() => {
+    const checkChatActive = () => {
+      setIsChatActive(document.body.classList.contains('chat-active'));
+    };
+    
+    // Check immediately
+    checkChatActive();
+    
+    // Set up observer to watch for class changes
+    const observer = new MutationObserver(checkChatActive);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,7 +67,8 @@ export const Header = () => {
     navigate(isLoggedIn ? '/account' : '/login');
   };
 
-  if (hideHeader) return null;
+  // Hide header if on excluded page OR if chat is active on mobile
+  if (hideHeader || (isChatActive && window.innerWidth < 768)) return null;
 
   return (
     <>

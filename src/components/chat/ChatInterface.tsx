@@ -48,6 +48,14 @@ export function ChatInterface({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
+  // Add class to body on mount to hide header/footer on mobile
+  useEffect(() => {
+    document.body.classList.add('chat-active');
+    return () => {
+      document.body.classList.remove('chat-active');
+    };
+  }, []);
+
   useEffect(() => {
     loadMessages();
     markMessagesAsRead();

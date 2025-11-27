@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Facebook, Linkedin, Globe } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,9 +15,25 @@ export const Footer = () => {
   const navigate = useNavigate();
   const [showAdminDialog, setShowAdminDialog] = useState(false);
   const [secretKey, setSecretKey] = useState("");
+  const [isChatActive, setIsChatActive] = useState(false);
   const hideFooterPaths = ['/contact', '/meeting', '/about', '/email-generator', '/login', '/register', '/forgot-password', '/account'];
   
-  if (hideFooterPaths.includes(location.pathname) || location.pathname.startsWith('/admin')) {
+  // Check if chat is active
+  useEffect(() => {
+    const checkChatActive = () => {
+      setIsChatActive(document.body.classList.contains('chat-active'));
+    };
+    
+    checkChatActive();
+    
+    const observer = new MutationObserver(checkChatActive);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    
+    return () => observer.disconnect();
+  }, []);
+  
+  // Hide footer if on excluded path, admin path, OR chat is active on mobile
+  if (hideFooterPaths.includes(location.pathname) || location.pathname.startsWith('/admin') || (isChatActive && window.innerWidth < 768)) {
     return null;
   }
 
