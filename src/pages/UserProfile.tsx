@@ -3,8 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { ArrowLeft, MessageSquare, Mail, Phone, MapPin, Briefcase, CheckCircle, Clock, Shield, Calendar } from "lucide-react";
+import { ArrowLeft, MessageSquare, Mail, Phone, MapPin, Briefcase, CheckCircle, Clock, Shield, Calendar, UserPlus, Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface UserProfile {
@@ -31,11 +32,13 @@ export default function UserProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [friendStatus, setFriendStatus] = useState<'none' | 'pending_sent' | 'pending_received' | 'accepted'>('none');
 
   useEffect(() => {
     checkCurrentUser();
     if (userId) {
       loadProfile(userId);
+      loadFriendStatus();
     }
   }, [userId]);
 
@@ -64,6 +67,94 @@ export default function UserProfile() {
       toast.error("Failed to load profile");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadFriendStatus = async () => {
+    if (!currentUser?.id || !userId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('friend_requests')
+        .select('sender_id, receiver_id, status')
+        .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUser.id})`)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+
+      if (data) {
+        if (data.status === 'accepted') {
+          setFriendStatus('accepted');
+        } else if (data.status === 'pending') {
+          setFriendStatus(data.sender_id === currentUser.id ? 'pending_sent' : 'pending_received');
+        }
+      } else {
+        setFriendStatus('none');
+      }
+    } catch (error) {
+      console.error('Error loading friend status:', error);
+    }
+  };
+
+  const sendFriendRequest = async () => {
+    if (!currentUser?.id || !userId) return;
+
+    try {
+      const { error } = await supabase
+        .from('friend_requests')
+        .insert({
+          sender_id: currentUser.id,
+          receiver_id: userId,
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast.success('Friend request sent');
+      loadFriendStatus();
+    } catch (error) {
+      console.error('Error sending friend request:', error);
+      toast.error('Failed to send friend request');
+    }
+  };
+
+  const acceptFriendRequest = async () => {
+    if (!currentUser?.id || !userId) return;
+
+    try {
+      const { error } = await supabase
+        .from('friend_requests')
+        .update({ status: 'accepted' })
+        .eq('sender_id', userId)
+        .eq('receiver_id', currentUser.id);
+
+      if (error) throw error;
+
+      toast.success('Friend request accepted');
+      loadFriendStatus();
+    } catch (error) {
+      console.error('Error accepting friend request:', error);
+      toast.error('Failed to accept friend request');
+    }
+  };
+
+  const rejectFriendRequest = async () => {
+    if (!currentUser?.id || !userId) return;
+
+    try {
+      const { error } = await supabase
+        .from('friend_requests')
+        .update({ status: 'rejected' })
+        .eq('sender_id', userId)
+        .eq('receiver_id', currentUser.id);
+
+      if (error) throw error;
+
+      toast.success('Friend request rejected');
+      loadFriendStatus();
+    } catch (error) {
+      console.error('Error rejecting friend request:', error);
+      toast.error('Failed to reject friend request');
     }
   };
 
@@ -207,6 +298,39 @@ export default function UserProfile() {
               {/* Action Buttons */}
               {!isOwnProfile && (
                 <div className="flex flex-col sm:flex-row gap-3">
+                  {friendStatus === 'none' && (
+                    <Button
+                      onClick={sendFriendRequest}
+                      variant="outline"
+                      className="gap-2"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      Add Friend
+                    </Button>
+                  )}
+                  {friendStatus === 'pending_sent' && (
+                    <Button variant="secondary" disabled className="gap-2">
+                      Request Sent
+                    </Button>
+                  )}
+                  {friendStatus === 'pending_received' && (
+                    <div className="flex gap-2">
+                      <Button onClick={acceptFriendRequest} variant="default" className="gap-2">
+                        <Check className="w-4 h-4" />
+                        Accept
+                      </Button>
+                      <Button onClick={rejectFriendRequest} variant="destructive" className="gap-2">
+                        <X className="w-4 h-4" />
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+                  {friendStatus === 'accepted' && (
+                    <Badge variant="default" className="bg-green-500 px-4 py-2">
+                      <Check className="w-4 h-4 mr-2" />
+                      Friends
+                    </Badge>
+                  )}
                   <Button
                     onClick={handleStartChat}
                     variant="liquid"
