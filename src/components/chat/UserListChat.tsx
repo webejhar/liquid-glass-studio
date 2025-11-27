@@ -36,12 +36,14 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
   const [friendStatus, setFriendStatus] = useState<FriendStatus>({});
   const [showRequests, setShowRequests] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     loadFriends();
     loadFriendStatus();
+    loadPendingRequestsCount();
 
     // Subscribe to friend request changes
     const channel = supabase
@@ -56,6 +58,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
         () => {
           loadFriends();
           loadFriendStatus();
+          loadPendingRequestsCount();
         }
       )
       .subscribe();
@@ -132,6 +135,22 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
       setFriendStatus(statusMap);
     } catch (error) {
       console.error('Error loading friend status:', error);
+    }
+  };
+
+  const loadPendingRequestsCount = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('friend_requests')
+        .select('id')
+        .eq('receiver_id', currentUserId)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+
+      setPendingRequestsCount(data?.length || 0);
+    } catch (error) {
+      console.error('Error loading pending requests count:', error);
     }
   };
 
@@ -215,7 +234,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <MessageCircle className="w-5 h-5 text-primary" />
-            Live Chat
+            Chat
           </h2>
           <div className="flex gap-2">
             <Button
@@ -238,8 +257,14 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
               }}
               variant={showRequests ? "default" : "outline"}
               size="sm"
+              className="relative"
             >
               {showRequests ? "Chat" : "Requests"}
+              {!showRequests && pendingRequestsCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {pendingRequestsCount}
+                </span>
+              )}
             </Button>
           </div>
         </div>
