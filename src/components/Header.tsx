@@ -168,29 +168,31 @@ export const Header = () => {
       <AnimatePresence>
         {scrolled && (
           <motion.div
-            className="fixed right-2 sm:right-4 top-2 sm:top-4 z-50 flex flex-wrap items-center gap-2 sm:gap-3"
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 100, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 100 }}
+            className="fixed right-2 sm:right-4 top-2 sm:top-4 z-[100] flex flex-wrap items-center gap-2 sm:gap-3"
+            initial={{ x: 100, opacity: 0, scale: 0.8 }}
+            animate={{ x: 0, opacity: 1, scale: 1 }}
+            exit={{ x: 100, opacity: 0, scale: 0.8 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
           >
             <Link
               to="/meeting"
-              className="glass-card backdrop-blur-xl bg-background/30 px-3 sm:px-4 py-2 sm:py-3 rounded-full hover:scale-110 transition text-xs sm:text-sm font-medium"
+              className="glass-card backdrop-blur-xl bg-background/40 border border-primary/20 px-3 sm:px-4 py-2 sm:py-3 rounded-full hover:scale-110 transition text-xs sm:text-sm font-medium shadow-lg"
             >
               Meeting
             </Link>
             <motion.button
               onClick={handleLoginClick}
-              className="glass-card backdrop-blur-xl bg-background/30 p-3 sm:p-4 rounded-full hover:scale-110 transition"
+              className="glass-card backdrop-blur-xl bg-background/40 border border-primary/20 p-3 sm:p-4 rounded-full hover:scale-110 transition shadow-lg"
               whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
               <User className="w-4 h-4 sm:w-5 sm:h-5" />
             </motion.button>
             <motion.button
               onClick={() => setMobileMenuOpen(true)}
-              className="glass-card backdrop-blur-xl bg-background/30 p-3 sm:p-4 rounded-full hover:scale-110 transition"
+              className="glass-card backdrop-blur-xl bg-background/40 border border-primary/20 p-3 sm:p-4 rounded-full hover:scale-110 transition shadow-lg"
               whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
               <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
             </motion.button>

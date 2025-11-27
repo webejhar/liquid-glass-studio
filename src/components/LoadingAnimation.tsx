@@ -125,30 +125,45 @@ export const LoadingAnimation = () => {
             }}
           />
 
-          {/* RI Text with Rotation Animation */}
+          {/* RI Text with Pulsing Scale Animation */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.5, rotate: -180 }}
+            initial={{ opacity: 0, scale: 0 }}
             animate={{ 
-              opacity: 1, 
-              scale: 1, 
-              rotate: [0, 360, 720, 1080],
+              opacity: [0, 1, 1, 1, 1],
+              scale: [0, 1.2, 0.9, 1.1, 1],
             }}
             transition={{ 
-              opacity: { duration: 1, ease: "easeOut" },
-              scale: { duration: 1, ease: "easeOut" },
-              rotate: { duration: 4, ease: "linear", repeat: Infinity }
+              duration: 2.5,
+              times: [0, 0.3, 0.5, 0.7, 1],
+              ease: "easeInOut"
             }}
             className="relative"
           >
-            <div 
-              className="text-9xl font-black text-transparent bg-clip-text bg-gradient-to-br from-primary via-white to-primary"
-              style={{
-                textShadow: '0 0 60px hsl(var(--primary) / 0.8), 0 0 30px white',
-                WebkitTextStroke: '2px hsl(var(--primary) / 0.3)',
+            <motion.div
+              animate={{
+                scale: [1, 1.05, 1],
+                filter: [
+                  "brightness(1) contrast(1)",
+                  "brightness(1.2) contrast(1.1)",
+                  "brightness(1) contrast(1)"
+                ]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
               }}
             >
-              RI
-            </div>
+              <div 
+                className="text-9xl font-black text-transparent bg-clip-text bg-gradient-to-br from-primary via-white to-primary"
+                style={{
+                  textShadow: '0 0 60px hsl(var(--primary) / 0.8), 0 0 30px white',
+                  WebkitTextStroke: '2px hsl(var(--primary) / 0.3)',
+                }}
+              >
+                RI
+              </div>
+            </motion.div>
 
             {/* Orbital Particles */}
             {[...Array(8)].map((_, i) => (
