@@ -8,6 +8,7 @@ import { ArrowLeft, Send, Image as ImageIcon, Smile, Download, X } from "lucide-
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import { chatSounds } from "@/utils/chatSounds";
 
 interface Message {
   id: string;
@@ -43,6 +44,8 @@ export function ChatInterface({
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [userOnlineStatus, setUserOnlineStatus] = useState<'online' | 'offline'>('offline');
+  const [lastSeen, setLastSeen] = useState<Date | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,26 +59,134 @@ export function ChatInterface({
     };
   }, []);
 
+  // Persist chat state in localStorage
+  useEffect(() => {
+    const chatState = {
+      userId: selectedUserId,
+      userName: selectedUserName,
+      avatarUrl: selectedUserAvatar,
+      message: newMessage
+    };
+    localStorage.setItem('activeChatState', JSON.stringify(chatState));
+
+    return () => {
+      // Clean up on unmount
+      if (!newMessage.trim()) {
+        localStorage.removeItem('activeChatState');
+      }
+    };
+  }, [selectedUserId, selectedUserName, selectedUserAvatar, newMessage]);
+
+  // Restore message from localStorage on mount
+  useEffect(() => {
+    const savedState = localStorage.getItem('activeChatState');
+    if (savedState) {
+      try {
+        const { message } = JSON.parse(savedState);
+        if (message) {
+          setNewMessage(message);
+        }
+      } catch (e) {
+        console.error('Error restoring chat state:', e);
+      }
+    }
+  }, []);
+
+  // Track user presence
+  useEffect(() => {
+    const presenceChannel = supabase.channel(`presence:${selectedUserId}`);
+
+    presenceChannel
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        const isOnline = Object.keys(state).length > 0;
+        setUserOnlineStatus(isOnline ? 'online' : 'offline');
+        
+        if (!isOnline) {
+          // Check last seen from profile or messages
+          loadLastSeen();
+        }
+      })
+      .on('presence', { event: 'join' }, () => {
+        setUserOnlineStatus('online');
+        setLastSeen(null);
+      })
+      .on('presence', { event: 'leave' }, () => {
+        setUserOnlineStatus('offline');
+        setLastSeen(new Date());
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          // Track current user's presence
+          await presenceChannel.track({
+            user_id: currentUserId,
+            online_at: new Date().toISOString()
+          });
+        }
+      });
+
+    loadLastSeen();
+
+    return () => {
+      supabase.removeChannel(presenceChannel);
+    };
+  }, [selectedUserId, currentUserId]);
+
   useEffect(() => {
     loadMessages();
     markMessagesAsRead();
     
-    // Set up realtime subscription
+    // Set up realtime subscription for instant message delivery
     const channel = supabase
       .channel(`chat:${currentUserId}:${selectedUserId}`)
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'chat_messages',
-          filter: `sender_id=in.(${currentUserId},${selectedUserId}),receiver_id=in.(${currentUserId},${selectedUserId})`
+          filter: `sender_id=eq.${selectedUserId},receiver_id=eq.${currentUserId}`
         },
         (payload) => {
-          console.log('Message change:', payload);
-          if (payload.eventType === 'INSERT') {
-            setMessages(prev => [...prev, payload.new as Message]);
-          }
+          console.log('New message received:', payload);
+          const newMsg = payload.new as Message;
+          
+          // Play receive sound
+          chatSounds.playReceiveSound();
+          
+          // Add message to list
+          setMessages(prev => {
+            // Check if message already exists (prevent duplicates)
+            if (prev.some(m => m.id === newMsg.id)) {
+              return prev;
+            }
+            return [...prev, newMsg];
+          });
+
+          // Mark as read immediately since user is in chat
+          markMessagesAsRead();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `sender_id=eq.${currentUserId},receiver_id=eq.${selectedUserId}`
+        },
+        (payload) => {
+          console.log('Message sent confirmed:', payload);
+          const newMsg = payload.new as Message;
+          
+          // Update messages list to include server-confirmed message
+          setMessages(prev => {
+            // Check if message already exists
+            if (prev.some(m => m.id === newMsg.id)) {
+              return prev;
+            }
+            return [...prev, newMsg];
+          });
         }
       )
       .subscribe();
@@ -108,6 +219,25 @@ export function ChatInterface({
       toast.error("Failed to load messages");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadLastSeen = async () => {
+    try {
+      // Get last message from this user
+      const { data } = await supabase
+        .from('chat_messages')
+        .select('created_at')
+        .or(`sender_id.eq.${selectedUserId},receiver_id.eq.${selectedUserId}`)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (data) {
+        setLastSeen(new Date(data.created_at));
+      }
+    } catch (error) {
+      console.error("Error loading last seen:", error);
     }
   };
 
@@ -205,9 +335,25 @@ export function ChatInterface({
         });
 
       if (error) throw error;
+
+      // Play send sound
+      chatSounds.playSendSound();
       
       setNewMessage("");
       handleRemoveImage();
+      
+      // Clear saved message from localStorage
+      const savedState = localStorage.getItem('activeChatState');
+      if (savedState) {
+        try {
+          const state = JSON.parse(savedState);
+          state.message = '';
+          localStorage.setItem('activeChatState', JSON.stringify(state));
+        } catch (e) {
+          console.error('Error updating chat state:', e);
+        }
+      }
+      
       inputRef.current?.focus();
     } catch (error) {
       console.error("Error sending message:", error);
@@ -251,6 +397,34 @@ export function ChatInterface({
     }
   };
 
+  const formatLastSeen = () => {
+    if (userOnlineStatus === 'online') {
+      return 'Online';
+    }
+
+    if (!lastSeen) {
+      return 'Offline';
+    }
+
+    const now = new Date();
+    const diffInHours = (now.getTime() - lastSeen.getTime()) / (1000 * 60 * 60);
+
+    if (diffInHours >= 24) {
+      return 'Offline';
+    }
+
+    const diffInMinutes = Math.floor(diffInHours * 60);
+    
+    if (diffInMinutes < 1) {
+      return 'Last seen just now';
+    } else if (diffInMinutes < 60) {
+      return `Last seen ${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+    } else {
+      const hours = Math.floor(diffInMinutes / 60);
+      return `Last seen ${hours} hour${hours > 1 ? 's' : ''} ago`;
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -267,15 +441,20 @@ export function ChatInterface({
           onClick={() => navigate(`/profile/${selectedUserId}`)}
           className="flex items-center gap-3 flex-1 cursor-pointer hover:bg-accent/10 rounded-lg p-2 -m-2 transition-colors"
         >
-          <Avatar className="w-10 h-10">
-            <AvatarImage src={selectedUserAvatar || undefined} />
-            <AvatarFallback className="bg-primary/20 text-primary">
-              {selectedUserName?.charAt(0)?.toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="w-10 h-10">
+              <AvatarImage src={selectedUserAvatar || undefined} />
+              <AvatarFallback className="bg-primary/20 text-primary">
+                {selectedUserName?.charAt(0)?.toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            {userOnlineStatus === 'online' && (
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-card rounded-full"></span>
+            )}
+          </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold truncate">{selectedUserName}</p>
-            <p className="text-xs text-muted-foreground">Click to view profile</p>
+            <p className="text-xs text-muted-foreground">{formatLastSeen()}</p>
           </div>
         </div>
       </div>

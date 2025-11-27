@@ -781,25 +781,28 @@ export default function Account() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex items-center justify-between mb-6 sm:mb-8 gap-4">
-            <button
-              onClick={() => navigate("/")}
-              className="flex items-center gap-2 sm:gap-3 group hover:scale-105 transition-transform"
-            >
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-glow">Back Home</h1>
-              <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-primary group-hover:translate-x-1 transition-transform" />
-            </button>
-            <AccountToggleBar
-              cartCount={cart.length}
-              favoritesCount={favorites.length}
-              verificationStatus={formData.verification_status}
-              onNavigate={(tab) => {
-                setActiveTab(tab);
-                setSelectedChatUser(null); // Reset chat when switching tabs
-              }}
-              onLogout={handleLogout}
-            />
-          </div>
+          {/* Hide header when in active chat */}
+          {!selectedChatUser && (
+            <div className="flex items-center justify-between mb-6 sm:mb-8 gap-4">
+              <button
+                onClick={() => navigate("/")}
+                className="flex items-center gap-2 sm:gap-3 group hover:scale-105 transition-transform"
+              >
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-glow">Back Home</h1>
+                <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-primary group-hover:translate-x-1 transition-transform" />
+              </button>
+              <AccountToggleBar
+                cartCount={cart.length}
+                favoritesCount={favorites.length}
+                verificationStatus={formData.verification_status}
+                onNavigate={(tab) => {
+                  setActiveTab(tab);
+                  setSelectedChatUser(null); // Reset chat when switching tabs
+                }}
+                onLogout={handleLogout}
+              />
+            </div>
+          )}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-3 sm:grid-cols-7 gap-1 hidden md:grid">
@@ -1604,20 +1607,22 @@ export default function Account() {
         </DialogContent>
       </Dialog>
 
-      {/* WhatsApp Contact Button */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pb-6 sm:pb-8">
-        <a
-          href="https://wa.me/01340125311"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full"
-        >
-          <Button variant="liquid" className="w-full text-sm sm:text-base lg:text-lg gap-2 sm:gap-3 py-4 sm:py-5 lg:py-6">
-            <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-            Contact Us on WhatsApp
-          </Button>
-        </a>
-      </div>
+      {/* WhatsApp Contact Button - Hide when in active chat */}
+      {!selectedChatUser && (
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pb-6 sm:pb-8">
+          <a
+            href="https://wa.me/01340125311"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full"
+          >
+            <Button variant="liquid" className="w-full text-sm sm:text-base lg:text-lg gap-2 sm:gap-3 py-4 sm:py-5 lg:py-6">
+              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+              Contact Us on WhatsApp
+            </Button>
+          </a>
+        </div>
+      )}
 
       {/* Delete Account Reason Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
