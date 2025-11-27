@@ -24,48 +24,100 @@ export const LoadingScreen = () => {
           <div className="relative">
             {/* Glass container */}
             <div className="glass-premium p-12 rounded-3xl">
-              {/* Logo text with liquid flow animation */}
-              <div className="relative overflow-hidden">
+              {/* Stylish logo design */}
+              <div className="relative">
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.6, ease: "easeOut" }}
+                  className="flex items-center gap-3"
                 >
-                  <h1 className="text-8xl md:text-9xl font-black text-foreground relative tracking-tighter">
-                    <span className="relative inline-block">
-                      <span className="relative z-10">RI</span>
-                      <motion.span
-                        className="absolute inset-0 bg-gradient-to-r from-primary via-liquid-blue to-liquid-cyan bg-clip-text text-transparent"
-                        animate={{ 
-                          x: ["-100%", "100%"],
+                  {/* Letter R with unique styling */}
+                  <div className="relative">
+                    <h1 className="text-9xl md:text-[10rem] font-black text-foreground relative tracking-tighter leading-none">
+                      R
+                    </h1>
+                    {/* Liquid flow animation on R - goes up, then down */}
+                    <motion.div
+                      className="absolute inset-0 overflow-hidden"
+                      style={{ WebkitMaskImage: "linear-gradient(to bottom, black, black)", maskImage: "linear-gradient(to bottom, black, black)" }}
+                    >
+                      <motion.div
+                        className="absolute w-full h-full bg-gradient-to-b from-primary via-liquid-blue to-liquid-cyan"
+                        animate={{
+                          y: ["100%", "-100%"],
                         }}
                         transition={{
-                          duration: 1.5,
+                          duration: 2,
                           repeat: Infinity,
                           ease: "easeInOut",
                           repeatDelay: 0.3,
                         }}
-                      >
-                        RI
-                      </motion.span>
-                    </span>
-                  </h1>
-                </motion.div>
+                        style={{
+                          WebkitMaskImage: "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext x=%2250%22 y=%2280%22 font-size=%2280%22 font-weight=%22900%22 text-anchor=%22middle%22 font-family=%22system-ui%22%3ER%3C/text%3E%3C/svg%3E')",
+                          maskImage: "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext x=%2250%22 y=%2280%22 font-size=%2280%22 font-weight=%22900%22 text-anchor=%22middle%22 font-family=%22system-ui%22%3ER%3C/text%3E%3C/svg%3E')",
+                          WebkitMaskSize: "contain",
+                          maskSize: "contain",
+                          WebkitMaskRepeat: "no-repeat",
+                          maskRepeat: "no-repeat",
+                          WebkitMaskPosition: "center",
+                          maskPosition: "center",
+                        }}
+                      />
+                    </motion.div>
+                  </div>
 
-                {/* Liquid wave effect */}
-                <motion.div
-                  className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent"
-                  animate={{ 
-                    scaleX: [0, 1, 0],
-                    x: ["-100%", "0%", "100%"]
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    repeatDelay: 0.3,
-                  }}
-                />
+                  {/* Decorative separator */}
+                  <motion.div
+                    className="w-1 h-20 bg-gradient-to-b from-primary via-liquid-blue to-liquid-cyan rounded-full"
+                    animate={{
+                      scaleY: [0.5, 1, 0.5],
+                      opacity: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      repeatDelay: 0.3,
+                    }}
+                  />
+
+                  {/* Letter I with unique styling */}
+                  <div className="relative -ml-1">
+                    <h1 className="text-9xl md:text-[10rem] font-black text-foreground relative tracking-tighter leading-none italic transform -skew-x-6">
+                      I
+                    </h1>
+                    {/* Liquid flow animation on I - delayed to create jump effect */}
+                    <motion.div
+                      className="absolute inset-0 overflow-hidden"
+                      style={{ WebkitMaskImage: "linear-gradient(to bottom, black, black)", maskImage: "linear-gradient(to bottom, black, black)" }}
+                    >
+                      <motion.div
+                        className="absolute w-full h-full bg-gradient-to-b from-liquid-cyan via-liquid-blue to-primary"
+                        animate={{
+                          y: ["100%", "-100%"],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          repeatDelay: 0.3,
+                          delay: 1,
+                        }}
+                        style={{
+                          WebkitMaskImage: "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext x=%2250%22 y=%2280%22 font-size=%2280%22 font-weight=%22900%22 text-anchor=%22middle%22 font-family=%22system-ui%22 font-style=%22italic%22%3EI%3C/text%3E%3C/svg%3E')",
+                          maskImage: "url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext x=%2250%22 y=%2280%22 font-size=%2280%22 font-weight=%22900%22 text-anchor=%22middle%22 font-family=%22system-ui%22 font-style=%22italic%22%3EI%3C/text%3E%3C/svg%3E')",
+                          WebkitMaskSize: "contain",
+                          maskSize: "contain",
+                          WebkitMaskRepeat: "no-repeat",
+                          maskRepeat: "no-repeat",
+                          WebkitMaskPosition: "center",
+                          maskPosition: "center",
+                        }}
+                      />
+                    </motion.div>
+                  </div>
+                </motion.div>
               </div>
 
               {/* Animated dots */}
