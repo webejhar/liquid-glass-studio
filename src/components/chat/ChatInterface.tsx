@@ -51,11 +51,21 @@ export function ChatInterface({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  // Add class to body on mount to hide header/footer on mobile
+  // Add class to body on mount to hide header/footer on mobile and prevent refresh
   useEffect(() => {
     document.body.classList.add('chat-active');
+    
+    // Prevent page refresh on mobile when in chat
+    const preventRefresh = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    
+    window.addEventListener('beforeunload', preventRefresh);
+    
     return () => {
       document.body.classList.remove('chat-active');
+      window.removeEventListener('beforeunload', preventRefresh);
     };
   }, []);
 
@@ -426,9 +436,9 @@ export function ChatInterface({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-screen md:h-full fixed inset-0 md:relative z-[100] md:z-auto bg-background">
       {/* Header */}
-      <div className="p-4 border-b border-border flex items-center gap-3 bg-card/50 backdrop-blur-sm">
+      <div className="p-4 border-b border-border flex items-center gap-3 bg-card/50 backdrop-blur-sm shrink-0">
         <Button
           variant="ghost"
           size="icon"
@@ -460,7 +470,7 @@ export function ChatInterface({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -541,7 +551,7 @@ export function ChatInterface({
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSendMessage} className="p-4 border-t border-border bg-card/50 backdrop-blur-sm">
+      <form onSubmit={handleSendMessage} className="p-4 border-t border-border bg-card/50 backdrop-blur-sm shrink-0">
         {/* Image Preview */}
         {imagePreview && (
           <div className="mb-3 relative inline-block">
