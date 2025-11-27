@@ -37,6 +37,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
   const [showRequests, setShowRequests] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [unreadCounts, setUnreadCounts] = useState<{ [userId: string]: number }>({});
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -44,9 +45,10 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
     loadFriends();
     loadFriendStatus();
     loadPendingRequestsCount();
+    loadUnreadCounts();
 
     // Subscribe to friend request changes
-    const channel = supabase
+    const friendRequestsChannel = supabase
       .channel('friend-requests-updates')
       .on(
         'postgres_changes',
@@ -63,8 +65,26 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
       )
       .subscribe();
 
+    // Subscribe to message changes for unread counts
+    const messagesChannel = supabase
+      .channel('chat-messages-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `receiver_id=eq.${currentUserId}`
+        },
+        () => {
+          loadUnreadCounts();
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(friendRequestsChannel);
+      supabase.removeChannel(messagesChannel);
     };
   }, [currentUserId]);
 
@@ -151,6 +171,28 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
       setPendingRequestsCount(data?.length || 0);
     } catch (error) {
       console.error('Error loading pending requests count:', error);
+    }
+  };
+
+  const loadUnreadCounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('sender_id')
+        .eq('receiver_id', currentUserId)
+        .eq('is_read', false);
+
+      if (error) throw error;
+
+      // Count unread messages per sender
+      const counts: { [userId: string]: number } = {};
+      data?.forEach(msg => {
+        counts[msg.sender_id] = (counts[msg.sender_id] || 0) + 1;
+      });
+
+      setUnreadCounts(counts);
+    } catch (error) {
+      console.error('Error loading unread counts:', error);
     }
   };
 
@@ -248,7 +290,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
               size="sm"
             >
               <UserPlus className="w-4 h-4 mr-1" />
-              {showSearch ? "Friends" : "Add Friend"}
+              Add Friend
             </Button>
             <Button
               onClick={() => {
@@ -314,7 +356,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
                   className="p-4 hover:bg-accent/10 transition-colors group relative"
                 >
                   <div className="flex items-center gap-3">
-                    <div
+                  <div
                       onClick={() => {
                         // Allow messaging if accepted friends or any user
                         onSelectUser(user.user_id, user.name || 'User', user.avatar_url);
@@ -336,6 +378,11 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
                           {user.account_number || 'No ID'}
                         </p>
                       </div>
+                      {!showSearch && unreadCounts[user.user_id] > 0 && (
+                        <div className="bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
+                          {unreadCounts[user.user_id]}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex gap-2 items-center">
