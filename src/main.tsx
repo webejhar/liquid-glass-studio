@@ -13,11 +13,11 @@ function Root() {
     // Start showing content slightly before animation ends for smooth blend
     const contentTimer = setTimeout(() => {
       setShowContent(true);
-    }, 3800);
+    }, 4500);
 
     const loadingTimer = setTimeout(() => {
       setIsLoading(false);
-    }, 5000);
+    }, 6000);
 
     return () => {
       clearTimeout(contentTimer);
