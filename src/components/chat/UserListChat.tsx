@@ -142,7 +142,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
         .from('profiles')
         .select('user_id, name, avatar_url, email, account_type, account_number')
         .neq('user_id', currentUserId)
-        .or(`email.ilike.%${query}%,account_number.ilike.%${query}%`);
+        .or(`email.ilike.%${query}%,account_number.ilike.%${query}%,name.ilike.%${query}%`);
 
       if (error) throw error;
 
@@ -227,7 +227,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search by email or account number..."
+            placeholder="Search by name, account number, or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -249,7 +249,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
             <MessageCircle className="w-12 h-12 mb-2 opacity-50" />
             <p className="text-center">
               {searchQuery.trim() 
-                ? "No users found. Search by email or account number."
+                ? "No users found. Search by name, account number, or email."
                 : "No friends yet. Search for users to send friend requests."}
             </p>
           </div>
@@ -285,7 +285,7 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
                           {getAccountTypeBadge(user.account_type)}
                         </div>
                         <p className="text-xs text-muted-foreground truncate">
-                          {user.account_number}
+                          {user.account_number || 'No ID'}
                         </p>
                       </div>
                     </div>

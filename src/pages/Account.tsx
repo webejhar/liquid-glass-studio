@@ -21,6 +21,7 @@ import { NotificationsList } from "@/components/NotificationsList";
 import { AccountToggleBar } from "@/components/AccountToggleBar";
 import { UserListChat } from "@/components/chat/UserListChat";
 import { ChatInterface } from "@/components/chat/ChatInterface";
+import { CustomPhoneInput } from "@/components/PhoneInput";
 
 const professions = [
   "Developer",
@@ -954,14 +955,14 @@ export default function Account() {
                   </div>
 
                   <div>
-                    <Label htmlFor="phone" className="text-xs sm:text-sm">Phone</Label>
-                    <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      disabled={!isEditing}
-                      className="mt-1.5 sm:mt-2 text-sm sm:text-base"
-                    />
+                    <Label htmlFor="phone" className="text-xs sm:text-sm">Phone Number</Label>
+                    <div className="mt-1.5 sm:mt-2">
+                      <CustomPhoneInput
+                        value={formData.phone}
+                        onChange={(value) => setFormData({ ...formData, phone: value })}
+                        disabled={!isEditing}
+                      />
+                    </div>
                   </div>
 
                   <div>
