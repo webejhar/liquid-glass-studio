@@ -91,12 +91,32 @@ export function FriendRequests({ currentUserId }: FriendRequestsProps) {
 
   const handleAccept = async (requestId: string) => {
     try {
+      // Get the request details
+      const request = requests.find(r => r.id === requestId);
+      if (!request) return;
+
+      // Get receiver's name for notification
+      const { data: receiverProfile } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('user_id', currentUserId)
+        .single();
+
       const { error } = await supabase
         .from('friend_requests')
         .update({ status: 'accepted' })
         .eq('id', requestId);
 
       if (error) throw error;
+
+      // Create notification for sender
+      const receiverName = receiverProfile?.name || 'Someone';
+      await supabase.rpc('create_user_notification', {
+        p_user_id: request.sender_id,
+        p_title: 'Friend Request Accepted',
+        p_message: `${receiverName} accepted your friend request`,
+        p_type: 'friend_request_accepted'
+      });
 
       toast({
         title: 'Friend request accepted',
