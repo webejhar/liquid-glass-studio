@@ -122,40 +122,10 @@ export function UserListChat({ currentUserId, onSelectUser }: UserListChatProps)
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, name, avatar_url, email, account_type, account_number')
-        .in('user_id', friendIds);
+        .in('user_id', friendIds)
+        .order('name');
 
-      if (!profiles) {
-        setFriends([]);
-        setIsLoading(false);
-        return;
-      }
-
-      // Get most recent message for each friend to sort by
-      const { data: recentMessages } = await supabase
-        .from('chat_messages')
-        .select('sender_id, receiver_id, created_at')
-        .or(`and(sender_id.eq.${currentUserId},receiver_id.in.(${friendIds.join(',')})),and(receiver_id.eq.${currentUserId},sender_id.in.(${friendIds.join(',')}))`);
-
-      // Create a map of friend_id -> most recent message timestamp
-      const lastMessageMap: { [userId: string]: string } = {};
-      recentMessages?.forEach(msg => {
-        const friendId = msg.sender_id === currentUserId ? msg.receiver_id : msg.sender_id;
-        if (!lastMessageMap[friendId] || msg.created_at > lastMessageMap[friendId]) {
-          lastMessageMap[friendId] = msg.created_at;
-        }
-      });
-
-      // Sort profiles by most recent message
-      const sortedProfiles = profiles.sort((a, b) => {
-        const aTime = lastMessageMap[a.user_id] || '';
-        const bTime = lastMessageMap[b.user_id] || '';
-        if (!aTime && !bTime) return a.name?.localeCompare(b.name || '') || 0;
-        if (!aTime) return 1;
-        if (!bTime) return -1;
-        return bTime.localeCompare(aTime);
-      });
-
-      setFriends(sortedProfiles);
+      setFriends(profiles || []);
     } catch (error) {
       console.error('Error loading friends:', error);
     } finally {

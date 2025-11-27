@@ -7,7 +7,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 interface AccountToggleBarProps {
   cartCount: number;
   favoritesCount: number;
-  unreadChatCount: number;
   verificationStatus: string;
   onNavigate: (tab: string) => void;
   onLogout: () => void;
@@ -16,7 +15,6 @@ interface AccountToggleBarProps {
 export const AccountToggleBar = ({
   cartCount,
   favoritesCount,
-  unreadChatCount,
   verificationStatus,
   onNavigate,
   onLogout
@@ -62,7 +60,6 @@ export const AccountToggleBar = ({
       icon: MessageSquare,
       label: "Live Chat",
       value: "chat",
-      count: unreadChatCount,
       color: "text-cyan-400",
       bgColor: "bg-cyan-500/20"
     },
@@ -116,13 +113,8 @@ export const AccountToggleBar = ({
         <span className="hidden sm:inline text-sm font-medium">Quick Access</span>
         
         {/* Badge indicators */}
-        {!isOpen && (cartCount > 0 || favoritesCount > 0 || unreadChatCount > 0) && (
+        {!isOpen && (cartCount > 0 || favoritesCount > 0) && (
           <div className="flex gap-1">
-            {unreadChatCount > 0 && (
-              <span className="w-5 h-5 rounded-full bg-cyan-500 text-white text-xs flex items-center justify-center">
-                {unreadChatCount}
-              </span>
-            )}
             {cartCount > 0 && (
               <span className="w-5 h-5 rounded-full bg-green-500 text-white text-xs flex items-center justify-center">
                 {cartCount}
