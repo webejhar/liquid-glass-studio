@@ -24,7 +24,7 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
-    clientType: "normal_user",
+    clientType: "personal",
     projectTitle: "",
     projectDetails: "",
     budgetType: "low",
@@ -46,6 +46,19 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
     }
     if (!formData.projectDetails.trim()) {
       toast.error("Please enter project details");
+      return;
+    }
+
+    // Validate word counts
+    const titleWords = formData.projectTitle.split(/\s+/).filter(Boolean).length;
+    const detailWords = formData.projectDetails.split(/\s+/).filter(Boolean).length;
+
+    if (titleWords > 100) {
+      toast.error("Project title must be 100 words or less");
+      return;
+    }
+    if (detailWords > 5000) {
+      toast.error("Project details must be 5000 words or less");
       return;
     }
 
@@ -74,11 +87,19 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
 
       if (error) throw error;
 
+      // Send notification to provider
+      await supabase.rpc('create_user_notification', {
+        p_user_id: provider.userId,
+        p_title: 'New Project Request',
+        p_message: `${formData.fullName} sent you a project request: ${formData.projectTitle}`,
+        p_type: 'project_request'
+      });
+
       toast.success("Project request sent successfully!");
       onClose();
       setFormData({
         fullName: "",
-        clientType: "normal_user",
+        clientType: "personal",
         projectTitle: "",
         projectDetails: "",
         budgetType: "low",
@@ -95,12 +116,15 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
   };
 
   const timeUnits = {
-    hours: Array.from({ length: 24 }, (_, i) => i + 1),
-    days: Array.from({ length: 30 }, (_, i) => i + 1),
-    months: Array.from({ length: 12 }, (_, i) => i + 1),
+    hours: Array.from({ length: 72 }, (_, i) => i + 1),
+    days: Array.from({ length: 90 }, (_, i) => i + 1),
+    months: Array.from({ length: 24 }, (_, i) => i + 1),
   };
 
   if (!isOpen) return null;
+
+  const titleWordCount = formData.projectTitle.split(/\s+/).filter(Boolean).length;
+  const detailWordCount = formData.projectDetails.split(/\s+/).filter(Boolean).length;
 
   return (
     <AnimatePresence>
@@ -135,13 +159,14 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <User className="w-4 h-4" />
-                Your Full Name
+                Full Name *
               </Label>
               <Input
                 value={formData.fullName}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 placeholder="Enter your full name"
                 className="glass-card"
+                required
               />
             </div>
 
@@ -149,7 +174,7 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Building2 className="w-4 h-4" />
-                Your Type
+                Select Type *
               </Label>
               <Select
                 value={formData.clientType}
@@ -159,8 +184,8 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="normal_user">Normal User</SelectItem>
-                  <SelectItem value="company">Company</SelectItem>
+                  <SelectItem value="personal">Personal Project</SelectItem>
+                  <SelectItem value="company">Company Project</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -169,7 +194,7 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />
-                Project Title (max 100 words)
+                Type Your Project (max 100 words) *
               </Label>
               <Input
                 value={formData.projectTitle}
@@ -181,15 +206,16 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
                 }}
                 placeholder="Brief project title"
                 className="glass-card"
+                required
               />
-              <p className="text-xs text-muted-foreground">
-                {formData.projectTitle.split(/\s+/).filter(Boolean).length}/100 words
+              <p className={`text-xs ${titleWordCount > 90 ? 'text-yellow-400' : 'text-muted-foreground'}`}>
+                {titleWordCount}/100 words
               </p>
             </div>
 
             {/* Project Details */}
             <div className="space-y-2">
-              <Label>Project Details (max 5000 words)</Label>
+              <Label>Project Details (max 5000 words) *</Label>
               <Textarea
                 value={formData.projectDetails}
                 onChange={(e) => {
@@ -199,10 +225,11 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
                   }
                 }}
                 placeholder="Please type your project details..."
-                className="glass-card min-h-[150px]"
+                className="glass-card min-h-[150px] resize-none"
+                required
               />
-              <p className="text-xs text-muted-foreground">
-                {formData.projectDetails.split(/\s+/).filter(Boolean).length}/5000 words
+              <p className={`text-xs ${detailWordCount > 4500 ? 'text-yellow-400' : 'text-muted-foreground'}`}>
+                {detailWordCount}/5000 words
               </p>
             </div>
 
@@ -210,7 +237,7 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <DollarSign className="w-4 h-4" />
-                Budget Type
+                Budget *
               </Label>
               <Select
                 value={formData.budgetType}
@@ -230,7 +257,7 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                Delivery Time
+                Delivery Time *
               </Label>
               <div className="flex gap-3">
                 <Select
@@ -253,7 +280,7 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
                   <SelectTrigger className="glass-card flex-1">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[200px]">
                     {timeUnits[formData.deliveryTimeUnit as keyof typeof timeUnits].map((num) => (
                       <SelectItem key={num} value={num.toString()}>
                         {num} {formData.deliveryTimeUnit}
@@ -266,11 +293,11 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
 
             {/* Payment Split */}
             <div className="space-y-4">
-              <Label>Payment Split</Label>
+              <Label>Payment Type *</Label>
               <div className="glass-card p-4 rounded-xl space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span>Advance Payment: {formData.advancePercentage}%</span>
-                  <span>After Delivery: {100 - formData.advancePercentage}%</span>
+                <div className="flex justify-between text-sm font-medium">
+                  <span className="text-green-400">Advance: {formData.advancePercentage}%</span>
+                  <span className="text-blue-400">After Work: {100 - formData.advancePercentage}%</span>
                 </div>
                 <Slider
                   value={[formData.advancePercentage]}
@@ -291,12 +318,12 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full glass-button py-3"
+              className="w-full py-6 text-lg font-semibold"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <motion.div
-                    className="w-4 h-4 border-2 border-current border-t-transparent rounded-full"
+                    className="w-5 h-5 border-2 border-current border-t-transparent rounded-full"
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   />
@@ -304,7 +331,7 @@ export const HireModal = ({ isOpen, onClose, provider }: HireModalProps) => {
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  <Send className="w-4 h-4" />
+                  <Send className="w-5 h-5" />
                   Send Project Request
                 </span>
               )}

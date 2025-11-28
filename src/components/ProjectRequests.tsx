@@ -25,6 +25,7 @@ interface Project {
   advance_paid: boolean;
   final_paid: boolean;
   submission_files: string[] | null;
+  admin_approved: boolean;
   created_at: string;
 }
 
