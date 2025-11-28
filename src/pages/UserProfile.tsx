@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { ArrowLeft, MessageSquare, MapPin, Briefcase, CheckCircle, Clock, Shield, Calendar, UserPlus, Check, X, Handshake, Tag, Mail, Phone, ExternalLink } from "lucide-react";
+import { ArrowLeft, MessageSquare, MapPin, Briefcase, CheckCircle, Clock, Shield, Calendar, UserPlus, Check, X, Handshake, Tag, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { HireModal } from "@/components/HireModal";
 import { ProviderSkillsTags } from "@/components/ProviderSkillsTags";
@@ -43,9 +43,14 @@ export default function UserProfile() {
     checkCurrentUser();
     if (userId) {
       loadProfile(userId);
-      loadFriendStatus();
     }
   }, [userId]);
+
+  useEffect(() => {
+    if (currentUser && userId) {
+      loadFriendStatus();
+    }
+  }, [currentUser, userId]);
 
   const checkCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -166,7 +171,6 @@ export default function UserProfile() {
   const handleStartChat = () => {
     if (!currentUser || !profile) return;
     
-    // Navigate to account page with chat tab and selected user
     navigate('/account', {
       state: {
         activeTab: 'chat',
@@ -234,7 +238,11 @@ export default function UserProfile() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <motion.div
+          className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        />
       </div>
     );
   }
@@ -251,8 +259,8 @@ export default function UserProfile() {
     );
   }
 
-  // Check if viewing own profile
   const isOwnProfile = currentUser?.id === profile.user_id;
+  const categories = profile.category?.split(", ").filter(Boolean) || [];
 
   return (
     <div className="min-h-screen pt-20 sm:pt-24 px-3 sm:px-4 md:px-6 lg:px-8 pb-16">
@@ -296,13 +304,21 @@ export default function UserProfile() {
                 {getVerificationBadge(profile.verification_status)}
               </div>
 
-              {profile.bio && (
-                <p className="text-muted-foreground mb-4">{profile.bio}</p>
+              {/* Categories for Service Provider */}
+              {profile.account_type === 'service_provider' && categories.length > 0 && (
+                <div className="flex flex-wrap gap-2 justify-center sm:justify-start mb-4">
+                  {categories.map((cat, index) => (
+                    <Badge key={index} className="bg-cyan-500/20 text-cyan-400">
+                      <Briefcase className="w-3 h-3 mr-1" />
+                      {cat}
+                    </Badge>
+                  ))}
+                </div>
               )}
 
               {/* Action Buttons */}
               {!isOwnProfile && (
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
                   {friendStatus === 'none' && (
                     <Button
                       onClick={sendFriendRequest}
@@ -338,16 +354,16 @@ export default function UserProfile() {
                   )}
                   <Button
                     onClick={handleStartChat}
-                    variant="liquid"
+                    variant="outline"
                     className="gap-2"
                   >
                     <MessageSquare className="w-4 h-4" />
-                    Live Chat
+                    Chat
                   </Button>
                   {profile.account_type === 'service_provider' && (
                     <Button
                       onClick={() => setShowHireModal(true)}
-                      className="gap-2 bg-gradient-to-r from-primary to-accent"
+                      className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
                     >
                       <Handshake className="w-4 h-4" />
                       Hire
@@ -368,64 +384,30 @@ export default function UserProfile() {
             </div>
           </div>
 
-          {/* Details Grid */}
+          {/* About Section for Service Providers */}
+          {profile.account_type === 'service_provider' && (
+            <div className="mb-8">
+              <ProviderSkillsTags
+                userId={profile.user_id}
+                initialBio={profile.bio || ""}
+                initialSkills={profile.skills || []}
+                initialTags={profile.tags || []}
+                initialCategories={categories}
+                readOnly={true}
+              />
+            </div>
+          )}
+
+          {/* Bio for non-service providers */}
+          {profile.account_type !== 'service_provider' && profile.bio && (
+            <div className="glass-card p-4 rounded-xl mb-6">
+              <h3 className="text-lg font-semibold mb-2">About</h3>
+              <p className="text-muted-foreground whitespace-pre-wrap">{profile.bio}</p>
+            </div>
+          )}
+
+          {/* Details Grid - Only show address and member since for public profiles */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {profile.email && isOwnProfile && (
-              <div className="glass-card p-4 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/20">
-                    <Mail className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Email</p>
-                    <p className="font-semibold break-all">{profile.email}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {profile.phone && isOwnProfile && (
-              <div className="glass-card p-4 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-500/20">
-                    <Phone className="w-5 h-5 text-green-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Phone</p>
-                    <p className="font-semibold">{profile.phone}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {profile.profession && (
-              <div className="glass-card p-4 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-purple-500/20">
-                    <Briefcase className="w-5 h-5 text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Profession</p>
-                    <p className="font-semibold">{profile.profession}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {profile.category && (
-              <div className="glass-card p-4 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-cyan-500/20">
-                    <Briefcase className="w-5 h-5 text-cyan-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Category</p>
-                    <p className="font-semibold">{profile.category}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {profile.address && (
               <div className="glass-card p-4 rounded-lg sm:col-span-2">
                 <div className="flex items-center gap-3">
@@ -433,7 +415,7 @@ export default function UserProfile() {
                     <MapPin className="w-5 h-5 text-orange-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Address</p>
+                    <p className="text-xs text-muted-foreground">Location</p>
                     <p className="font-semibold">{profile.address}</p>
                   </div>
                 </div>
@@ -459,19 +441,6 @@ export default function UserProfile() {
             </div>
           </div>
 
-          {/* Skills and Tags for Service Providers */}
-          {profile.account_type === 'service_provider' && (
-            <div className="mt-6">
-              <ProviderSkillsTags
-                userId={profile.user_id}
-                initialBio={profile.bio || ""}
-                initialSkills={profile.skills || []}
-                initialTags={profile.tags || []}
-                readOnly={true}
-              />
-            </div>
-          )}
-
           {/* Social Media Links */}
           {profile.social_media_links && Array.isArray(profile.social_media_links) && profile.social_media_links.length > 0 && (
             <div className="mt-6">
@@ -483,16 +452,14 @@ export default function UserProfile() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="glass-card p-3 rounded-lg hover:bg-accent/10 transition-colors"
+                    className="glass-card p-3 rounded-lg hover:bg-accent/10 transition-colors flex items-center gap-3"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/20">
-                        <MessageSquare className="w-4 h-4 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground">{link.platform}</p>
-                        <p className="font-semibold truncate">{link.url}</p>
-                      </div>
+                    <div className="p-2 rounded-lg bg-primary/20">
+                      <ExternalLink className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground">{link.platform}</p>
+                      <p className="font-semibold truncate text-sm">{link.url}</p>
                     </div>
                   </a>
                 ))}
@@ -503,17 +470,15 @@ export default function UserProfile() {
       </div>
 
       {/* Hire Modal */}
-      {profile && (
-        <HireModal
-          isOpen={showHireModal}
-          onClose={() => setShowHireModal(false)}
-          provider={{
-            userId: profile.user_id,
-            name: profile.name || "Provider",
-            category: profile.category || undefined
-          }}
-        />
-      )}
+      <HireModal
+        isOpen={showHireModal}
+        onClose={() => setShowHireModal(false)}
+        provider={{
+          userId: profile.user_id,
+          name: profile.name || "Provider",
+          category: categories[0]
+        }}
+      />
     </div>
   );
 }
