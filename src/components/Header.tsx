@@ -10,6 +10,7 @@ const menuItems = [
   { label: "About", path: "/about" },
   { label: "Services", path: "/services" },
   { label: "Portfolio", path: "/portfolio" },
+  { label: "Providers", path: "/providers" },
   { label: "Shop", path: "/shop" },
   { label: "Contact", path: "/contact" },
 ];
