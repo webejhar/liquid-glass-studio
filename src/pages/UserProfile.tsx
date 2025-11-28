@@ -5,7 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { ArrowLeft, MessageSquare, MapPin, Briefcase, CheckCircle, Clock, Shield, Calendar, UserPlus, Check, X, Handshake, Tag, ExternalLink } from "lucide-react";
+import { ArrowLeft, MessageSquare, MapPin, Briefcase, CheckCircle, Clock, Shield, Calendar, UserPlus, Check, X, Handshake, Tag } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Twitter, Github, Globe, Dribbble, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { HireModal } from "@/components/HireModal";
 import { ProviderSkillsTags } from "@/components/ProviderSkillsTags";
@@ -441,28 +442,51 @@ export default function UserProfile() {
             </div>
           </div>
 
-          {/* Social Media Links */}
+          {/* Social Media Links - Icons Only */}
           {profile.social_media_links && Array.isArray(profile.social_media_links) && profile.social_media_links.length > 0 && (
             <div className="mt-6">
-              <h3 className="text-lg font-bold mb-4">Social Media</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {profile.social_media_links.map((link: any, index: number) => (
-                  <a
-                    key={index}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="glass-card p-3 rounded-lg hover:bg-accent/10 transition-colors flex items-center gap-3"
-                  >
-                    <div className="p-2 rounded-lg bg-primary/20">
-                      <ExternalLink className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-muted-foreground">{link.platform}</p>
-                      <p className="font-semibold truncate text-sm">{link.url}</p>
-                    </div>
-                  </a>
-                ))}
+              <h3 className="text-lg font-bold mb-4">Connect</h3>
+              <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+                {profile.social_media_links.map((link: any, index: number) => {
+                  const getSocialIcon = (platform: string) => {
+                    const p = platform.toLowerCase();
+                    if (p.includes('facebook')) return <Facebook className="w-5 h-5" />;
+                    if (p.includes('instagram')) return <Instagram className="w-5 h-5" />;
+                    if (p.includes('linkedin')) return <Linkedin className="w-5 h-5" />;
+                    if (p.includes('twitter') || p.includes('x')) return <Twitter className="w-5 h-5" />;
+                    if (p.includes('github')) return <Github className="w-5 h-5" />;
+                    if (p.includes('dribbble')) return <Dribbble className="w-5 h-5" />;
+                    if (p.includes('behance')) return <Globe className="w-5 h-5" />;
+                    if (p.includes('fiverr') || p.includes('upwork') || p.includes('freelancer')) return <Briefcase className="w-5 h-5" />;
+                    if (p.includes('portfolio') || p.includes('website')) return <Globe className="w-5 h-5" />;
+                    return <ExternalLink className="w-5 h-5" />;
+                  };
+                  
+                  const getIconColor = (platform: string) => {
+                    const p = platform.toLowerCase();
+                    if (p.includes('facebook')) return 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30';
+                    if (p.includes('instagram')) return 'bg-pink-600/20 text-pink-400 hover:bg-pink-600/30';
+                    if (p.includes('linkedin')) return 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30';
+                    if (p.includes('twitter') || p.includes('x')) return 'bg-sky-500/20 text-sky-400 hover:bg-sky-500/30';
+                    if (p.includes('github')) return 'bg-gray-500/20 text-gray-300 hover:bg-gray-500/30';
+                    if (p.includes('dribbble')) return 'bg-pink-500/20 text-pink-300 hover:bg-pink-500/30';
+                    if (p.includes('behance')) return 'bg-blue-400/20 text-blue-300 hover:bg-blue-400/30';
+                    return 'bg-primary/20 text-primary hover:bg-primary/30';
+                  };
+
+                  return (
+                    <a
+                      key={index}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={link.platform}
+                      className={`p-3 rounded-xl transition-all duration-300 ${getIconColor(link.platform)}`}
+                    >
+                      {getSocialIcon(link.platform)}
+                    </a>
+                  );
+                })}
               </div>
             </div>
           )}

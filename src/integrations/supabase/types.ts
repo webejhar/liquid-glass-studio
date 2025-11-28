@@ -341,6 +341,27 @@ export type Database = {
         }
         Relationships: []
       }
+      product_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       product_orders: {
         Row: {
           buyer_email: string

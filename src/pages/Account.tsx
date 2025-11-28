@@ -1667,23 +1667,6 @@ export default function Account() {
         </DialogContent>
       </Dialog>
 
-      {/* WhatsApp Contact Button - Hide when in active chat */}
-      {!selectedChatUser && (
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pb-6 sm:pb-8">
-          <a
-            href="https://wa.me/01340125311"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full"
-          >
-            <Button variant="liquid" className="w-full text-sm sm:text-base lg:text-lg gap-2 sm:gap-3 py-4 sm:py-5 lg:py-6">
-              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-              Contact Us on WhatsApp
-            </Button>
-          </a>
-        </div>
-      )}
-
       {/* Delete Account Reason Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="glass-premium">
