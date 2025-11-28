@@ -10,7 +10,9 @@ import {
   Menu,
   Mail,
   Calendar,
-  CheckSquare
+  CheckSquare,
+  Package,
+  Briefcase
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -62,6 +64,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: "/admin/users", label: "All Users", icon: Users, badge: null },
     { path: "/admin/pending-approval", label: "Pending Approval", icon: CheckSquare, badge: pendingCount > 0 ? pendingCount : null },
     { path: "/admin/orders", label: "Orders", icon: ShoppingBag, badge: null },
+    { path: "/admin/products", label: "Products", icon: Package, badge: null },
+    { path: "/admin/project-orders", label: "Project Orders", icon: Briefcase, badge: null },
     { path: "/admin/meetings", label: "Meetings", icon: Calendar, badge: null },
     { path: "/admin/verification", label: "Verification", icon: CheckSquare, badge: null },
     { path: "/admin/contacts", label: "Contacts", icon: Mail, badge: null },

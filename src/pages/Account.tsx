@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell, X, ArrowRight, MessageSquare } from "lucide-react";
+import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell, X, ArrowRight, MessageSquare, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,9 @@ import { AccountToggleBar } from "@/components/AccountToggleBar";
 import { UserListChat } from "@/components/chat/UserListChat";
 import { ChatInterface } from "@/components/chat/ChatInterface";
 import { CustomPhoneInput } from "@/components/PhoneInput";
+import { ProjectRequests } from "@/components/ProjectRequests";
+import { YourProjects } from "@/components/YourProjects";
+import { ProviderSkillsTags } from "@/components/ProviderSkillsTags";
 
 const professions = [
   "Developer",
@@ -67,6 +70,8 @@ interface Profile {
   cv_url: string | null;
   social_media_links: any;
   approval_status: string | null;
+  skills: string[] | null;
+  tags: string[] | null;
 }
 
 interface Order {
@@ -805,7 +810,7 @@ export default function Account() {
           )}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-3 sm:grid-cols-7 gap-1 hidden md:grid">
+            <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-4 sm:grid-cols-9 gap-1 hidden md:grid">
               <TabsTrigger value="profile" className="gap-1 sm:gap-2 text-xs sm:text-sm">
                 <User className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Profile</span>
@@ -822,6 +827,18 @@ export default function Account() {
                 <Heart className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Fav</span> ({favorites.length})
               </TabsTrigger>
+              {profile?.account_type === 'service_provider' && (
+                <TabsTrigger value="project-requests" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <Briefcase className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden xs:inline">Requests</span>
+                </TabsTrigger>
+              )}
+              {(profile?.account_type === 'client' || profile?.account_type === 'general') && (
+                <TabsTrigger value="your-projects" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <Briefcase className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden xs:inline">Projects</span>
+                </TabsTrigger>
+              )}
               <TabsTrigger value="chat" className="gap-1 sm:gap-2 text-xs sm:text-sm">
                 <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Chat</span>
@@ -1082,7 +1099,7 @@ export default function Account() {
 
                 {/* Social Media Links for Service Providers and Clients */}
                 {(profile?.account_type === 'service_provider' || profile?.account_type === 'client') && 
-                 profile?.social_media_links && Array.isArray(profile.social_media_links) && profile.social_media_links.length > 0 && (
+                  profile?.social_media_links && Array.isArray(profile.social_media_links) && profile.social_media_links.length > 0 && (
                   <div className="mt-6 p-4 rounded-lg border border-border/50 bg-muted/10">
                     <Label className="text-xs sm:text-sm mb-3 block">Social Media Links</Label>
                     <div className="space-y-2">
@@ -1102,6 +1119,21 @@ export default function Account() {
                         </div>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* Provider Skills & Tags Section */}
+                {profile?.account_type === 'service_provider' && (
+                  <div className="mt-6 p-4 rounded-lg border border-border/50 bg-muted/10">
+                    <h3 className="text-lg font-semibold mb-4">Skills & Tags</h3>
+                    <ProviderSkillsTags
+                      userId={profile.user_id}
+                      initialBio={profile.bio || ""}
+                      initialSkills={profile.skills || []}
+                      initialTags={profile.tags || []}
+                      onUpdate={() => loadProfile(profile.user_id)}
+                      readOnly={false}
+                    />
                   </div>
                 )}
 
@@ -1458,6 +1490,34 @@ export default function Account() {
                 </div>
               </motion.div>
             </TabsContent>
+
+            {/* Project Requests Tab - For Service Providers */}
+            {profile?.account_type === 'service_provider' && (
+              <TabsContent value="project-requests">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="glass-premium p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl"
+                >
+                  <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Project Requests</h2>
+                  <ProjectRequests userId={user?.id || ""} />
+                </motion.div>
+              </TabsContent>
+            )}
+
+            {/* Your Projects Tab - For Clients & General Users */}
+            {(profile?.account_type === 'client' || profile?.account_type === 'general') && (
+              <TabsContent value="your-projects">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="glass-premium p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl"
+                >
+                  <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Your Projects</h2>
+                  <YourProjects userId={user?.id || ""} />
+                </motion.div>
+              </TabsContent>
+            )}
           </Tabs>
         </motion.div>
       </div>

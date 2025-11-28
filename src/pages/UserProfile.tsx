@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { ArrowLeft, MessageSquare, MapPin, Briefcase, CheckCircle, Clock, Shield, Calendar, UserPlus, Check, X, Handshake, Tag } from "lucide-react";
+import { ArrowLeft, MessageSquare, MapPin, Briefcase, CheckCircle, Clock, Shield, Calendar, UserPlus, Check, X, Handshake, Tag, Mail, Phone, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { HireModal } from "@/components/HireModal";
 import { ProviderSkillsTags } from "@/components/ProviderSkillsTags";
@@ -370,7 +370,7 @@ export default function UserProfile() {
 
           {/* Details Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {profile.email && (
+            {profile.email && isOwnProfile && (
               <div className="glass-card p-4 rounded-lg">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-primary/20">
@@ -384,7 +384,7 @@ export default function UserProfile() {
               </div>
             )}
 
-            {profile.phone && (
+            {profile.phone && isOwnProfile && (
               <div className="glass-card p-4 rounded-lg">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-green-500/20">

@@ -2,104 +2,42 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export const LoadingScreen = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isPouring, setIsPouring] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsPouring(true);
-      setTimeout(() => {
-        setIsTransitioning(true);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 800);
-      }, 1000);
-    }, 2800);
+      setIsVisible(false);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
 
   return (
     <AnimatePresence>
-      {isLoading && (
+      {isVisible && (
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
           className="fixed inset-0 z-[99999] flex items-center justify-center bg-background overflow-hidden"
         >
-          {/* Animated background gradient */}
-          <motion.div
-            className="absolute inset-0 bg-gradient-radial"
-            animate={
-              isTransitioning
-                ? {
-                    opacity: 0,
-                    scale: 1.5,
-                  }
-                : {
-                    opacity: [0.3, 0.5, 0.3],
-                    scale: [1, 1.2, 1],
-                  }
-            }
-            transition={{
-              duration: 4,
-              repeat: isTransitioning ? 0 : Infinity,
-              ease: "easeInOut",
-            }}
-          />
-          {/* Main Liquid Glass Container with Fragment Animation */}
+          {/* Simple liquid glass sphere */}
           <motion.div
             className="relative z-10"
-            animate={
-              isTransitioning
-                ? {
-                    scale: [1, 1.2, 0.8],
-                    opacity: [1, 0.8, 0],
-                  }
-                : {
-                    y: [0, -20, 0],
-                    rotate: [0, 2, -2, 0],
-                  }
-            }
-            transition={
-              isTransitioning
-                ? { duration: 0.4, ease: "easeInOut" }
-                : {
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }
-            }
+            initial={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
           >
-            {/* Liquid Glass Sphere with RI Text */}
             <motion.div
               className="liquid-glass-container"
-              animate={
-                isTransitioning
-                  ? {
-                      borderRadius: ["50%", "40% 60% 30% 70%", "30%"],
-                    }
-                  : {
-                      rotate: [-3, 3, -3],
-                      borderRadius: [
-                        "50%",
-                        "48% 52% 51% 49%",
-                        "52% 48% 49% 51%",
-                        "50%"
-                      ],
-                    }
-              }
-              transition={
-                isTransitioning
-                  ? { duration: 0.4, ease: "easeOut" }
-                  : {
-                      duration: 5,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }
-              }
+              animate={{
+                y: [0, -10, 0],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
             >
               {/* Glass effect overlay */}
               <div className="glass-overlay" />
@@ -107,26 +45,14 @@ export const LoadingScreen = () => {
               {/* RI Text */}
               <motion.div
                 className="ri-text"
-                animate={
-                  isTransitioning
-                    ? {
-                        scale: [1, 0.5],
-                        opacity: [1, 0],
-                      }
-                    : {
-                        scale: [1, 1.08, 1],
-                        opacity: [0.9, 1, 0.9],
-                      }
-                }
-                transition={
-                  isTransitioning
-                    ? { duration: 0.3 }
-                    : {
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }
-                }
+                animate={{
+                  opacity: [0.9, 1, 0.9],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
                 RI
               </motion.div>
@@ -136,57 +62,19 @@ export const LoadingScreen = () => {
                 className="sheen-effect"
                 animate={{
                   x: ["-200%", "200%"],
-                  opacity: [0, 1, 0],
+                  opacity: [0, 0.8, 0],
                 }}
                 transition={{
-                  duration: 2.5,
+                  duration: 2,
                   repeat: Infinity,
                   ease: "easeInOut",
-                  repeatDelay: 0.8,
+                  repeatDelay: 1,
                 }}
               />
             </motion.div>
-
-            {/* Fragment particles on exit */}
-            {isTransitioning && [...Array(12)].map((_, i) => (
-              <motion.div
-                key={`fragment-${i}`}
-                className="fragment"
-                initial={{
-                  x: 0,
-                  y: 0,
-                  opacity: 1,
-                  scale: 1,
-                }}
-                animate={{
-                  x: Math.cos((i * Math.PI * 2) / 12) * 300,
-                  y: Math.sin((i * Math.PI * 2) / 12) * 300,
-                  opacity: 0,
-                  scale: [1, 0.5, 0],
-                  rotate: [0, 360 + i * 30],
-                }}
-                transition={{
-                  duration: 0.6,
-                  ease: "easeOut",
-                }}
-                style={{
-                  left: Math.cos((i * Math.PI * 2) / 12) * 110,
-                  top: Math.sin((i * Math.PI * 2) / 12) * 110,
-                }}
-              />
-            ))}
-
           </motion.div>
 
           <style>{`
-            .bg-gradient-radial {
-              background: radial-gradient(
-                circle at center,
-                hsl(var(--primary) / 0.15) 0%,
-                transparent 70%
-              );
-            }
-
             .liquid-glass-container {
               width: 220px;
               height: 220px;
@@ -260,22 +148,6 @@ export const LoadingScreen = () => {
               transform: rotate(25deg);
             }
 
-            .fragment {
-              position: absolute;
-              width: 20px;
-              height: 20px;
-              border-radius: 50%;
-              background: linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.4),
-                rgba(51, 187, 238, 0.6)
-              );
-              backdrop-filter: blur(10px);
-              box-shadow: 
-                0 0 20px rgba(51, 187, 238, 0.6),
-                inset 0 2px 8px rgba(255, 255, 255, 0.3);
-            }
-
             @media (max-width: 768px) {
               .liquid-glass-container {
                 width: 170px;
@@ -284,10 +156,6 @@ export const LoadingScreen = () => {
               .ri-text {
                 font-size: 70px;
                 letter-spacing: 8px;
-              }
-              .fragment {
-                width: 15px;
-                height: 15px;
               }
             }
           `}</style>
