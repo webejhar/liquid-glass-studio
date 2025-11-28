@@ -392,6 +392,51 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          file_path: string | null
+          id: string
+          images: string[] | null
+          is_active: boolean | null
+          name: string
+          price: number
+          sale_price: number | null
+          tags: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          name: string
+          price: number
+          sale_price?: number | null
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          name?: string
+          price?: number
+          sale_price?: number | null
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_number: string
@@ -412,7 +457,9 @@ export type Database = {
           payment_policy_accepted: boolean | null
           phone: string | null
           profession: string | null
+          skills: string[] | null
           social_media_links: Json | null
+          tags: string[] | null
           updated_at: string | null
           user_id: string
           verification_notes: string | null
@@ -437,7 +484,9 @@ export type Database = {
           payment_policy_accepted?: boolean | null
           phone?: string | null
           profession?: string | null
+          skills?: string[] | null
           social_media_links?: Json | null
+          tags?: string[] | null
           updated_at?: string | null
           user_id: string
           verification_notes?: string | null
@@ -462,11 +511,126 @@ export type Database = {
           payment_policy_accepted?: boolean | null
           phone?: string | null
           profession?: string | null
+          skills?: string[] | null
           social_media_links?: Json | null
+          tags?: string[] | null
           updated_at?: string | null
           user_id?: string
           verification_notes?: string | null
           verification_status?: string | null
+        }
+        Relationships: []
+      }
+      project_messages: {
+        Row: {
+          created_at: string | null
+          file_type: string | null
+          file_url: string | null
+          id: string
+          message: string | null
+          project_id: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          message?: string | null
+          project_id: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          message?: string | null
+          project_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_messages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          admin_approved: boolean | null
+          advance_paid: boolean | null
+          advance_percentage: number
+          budget_type: string
+          client_id: string
+          client_name: string
+          client_type: string
+          created_at: string | null
+          delivery_time_unit: string
+          delivery_time_value: number
+          final_budget: number | null
+          final_paid: boolean | null
+          final_percentage: number
+          id: string
+          project_details: string
+          project_title: string
+          provider_id: string
+          provider_payment_id: string | null
+          provider_payment_method: string | null
+          status: string
+          submission_files: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          admin_approved?: boolean | null
+          advance_paid?: boolean | null
+          advance_percentage: number
+          budget_type: string
+          client_id: string
+          client_name: string
+          client_type: string
+          created_at?: string | null
+          delivery_time_unit: string
+          delivery_time_value: number
+          final_budget?: number | null
+          final_paid?: boolean | null
+          final_percentage: number
+          id?: string
+          project_details: string
+          project_title: string
+          provider_id: string
+          provider_payment_id?: string | null
+          provider_payment_method?: string | null
+          status?: string
+          submission_files?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          admin_approved?: boolean | null
+          advance_paid?: boolean | null
+          advance_percentage?: number
+          budget_type?: string
+          client_id?: string
+          client_name?: string
+          client_type?: string
+          created_at?: string | null
+          delivery_time_unit?: string
+          delivery_time_value?: number
+          final_budget?: number | null
+          final_paid?: boolean | null
+          final_percentage?: number
+          id?: string
+          project_details?: string
+          project_title?: string
+          provider_id?: string
+          provider_payment_id?: string | null
+          provider_payment_method?: string | null
+          status?: string
+          submission_files?: string[] | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -529,6 +693,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_purchases: {
+        Row: {
+          created_at: string | null
+          id: string
+          payment_method: string
+          payment_reference: string
+          product_id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          payment_method: string
+          payment_reference: string
+          product_id: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          payment_method?: string
+          payment_reference?: string
+          product_id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_purchases_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

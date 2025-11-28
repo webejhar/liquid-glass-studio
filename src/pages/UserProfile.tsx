@@ -5,8 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { ArrowLeft, MessageSquare, Mail, Phone, MapPin, Briefcase, CheckCircle, Clock, Shield, Calendar, UserPlus, Check, X } from "lucide-react";
+import { ArrowLeft, MessageSquare, MapPin, Briefcase, CheckCircle, Clock, Shield, Calendar, UserPlus, Check, X, Handshake, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { HireModal } from "@/components/HireModal";
+import { ProviderSkillsTags } from "@/components/ProviderSkillsTags";
 
 interface UserProfile {
   user_id: string;
@@ -23,6 +25,8 @@ interface UserProfile {
   approval_status: string | null;
   category: string | null;
   social_media_links: any;
+  skills: string[] | null;
+  tags: string[] | null;
   created_at: string;
 }
 
@@ -33,6 +37,7 @@ export default function UserProfile() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [friendStatus, setFriendStatus] = useState<'none' | 'pending_sent' | 'pending_received' | 'accepted'>('none');
+  const [showHireModal, setShowHireModal] = useState(false);
 
   useEffect(() => {
     checkCurrentUser();
@@ -339,6 +344,15 @@ export default function UserProfile() {
                     <MessageSquare className="w-4 h-4" />
                     Live Chat
                   </Button>
+                  {profile.account_type === 'service_provider' && (
+                    <Button
+                      onClick={() => setShowHireModal(true)}
+                      className="gap-2 bg-gradient-to-r from-primary to-accent"
+                    >
+                      <Handshake className="w-4 h-4" />
+                      Hire
+                    </Button>
+                  )}
                 </div>
               )}
 
@@ -445,6 +459,19 @@ export default function UserProfile() {
             </div>
           </div>
 
+          {/* Skills and Tags for Service Providers */}
+          {profile.account_type === 'service_provider' && (
+            <div className="mt-6">
+              <ProviderSkillsTags
+                userId={profile.user_id}
+                initialBio={profile.bio || ""}
+                initialSkills={profile.skills || []}
+                initialTags={profile.tags || []}
+                readOnly={true}
+              />
+            </div>
+          )}
+
           {/* Social Media Links */}
           {profile.social_media_links && Array.isArray(profile.social_media_links) && profile.social_media_links.length > 0 && (
             <div className="mt-6">
@@ -474,6 +501,19 @@ export default function UserProfile() {
           )}
         </motion.div>
       </div>
+
+      {/* Hire Modal */}
+      {profile && (
+        <HireModal
+          isOpen={showHireModal}
+          onClose={() => setShowHireModal(false)}
+          provider={{
+            userId: profile.user_id,
+            name: profile.name || "Provider",
+            category: profile.category || undefined
+          }}
+        />
+      )}
     </div>
   );
 }
