@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSessionTracking } from "@/hooks/useSessionTracking";
-import { SocialLoginButtons } from "@/components/SocialLoginButtons";
+
 import { CaptchaSlider } from "@/components/CaptchaSlider";
 
 export default function Login() {
@@ -97,14 +97,6 @@ export default function Login() {
             Sign in to continue to Webejhar
           </motion.p>
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.35 }}
-            className="mb-6"
-          >
-            <SocialLoginButtons />
-          </motion.div>
 
           <form onSubmit={handleLogin} className="space-y-6">
             <motion.div

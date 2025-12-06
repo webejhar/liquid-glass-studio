@@ -14,21 +14,18 @@ export const AccountTypeModal = ({ open, onClose, onSelectType }: AccountTypeMod
     {
       type: 'general' as const,
       title: 'General User',
-      description: 'Basic account for regular users',
       icon: Users,
       gradient: 'from-blue-500 to-cyan-500'
     },
     {
       type: 'service_provider' as const,
       title: 'Service Provider',
-      description: 'For freelancers and service professionals',
       icon: Briefcase,
       gradient: 'from-purple-500 to-pink-500'
     },
     {
       type: 'client' as const,
       title: 'Client',
-      description: 'For clients seeking services',
       icon: Building2,
       gradient: 'from-orange-500 to-red-500'
     }
@@ -61,9 +58,8 @@ export const AccountTypeModal = ({ open, onClose, onSelectType }: AccountTypeMod
                   <div className={`p-4 rounded-full bg-gradient-to-br ${accountType.gradient} text-white shadow-lg group-hover:shadow-xl transition-shadow`}>
                     <Icon className="w-8 h-8" />
                   </div>
-                  <div className="text-center space-y-2">
+                  <div className="text-center">
                     <h3 className="font-semibold text-lg">{accountType.title}</h3>
-                    <p className="text-sm text-muted-foreground">{accountType.description}</p>
                   </div>
                 </Button>
               </motion.div>
