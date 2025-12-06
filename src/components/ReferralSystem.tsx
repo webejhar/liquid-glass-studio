@@ -45,12 +45,22 @@ export const ReferralSystem = ({ userId }: ReferralSystemProps) => {
     }
   };
 
+  const generateCode = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  };
+
   const createReferralCode = async () => {
     setIsCreating(true);
     try {
+      const code = generateCode();
       const { data, error } = await supabase
         .from("referral_codes")
-        .insert([{ user_id: userId }])
+        .insert([{ user_id: userId, code }])
         .select()
         .single();
 
