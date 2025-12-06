@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell, X, ArrowRight, MessageSquare, Briefcase } from "lucide-react";
+import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell, X, ArrowRight, MessageSquare, Briefcase, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
@@ -25,6 +26,7 @@ import { CustomPhoneInput } from "@/components/PhoneInput";
 import { ProjectRequests } from "@/components/ProjectRequests";
 import { YourProjects } from "@/components/YourProjects";
 import { ProviderSkillsTags } from "@/components/ProviderSkillsTags";
+import { OrdersSection } from "@/components/account/OrdersSection";
 
 const professions = [
   "Developer",
@@ -125,6 +127,7 @@ export default function Account() {
     userName: string;
     avatarUrl: string | null;
   } | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   useSessionTracking();
 
@@ -777,81 +780,221 @@ export default function Account() {
     }
   };
 
-  return (
-    <div className="min-h-screen">
-      {/* Main Content */}
-      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 max-w-7xl pt-6 sm:pt-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Hide header when in active chat */}
-          {!selectedChatUser && (
-            <div className="flex items-center justify-between mb-6 sm:mb-8 gap-4">
-              <button
-                onClick={() => navigate("/")}
-                className="flex items-center gap-2 sm:gap-3 group hover:scale-105 transition-transform"
-              >
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-glow">Back Home</h1>
-                <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-primary group-hover:translate-x-1 transition-transform" />
-              </button>
-              <AccountToggleBar
-                cartCount={cart.length}
-                favoritesCount={favorites.length}
-                verificationStatus={formData.verification_status}
-                onNavigate={(tab) => {
-                  setActiveTab(tab);
-                  setSelectedChatUser(null); // Reset chat when switching tabs
-                }}
-                onLogout={handleLogout}
-              />
-            </div>
-          )}
+  // Sidebar navigation items
+  const sidebarNavItems = [
+    { id: "profile", label: "Profile", icon: User, badge: null },
+    { id: "cart", label: "Cart", icon: ShoppingCart, badge: cart.length > 0 ? cart.length : null },
+    { id: "orders", label: "Orders", icon: Package, badge: null },
+    { id: "favorites", label: "Favorites", icon: Heart, badge: favorites.length > 0 ? favorites.length : null },
+    ...(profile?.account_type === 'service_provider' 
+      ? [{ id: "project-requests", label: "Project Requests", icon: Briefcase, badge: null }]
+      : []
+    ),
+    ...((profile?.account_type === 'client' || profile?.account_type === 'general')
+      ? [{ id: "your-projects", label: "Your Projects", icon: Briefcase, badge: null }]
+      : []
+    ),
+    { id: "chat", label: "Messages", icon: MessageSquare, badge: null },
+    { id: "notifications", label: "Notifications", icon: Bell, badge: null },
+    { id: "sessions", label: "Security", icon: Shield, badge: null },
+  ];
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="glass-premium mb-6 sm:mb-8 p-1 w-full grid grid-cols-4 sm:grid-cols-9 gap-1 hidden md:grid">
-              <TabsTrigger value="profile" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-                <User className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Profile</span>
-              </TabsTrigger>
-              <TabsTrigger value="cart" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-                <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Cart</span> ({cart.length})
-              </TabsTrigger>
-              <TabsTrigger value="orders" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Package className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Order</span>
-              </TabsTrigger>
-              <TabsTrigger value="favorites" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Heart className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Fav</span> ({favorites.length})
-              </TabsTrigger>
-              {profile?.account_type === 'service_provider' && (
-                <TabsTrigger value="project-requests" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-                  <Briefcase className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden xs:inline">Requests</span>
-                </TabsTrigger>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
+      {/* Header */}
+      <header className="backdrop-blur-xl bg-background/80 border-b border-border/50 sticky top-0 z-50">
+        <div className="px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 group hover:scale-105 transition-transform"
+            >
+              <h1 className="text-xl font-bold text-glow">My Account</h1>
+            </button>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Mobile menu button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+            
+            {/* Desktop back and logout */}
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/")}
+              className="hidden md:flex items-center gap-2"
+            >
+              <ArrowRight className="w-4 h-4 rotate-180" />
+              Back Home
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleLogout}
+              className="hidden md:flex items-center gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex relative">
+        {/* Desktop Sidebar */}
+        <aside className="hidden md:block w-64 border-r border-border/50 min-h-[calc(100vh-73px)] backdrop-blur-xl bg-background/60 sticky top-[73px] self-start">
+          {/* User Info */}
+          <div className="p-4 border-b border-border/50">
+            <div className="flex items-center gap-3 mb-3">
+              <Avatar className="w-12 h-12 border-2 border-primary/20">
+                <AvatarImage src={formData.avatar_url} />
+                <AvatarFallback className="text-sm">
+                  {formData.name ? getInitials(formData.name) : "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm truncate">{formData.name || "User"}</h3>
+                <p className="text-xs text-muted-foreground truncate">{formData.email}</p>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-1.5">
+              <Badge variant="secondary" className="text-xs">
+                {profile?.account_type === 'general' && 'General User'}
+                {profile?.account_type === 'service_provider' && 'Provider'}
+                {profile?.account_type === 'client' && 'Client'}
+              </Badge>
+              {profile?.account_number && (
+                <Badge variant="outline" className="text-xs">
+                  {profile.account_number}
+                </Badge>
               )}
-              {(profile?.account_type === 'client' || profile?.account_type === 'general') && (
-                <TabsTrigger value="your-projects" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-                  <Briefcase className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden xs:inline">Projects</span>
-                </TabsTrigger>
-              )}
-              <TabsTrigger value="chat" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-                <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Chat</span>
-              </TabsTrigger>
-              <TabsTrigger value="notifications" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Bell className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Notify</span>
-              </TabsTrigger>
-              <TabsTrigger value="sessions" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Sessions</span>
-              </TabsTrigger>
-            </TabsList>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="p-3 space-y-1">
+            {sidebarNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              
+              return (
+                <Button
+                  key={item.id}
+                  variant={isActive ? "secondary" : "ghost"}
+                  className="w-full justify-start gap-2 text-sm"
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setSelectedChatUser(null);
+                  }}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                  {item.badge !== null && (
+                    <span className="ml-auto bg-primary text-primary-foreground text-xs rounded-full px-2 py-0.5">
+                      {item.badge}
+                    </span>
+                  )}
+                </Button>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {/* Mobile Sidebar */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 md:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <motion.aside
+                initial={{ x: -300 }}
+                animate={{ x: 0 }}
+                exit={{ x: -300 }}
+                className="absolute left-0 top-[73px] bottom-0 w-64 backdrop-blur-xl bg-background/95 border-r border-border/50 overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* User Info */}
+                <div className="p-4 border-b border-border/50">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Avatar className="w-10 h-10 border-2 border-primary/20">
+                      <AvatarImage src={formData.avatar_url} />
+                      <AvatarFallback className="text-xs">
+                        {formData.name ? getInitials(formData.name) : "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm truncate">{formData.name || "User"}</h3>
+                      <p className="text-xs text-muted-foreground truncate">{formData.email}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <nav className="p-3 space-y-1">
+                  {sidebarNavItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    
+                    return (
+                      <Button
+                        key={item.id}
+                        variant={isActive ? "secondary" : "ghost"}
+                        className="w-full justify-start gap-2 text-sm"
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setSelectedChatUser(null);
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <Icon className="w-4 h-4" />
+                        {item.label}
+                        {item.badge !== null && (
+                          <span className="ml-auto bg-primary text-primary-foreground text-xs rounded-full px-2 py-0.5">
+                            {item.badge}
+                          </span>
+                        )}
+                      </Button>
+                    );
+                  })}
+                  
+                  <div className="border-t border-border/50 pt-2 mt-2">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-2 text-sm"
+                      onClick={() => navigate("/")}
+                    >
+                      <ArrowRight className="w-4 h-4 rotate-180" />
+                      Back to Home
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={handleLogout}
+                      className="w-full justify-start gap-2 text-sm text-destructive hover:text-destructive"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </Button>
+                  </div>
+                </nav>
+              </motion.aside>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Main Content */}
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-hidden">
+          <div className="max-w-5xl mx-auto w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+
 
             {/* Profile Tab */}
             <TabsContent value="profile">
@@ -1519,7 +1662,8 @@ export default function Account() {
               </TabsContent>
             )}
           </Tabs>
-        </motion.div>
+          </div>
+        </main>
       </div>
 
       {/* Image Cropper Modal */}
