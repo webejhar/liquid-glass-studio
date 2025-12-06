@@ -10,8 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink, Trash2, AlertTriangle } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -40,6 +41,8 @@ const AdminUserEdit = () => {
   const [user, setUser] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (userId) {
@@ -333,6 +336,25 @@ const AdminUserEdit = () => {
               </div>
             )}
 
+            {/* Danger Zone */}
+            <div className="border-t border-destructive/30 pt-6 mt-6">
+              <h3 className="text-lg font-semibold text-destructive mb-4 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                Danger Zone
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Permanently delete this user account and all associated data including orders, projects, messages, and files.
+              </p>
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteDialog(true)}
+                className="gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete User Account
+              </Button>
+            </div>
+
             <div className="flex justify-end gap-4 pt-4">
               <Button
                 variant="outline"
@@ -347,9 +369,117 @@ const AdminUserEdit = () => {
             </div>
           </div>
         </Card>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent className="glass-premium">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="w-5 h-5" />
+                Delete User Account
+              </DialogTitle>
+              <DialogDescription>
+                This action cannot be undone. This will permanently delete the user account
+                and all associated data.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="glass-card p-4 rounded-lg my-4">
+              <p className="font-semibold">{user?.name || "Unknown User"}</p>
+              <p className="text-sm text-muted-foreground">{user?.email}</p>
+              <Badge variant="outline" className="mt-2">
+                {user?.account_type === 'general' ? 'General' : 
+                 user?.account_type === 'service_provider' ? 'Service Provider' : 
+                 'Client'}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              The following data will be deleted:
+            </p>
+            <ul className="text-sm text-muted-foreground list-disc list-inside mb-4">
+              <li>Profile and account information</li>
+              <li>All orders (products, domains)</li>
+              <li>All projects and project messages</li>
+              <li>Chat messages and friend requests</li>
+              <li>Favorites and cart items</li>
+              <li>Login sessions and notifications</li>
+            </ul>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteDialog(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteUser}
+                disabled={isDeleting}
+                className="gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Delete Permanently
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
+
+  async function handleDeleteUser() {
+    if (!userId || !user) return;
+
+    setIsDeleting(true);
+    try {
+      // Delete all user data in order
+      const deleteOperations = [
+        supabase.from("project_messages").delete().eq("sender_id", userId),
+        supabase.from("chat_messages").delete().or(`sender_id.eq.${userId},receiver_id.eq.${userId}`),
+        supabase.from("friend_requests").delete().or(`sender_id.eq.${userId},receiver_id.eq.${userId}`),
+        supabase.from("user_notifications").delete().eq("user_id", userId),
+        supabase.from("login_sessions").delete().eq("user_id", userId),
+        supabase.from("cart_items").delete().eq("user_id", userId),
+        supabase.from("favorites").delete().eq("user_id", userId),
+        supabase.from("product_orders").delete().eq("user_id", userId),
+        supabase.from("domain_orders").delete().eq("user_id", userId),
+        supabase.from("projects").delete().or(`client_id.eq.${userId},provider_id.eq.${userId}`),
+        supabase.from("user_purchases").delete().eq("user_id", userId),
+        supabase.from("user_roles").delete().eq("user_id", userId),
+        supabase.from("profiles").delete().eq("user_id", userId),
+      ];
+
+      for (const operation of deleteOperations) {
+        await operation;
+      }
+
+      toast({
+        title: "User Deleted",
+        description: `${user.name || "User"} has been permanently deleted.`,
+      });
+
+      navigate("/admin/users");
+    } catch (error: any) {
+      console.error("Delete user error:", error);
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete user",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  }
 };
 
 export default AdminUserEdit;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, X, Eye, DollarSign, Clock, User } from "lucide-react";
+import { Check, X, Eye, DollarSign, Clock, User, Wallet, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,8 @@ interface Project {
   submission_files: string[] | null;
   provider_payment_method: string | null;
   provider_payment_id: string | null;
+  provider_payment_requested: boolean;
+  provider_payment_status: string | null;
   admin_approved: boolean;
   created_at: string;
   client?: { name: string | null; email: string | null };
@@ -115,6 +117,24 @@ export default function AdminProjectOrders() {
     } catch (error) {
       console.error("Error approving payment:", error);
       toast.error("Failed to approve payment");
+    }
+  };
+
+  const handleMarkProviderPaid = async (projectId: string) => {
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .update({
+          provider_payment_status: 'paid'
+        })
+        .eq("id", projectId);
+
+      if (error) throw error;
+      toast.success("Provider marked as paid!");
+      loadProjects();
+    } catch (error) {
+      console.error("Error marking provider paid:", error);
+      toast.error("Failed to update payment status");
     }
   };
 
@@ -206,16 +226,46 @@ export default function AdminProjectOrders() {
                         </div>
                       )}
 
-                      {project.status === 'completed' && project.final_budget && (
+                {project.status === 'completed' && project.final_budget && (
                         <div className="glass-card p-2 rounded-lg text-sm">
                           <span className="text-primary">Admin Fee (5%): ${payments.adminFee?.toFixed(2)}</span>
                           {" | "}
                           <span className="text-green-400">Provider Amount: ${payments.providerAmount?.toFixed(2)}</span>
                         </div>
                       )}
+
+                      {/* Provider Payment Request Status */}
+                      {project.provider_payment_requested && (
+                        <div className="glass-card p-2 rounded-lg text-sm">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div>
+                              <span className="text-yellow-400 flex items-center gap-1">
+                                <Wallet className="w-4 h-4" />
+                                Payment Requested via {project.provider_payment_method}
+                              </span>
+                              <span className="text-muted-foreground ml-5">ID: {project.provider_payment_id}</span>
+                            </div>
+                            {project.provider_payment_status === 'paid' ? (
+                              <Badge className="bg-green-500/20 text-green-400 gap-1">
+                                <CheckCircle className="w-3 h-3" />
+                                Paid
+                              </Badge>
+                            ) : (
+                              <Button
+                                onClick={() => handleMarkProviderPaid(project.id)}
+                                size="sm"
+                                className="gap-1 bg-green-600 hover:bg-green-700"
+                              >
+                                <Check className="w-4 h-4" />
+                                Mark as Paid
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="flex gap-2 shrink-0">
+                    <div className="flex gap-2 shrink-0 flex-wrap">
                       <Button
                         onClick={() => { setSelectedProject(project); setShowDetails(true); }}
                         size="sm"
@@ -325,6 +375,7 @@ export default function AdminProjectOrders() {
                     <Label className="text-muted-foreground">Provider Payment Info</Label>
                     <p>Method: {selectedProject.provider_payment_method}</p>
                     <p>ID: {selectedProject.provider_payment_id}</p>
+                    <p>Status: {selectedProject.provider_payment_status || 'Pending'}</p>
                   </div>
                 )}
 

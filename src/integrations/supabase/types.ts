@@ -601,6 +601,8 @@ export type Database = {
           provider_id: string
           provider_payment_id: string | null
           provider_payment_method: string | null
+          provider_payment_requested: boolean | null
+          provider_payment_status: string | null
           status: string
           submission_files: string[] | null
           updated_at: string | null
@@ -625,6 +627,8 @@ export type Database = {
           provider_id: string
           provider_payment_id?: string | null
           provider_payment_method?: string | null
+          provider_payment_requested?: boolean | null
+          provider_payment_status?: string | null
           status?: string
           submission_files?: string[] | null
           updated_at?: string | null
@@ -649,6 +653,8 @@ export type Database = {
           provider_id?: string
           provider_payment_id?: string | null
           provider_payment_method?: string | null
+          provider_payment_requested?: boolean | null
+          provider_payment_status?: string | null
           status?: string
           submission_files?: string[] | null
           updated_at?: string | null
