@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Send, Paperclip, FileText, DollarSign, Upload, Download, CreditCard, Image, Video, File } from "lucide-react";
+import { ArrowLeft, Send, Paperclip, FileText, DollarSign, Upload, Download, CreditCard, Image, Video, File, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { PaymentConfirmationDialog } from "@/components/PaymentConfirmationDialog";
 
 interface Project {
   id: string;
@@ -62,8 +64,10 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
   const [finalBudget, setFinalBudget] = useState(project.final_budget?.toString() || "");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [paymentReference, setPaymentReference] = useState("");
-  const [submissionFiles, setSubmissionFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
+  const [pendingPaymentAction, setPendingPaymentAction] = useState<'advance' | 'final' | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -223,45 +227,12 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
   };
 
   const handleSubmitProject = async () => {
-    if (submissionFiles.length === 0) {
-      toast.error("Please upload at least one file");
-      return;
-    }
-
     setIsLoading(true);
     try {
-      const uploadedUrls: string[] = [];
-
-      for (const file of submissionFiles) {
-        // Use unique filename with timestamp and sanitized name
-        const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const filePath = `${project.id}/${Date.now()}-${sanitizedName}`;
-
-        // Upload to dedicated project-submissions bucket
-        const { error: uploadError, data: uploadData } = await supabase.storage
-          .from('project-submissions')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
-
-        if (uploadError) {
-          console.error("Upload error:", uploadError);
-          throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
-        }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('project-submissions')
-          .getPublicUrl(filePath);
-
-        uploadedUrls.push(publicUrl);
-      }
-
-      // Update project with submission files
+      // Update project status to submitted (no files needed)
       const { error: updateError } = await supabase
         .from("projects")
         .update({
-          submission_files: uploadedUrls,
           status: "submitted"
         })
         .eq("id", project.id);
@@ -282,7 +253,6 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
 
       toast.success("Project submitted successfully!");
       setShowSubmitModal(false);
-      setSubmissionFiles([]);
       onProjectUpdate();
     } catch (error: any) {
       console.error("Error submitting project:", error);
@@ -505,7 +475,10 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
       </div>
 
       {/* Order/Payment Modal */}
-      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+      <Dialog open={showPaymentModal} onOpenChange={(open) => {
+        setShowPaymentModal(open);
+        if (!open) setPaymentConfirmed(false);
+      }}>
         <DialogContent className="glass-premium max-w-md">
           <DialogHeader>
             <DialogTitle>Order Your Project</DialogTitle>
@@ -565,56 +538,75 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
               )}
             </div>
 
-            <Button onClick={handleOrderProject} disabled={isLoading} className="w-full">
+            {/* Confirmation Checkbox */}
+            <div className="flex items-start gap-3 p-3 glass-card rounded-lg border border-primary/20">
+              <Checkbox 
+                id="payment-confirm" 
+                checked={paymentConfirmed}
+                onCheckedChange={(checked) => setPaymentConfirmed(checked === true)}
+              />
+              <label htmlFor="payment-confirm" className="text-sm cursor-pointer">
+                I confirm that I have completed the payment and the transaction ID is correct.
+              </label>
+            </div>
+
+            <Button 
+              onClick={() => {
+                setPendingPaymentAction('advance');
+                setShowPaymentConfirmation(true);
+              }} 
+              disabled={isLoading || !paymentConfirmed} 
+              className="w-full"
+            >
               {isLoading ? "Processing..." : "Confirm & Pay Advance"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Submit Project Modal */}
+      {/* Submit Project Modal - Confirmation Based */}
       <Dialog open={showSubmitModal} onOpenChange={setShowSubmitModal}>
         <DialogContent className="glass-premium max-w-md">
           <DialogHeader>
-            <DialogTitle>Submit Project</DialogTitle>
+            <DialogTitle className="text-center">Submit Project</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Upload Final Files * (All file types supported)</Label>
-              <input
-                type="file"
-                multiple
-                onChange={(e) => setSubmissionFiles(Array.from(e.target.files || []))}
-                className="w-full glass-card p-3 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-primary-foreground"
-              />
-              <p className="text-xs text-muted-foreground mt-2">
-                Supports: Images, Videos, Documents, Archives, and all other file types (Max 50MB per file)
+          <div className="space-y-6 py-4">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold">Are you sure you have completed this project?</h3>
+              <p className="text-sm text-muted-foreground">
+                By submitting, you confirm that all work has been completed according to the project requirements. 
+                The client will be notified and prompted to make the final payment.
               </p>
             </div>
-            
-            {submissionFiles.length > 0 && (
-              <div className="glass-card p-3 rounded-lg">
-                <p className="text-sm font-semibold mb-2">Files to upload ({submissionFiles.length}):</p>
-                <div className="space-y-1 max-h-32 overflow-y-auto">
-                  {submissionFiles.map((file, i) => (
-                    <p key={i} className="text-xs text-muted-foreground flex items-center gap-2">
-                      <FileText className="w-3 h-3" />
-                      {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            <Button onClick={handleSubmitProject} disabled={isLoading || submissionFiles.length === 0} className="w-full">
-              {isLoading ? "Uploading..." : "Submit Project"}
-            </Button>
+            <div className="flex flex-col gap-3">
+              <Button 
+                onClick={handleSubmitProject} 
+                disabled={isLoading} 
+                className="w-full"
+              >
+                {isLoading ? "Submitting..." : "Yes, Submit Project"}
+              </Button>
+              <Button 
+                onClick={() => setShowSubmitModal(false)} 
+                variant="outline" 
+                className="w-full"
+              >
+                No, Go Back
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Final Payment Modal */}
-      <Dialog open={showFinalPaymentModal} onOpenChange={setShowFinalPaymentModal}>
+      <Dialog open={showFinalPaymentModal} onOpenChange={(open) => {
+        setShowFinalPaymentModal(open);
+        if (!open) setPaymentConfirmed(false);
+      }}>
         <DialogContent className="glass-premium max-w-md">
           <DialogHeader>
             <DialogTitle>Final Payment</DialogTitle>
@@ -659,12 +651,49 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
               )}
             </div>
 
-            <Button onClick={handleFinalPayment} disabled={isLoading} className="w-full bg-green-600 hover:bg-green-700">
+            {/* Confirmation Checkbox */}
+            <div className="flex items-start gap-3 p-3 glass-card rounded-lg border border-primary/20">
+              <Checkbox 
+                id="final-payment-confirm" 
+                checked={paymentConfirmed}
+                onCheckedChange={(checked) => setPaymentConfirmed(checked === true)}
+              />
+              <label htmlFor="final-payment-confirm" className="text-sm cursor-pointer">
+                I confirm that I have completed the payment and the transaction ID is correct.
+              </label>
+            </div>
+
+            <Button 
+              onClick={() => {
+                setPendingPaymentAction('final');
+                setShowPaymentConfirmation(true);
+              }} 
+              disabled={isLoading || !paymentConfirmed} 
+              className="w-full bg-green-600 hover:bg-green-700"
+            >
               {isLoading ? "Processing..." : "Confirm Final Payment"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Payment Confirmation Dialog */}
+      <PaymentConfirmationDialog
+        isOpen={showPaymentConfirmation}
+        onConfirm={() => {
+          setShowPaymentConfirmation(false);
+          if (pendingPaymentAction === 'advance') {
+            handleOrderProject();
+          } else if (pendingPaymentAction === 'final') {
+            handleFinalPayment();
+          }
+          setPendingPaymentAction(null);
+        }}
+        onCancel={() => {
+          setShowPaymentConfirmation(false);
+          setPendingPaymentAction(null);
+        }}
+      />
     </div>
   );
 };

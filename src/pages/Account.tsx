@@ -129,6 +129,13 @@ export default function Account() {
   } | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
+  // Count states for sidebar badges
+  const [projectRequestsCount, setProjectRequestsCount] = useState(0);
+  const [yourProjectsCount, setYourProjectsCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const [activeSessionsCount, setActiveSessionsCount] = useState(0);
+  
   useSessionTracking();
 
   // Handle navigation from UserProfile with chat state
@@ -193,7 +200,7 @@ export default function Account() {
     };
   }, [user]);
 
-  // Set up real-time subscription for orders and profile updates
+  // Set up real-time subscription for orders, profile updates, and counts
   useEffect(() => {
     if (!user) return;
 
@@ -247,10 +254,61 @@ export default function Account() {
       )
       .subscribe();
 
+    // Listen for project updates
+    const projectsChannel = supabase
+      .channel('user-projects-count')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'projects'
+        },
+        () => {
+          loadCounts(user.id);
+        }
+      )
+      .subscribe();
+
+    // Listen for messages updates
+    const messagesChannel = supabase
+      .channel('user-messages-count')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_messages'
+        },
+        () => {
+          loadCounts(user.id);
+        }
+      )
+      .subscribe();
+
+    // Listen for notifications updates
+    const notificationsChannel = supabase
+      .channel('user-notifications-count')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_notifications'
+        },
+        () => {
+          loadCounts(user.id);
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(productOrdersChannel);
       supabase.removeChannel(domainOrdersChannel);
       supabase.removeChannel(profileChannel);
+      supabase.removeChannel(projectsChannel);
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(notificationsChannel);
     };
   }, [user]);
 
@@ -264,6 +322,52 @@ export default function Account() {
     await loadProfile(user.id);
     await loadOrders(user.id);
     await loadFavorites(user.id);
+    await loadCounts(user.id);
+  };
+
+  const loadCounts = async (userId: string) => {
+    try {
+      // Load project requests count (for service providers)
+      const { count: projectRequestsCount } = await supabase
+        .from("projects")
+        .select("*", { count: "exact", head: true })
+        .eq("provider_id", userId);
+      setProjectRequestsCount(projectRequestsCount || 0);
+
+      // Load your projects count (for clients)
+      const { count: yourProjectsCount } = await supabase
+        .from("projects")
+        .select("*", { count: "exact", head: true })
+        .eq("client_id", userId);
+      setYourProjectsCount(yourProjectsCount || 0);
+
+      // Load unread messages count
+      const { count: unreadMsgsCount } = await supabase
+        .from("chat_messages")
+        .select("*", { count: "exact", head: true })
+        .eq("receiver_id", userId)
+        .eq("is_read", false);
+      setUnreadMessagesCount(unreadMsgsCount || 0);
+
+      // Load unread notifications count
+      const { count: unreadNotifCount } = await supabase
+        .from("user_notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("is_read", false);
+      setUnreadNotificationsCount(unreadNotifCount || 0);
+
+      // Load active sessions count
+      const { count: sessionsCount } = await supabase
+        .from("login_sessions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("is_active", true);
+      setActiveSessionsCount(sessionsCount || 0);
+
+    } catch (error) {
+      console.error("Error loading counts:", error);
+    }
   };
 
   const loadProfile = async (userId: string) => {
@@ -784,19 +888,19 @@ export default function Account() {
   const sidebarNavItems = [
     { id: "profile", label: "Profile", icon: User, badge: null },
     { id: "cart", label: "Cart", icon: ShoppingCart, badge: cart.length > 0 ? cart.length : null },
-    { id: "orders", label: "Orders", icon: Package, badge: null },
+    { id: "orders", label: "Orders", icon: Package, badge: orders.length > 0 ? orders.length : null },
     { id: "favorites", label: "Favorites", icon: Heart, badge: favorites.length > 0 ? favorites.length : null },
     ...(profile?.account_type === 'service_provider' 
-      ? [{ id: "project-requests", label: "Project Requests", icon: Briefcase, badge: null }]
+      ? [{ id: "project-requests", label: "Project Requests", icon: Briefcase, badge: projectRequestsCount > 0 ? projectRequestsCount : null }]
       : []
     ),
     ...((profile?.account_type === 'client' || profile?.account_type === 'general')
-      ? [{ id: "your-projects", label: "Your Projects", icon: Briefcase, badge: null }]
+      ? [{ id: "your-projects", label: "Your Projects", icon: Briefcase, badge: yourProjectsCount > 0 ? yourProjectsCount : null }]
       : []
     ),
-    { id: "chat", label: "Messages", icon: MessageSquare, badge: null },
-    { id: "notifications", label: "Notifications", icon: Bell, badge: null },
-    { id: "sessions", label: "Security", icon: Shield, badge: null },
+    { id: "chat", label: "Messages", icon: MessageSquare, badge: unreadMessagesCount > 0 ? unreadMessagesCount : null },
+    { id: "notifications", label: "Notifications", icon: Bell, badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : null },
+    { id: "sessions", label: "Security", icon: Shield, badge: activeSessionsCount > 0 ? activeSessionsCount : null },
   ];
 
   return (
