@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action_description: string
+          action_type: string
+          admin_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_description: string
+          action_type: string
+          admin_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_description?: string
+          action_type?: string
+          admin_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       admin_notifications: {
         Row: {
           created_at: string | null
@@ -41,6 +83,42 @@ export type Database = {
           reference_id?: string | null
           title?: string
           type?: string
+        }
+        Relationships: []
+      }
+      announcements: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          start_date: string | null
+          target_audience: string | null
+          title: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          start_date?: string | null
+          target_audience?: string | null
+          title: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          start_date?: string | null
+          target_audience?: string | null
+          title?: string
         }
         Relationships: []
       }
@@ -341,6 +419,104 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_receipts: {
+        Row: {
+          admin_fee: number | null
+          amount: number
+          created_at: string
+          currency: string | null
+          id: string
+          order_id: string | null
+          order_type: string | null
+          payee_id: string | null
+          payer_id: string
+          payment_method: string
+          payment_reference: string
+          payment_type: string | null
+          project_id: string | null
+          provider_amount: number | null
+          receipt_number: string
+          status: string | null
+        }
+        Insert: {
+          admin_fee?: number | null
+          amount: number
+          created_at?: string
+          currency?: string | null
+          id?: string
+          order_id?: string | null
+          order_type?: string | null
+          payee_id?: string | null
+          payer_id: string
+          payment_method: string
+          payment_reference: string
+          payment_type?: string | null
+          project_id?: string | null
+          provider_amount?: number | null
+          receipt_number: string
+          status?: string | null
+        }
+        Update: {
+          admin_fee?: number | null
+          amount?: number
+          created_at?: string
+          currency?: string | null
+          id?: string
+          order_id?: string | null
+          order_type?: string | null
+          payee_id?: string | null
+          payer_id?: string
+          payment_method?: string
+          payment_reference?: string
+          payment_type?: string | null
+          project_id?: string | null
+          provider_amount?: number | null
+          receipt_number?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_receipts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          setting_key: string
+          setting_type: string | null
+          setting_value: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_type?: string | null
+          setting_value: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_type?: string | null
+          setting_value?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       product_categories: {
         Row: {
           created_at: string | null
@@ -580,6 +756,50 @@ export type Database = {
           },
         ]
       }
+      project_reviews: {
+        Row: {
+          created_at: string
+          id: string
+          is_approved: boolean | null
+          project_id: string
+          rating: number
+          review_text: string | null
+          review_type: string
+          reviewee_id: string
+          reviewer_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          project_id: string
+          rating: number
+          review_text?: string | null
+          review_type: string
+          reviewee_id: string
+          reviewer_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          project_id?: string
+          rating?: number
+          review_text?: string | null
+          review_type?: string
+          reviewee_id?: string
+          reviewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_reviews_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           admin_approved: boolean | null
@@ -658,6 +878,286 @@ export type Database = {
           status?: string
           submission_files?: string[] | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      provider_availability: {
+        Row: {
+          available_hours_per_week: number | null
+          hourly_rate: number | null
+          id: string
+          is_available: boolean | null
+          minimum_project_size: string | null
+          preferred_project_duration: string | null
+          provider_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          available_hours_per_week?: number | null
+          hourly_rate?: number | null
+          id?: string
+          is_available?: boolean | null
+          minimum_project_size?: string | null
+          preferred_project_duration?: string | null
+          provider_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          available_hours_per_week?: number | null
+          hourly_rate?: number | null
+          id?: string
+          is_available?: boolean | null
+          minimum_project_size?: string | null
+          preferred_project_duration?: string | null
+          provider_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      provider_portfolios: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          images: string[] | null
+          is_featured: boolean | null
+          project_url: string | null
+          provider_id: string
+          tags: string[] | null
+          title: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_featured?: boolean | null
+          project_url?: string | null
+          provider_id: string
+          tags?: string[] | null
+          title: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_featured?: boolean | null
+          project_url?: string | null
+          provider_id?: string
+          tags?: string[] | null
+          title?: string
+        }
+        Relationships: []
+      }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          rewards_earned: number | null
+          user_id: string
+          uses_count: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          rewards_earned?: number | null
+          user_id: string
+          uses_count?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          rewards_earned?: number | null
+          user_id?: string
+          uses_count?: number | null
+        }
+        Relationships: []
+      }
+      referral_uses: {
+        Row: {
+          created_at: string
+          id: string
+          is_rewarded: boolean | null
+          referral_code_id: string
+          referred_user_id: string
+          reward_amount: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_rewarded?: boolean | null
+          referral_code_id: string
+          referred_user_id: string
+          reward_amount?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_rewarded?: boolean | null
+          referral_code_id?: string
+          referred_user_id?: string
+          reward_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_uses_referral_code_id_fkey"
+            columns: ["referral_code_id"]
+            isOneToOne: false
+            referencedRelation: "referral_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_content: {
+        Row: {
+          admin_notes: string | null
+          content_id: string | null
+          content_type: string
+          created_at: string
+          description: string | null
+          id: string
+          reason: string
+          reported_user_id: string | null
+          reporter_id: string
+          status: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          content_id?: string | null
+          content_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason: string
+          reported_user_id?: string | null
+          reporter_id: string
+          status?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          content_id?: string | null
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason?: string
+          reported_user_id?: string | null
+          reporter_id?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
+      saved_providers: {
+        Row: {
+          created_at: string
+          id: string
+          provider_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          provider_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          provider_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          attachment_url: string | null
+          created_at: string
+          id: string
+          is_admin: boolean | null
+          message: string
+          sender_id: string
+          ticket_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          created_at?: string
+          id?: string
+          is_admin?: boolean | null
+          message: string
+          sender_id: string
+          ticket_id: string
+        }
+        Update: {
+          attachment_url?: string | null
+          created_at?: string
+          id?: string
+          is_admin?: boolean | null
+          message?: string
+          sender_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          category: string | null
+          created_at: string
+          description: string
+          id: string
+          priority: string | null
+          resolution_notes: string | null
+          status: string | null
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          priority?: string | null
+          resolution_notes?: string | null
+          status?: string | null
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          priority?: string | null
+          resolution_notes?: string | null
+          status?: string | null
+          subject?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -808,6 +1308,8 @@ export type Database = {
         Args: { acc_type: Database["public"]["Enums"]["account_type"] }
         Returns: string
       }
+      generate_receipt_number: { Args: never; Returns: string }
+      generate_referral_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
