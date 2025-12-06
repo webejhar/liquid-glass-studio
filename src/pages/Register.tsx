@@ -6,7 +6,7 @@ import { AccountTypeModal } from "@/components/AccountTypeModal";
 import { GeneralUserForm } from "@/components/registration/GeneralUserForm";
 import { ServiceProviderForm } from "@/components/registration/ServiceProviderForm";
 import { ClientForm } from "@/components/registration/ClientForm";
-import { SocialLoginButtons } from "@/components/SocialLoginButtons";
+
 import { ArrowLeft } from "lucide-react";
 
 type AccountType = 'general' | 'service_provider' | 'client' | null;
@@ -81,23 +81,6 @@ export default function Register() {
                 Create your account to get started
               </motion.p>
 
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.35 }}
-                className="mb-6"
-              >
-                <SocialLoginButtons />
-              </motion.div>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
 
               {selectedType === 'general' && <GeneralUserForm onSuccess={handleSuccess} />}
               {selectedType === 'service_provider' && <ServiceProviderForm onSuccess={handleSuccess} />}

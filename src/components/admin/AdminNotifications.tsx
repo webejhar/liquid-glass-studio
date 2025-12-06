@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, Check, Trash2, UserPlus, ShoppingBag, Calendar, Globe } from "lucide-react";
+import { Bell, Check, Trash2, UserPlus, ShoppingBag, Calendar, Globe, MessageSquare, Briefcase, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -54,7 +54,8 @@ export const AdminNotifications = () => {
   };
 
   const subscribeToNotifications = () => {
-    const channel = supabase
+    // Subscribe to admin_notifications table
+    const notificationsChannel = supabase
       .channel("admin_notifications_channel")
       .on(
         "postgres_changes",
@@ -68,7 +69,6 @@ export const AdminNotifications = () => {
           setNotifications((prev) => [newNotification, ...prev]);
           setUnreadCount((prev) => prev + 1);
 
-          // Show toast for new notification
           toast({
             title: newNotification.title,
             description: newNotification.message,
@@ -77,8 +77,113 @@ export const AdminNotifications = () => {
       )
       .subscribe();
 
+    // Subscribe to support_tickets for real-time updates
+    const ticketsChannel = supabase
+      .channel("support_tickets_realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "support_tickets",
+        },
+        (payload) => {
+          toast({
+            title: "New Support Ticket",
+            description: `New ticket: ${(payload.new as any).subject}`,
+          });
+          fetchNotifications();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to product_orders for real-time updates
+    const productOrdersChannel = supabase
+      .channel("product_orders_realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "product_orders",
+        },
+        (payload) => {
+          toast({
+            title: "New Product Order",
+            description: `New order: ${(payload.new as any).product_name}`,
+          });
+          fetchNotifications();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to domain_orders for real-time updates
+    const domainOrdersChannel = supabase
+      .channel("domain_orders_realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "domain_orders",
+        },
+        (payload) => {
+          toast({
+            title: "New Domain Order",
+            description: `New domain: ${(payload.new as any).domain_name}`,
+          });
+          fetchNotifications();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to projects for real-time updates
+    const projectsChannel = supabase
+      .channel("projects_realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "projects",
+        },
+        (payload) => {
+          toast({
+            title: "New Project Request",
+            description: `New project: ${(payload.new as any).project_title}`,
+          });
+          fetchNotifications();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to contacts for real-time updates
+    const contactsChannel = supabase
+      .channel("contacts_realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "contacts",
+        },
+        (payload) => {
+          toast({
+            title: "New Contact Message",
+            description: `From: ${(payload.new as any).name}`,
+          });
+          fetchNotifications();
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(notificationsChannel);
+      supabase.removeChannel(ticketsChannel);
+      supabase.removeChannel(productOrdersChannel);
+      supabase.removeChannel(domainOrdersChannel);
+      supabase.removeChannel(projectsChannel);
+      supabase.removeChannel(contactsChannel);
     };
   };
 
@@ -174,8 +279,19 @@ export const AdminNotifications = () => {
         break;
       case "product_order":
       case "domain_order":
-      case "meeting_booking":
         navigate("/admin/orders");
+        break;
+      case "meeting_booking":
+        navigate("/admin/meetings");
+        break;
+      case "support_ticket":
+        navigate("/admin/support");
+        break;
+      case "project_request":
+        navigate("/admin/project-orders");
+        break;
+      case "contact":
+        navigate("/admin/contacts");
         break;
     }
     
@@ -192,6 +308,12 @@ export const AdminNotifications = () => {
         return <Globe className="w-4 h-4 text-purple-500" />;
       case "meeting_booking":
         return <Calendar className="w-4 h-4 text-orange-500" />;
+      case "support_ticket":
+        return <MessageSquare className="w-4 h-4 text-cyan-500" />;
+      case "project_request":
+        return <Briefcase className="w-4 h-4 text-pink-500" />;
+      case "contact":
+        return <FileText className="w-4 h-4 text-yellow-500" />;
       default:
         return <Bell className="w-4 h-4" />;
     }
