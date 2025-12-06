@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, X, MessageSquare, Clock, User, DollarSign, Calendar } from "lucide-react";
+import { Check, X, MessageSquare, Clock, User, DollarSign, Calendar, Wallet, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ProjectChat } from "./ProjectChat";
+import { ProviderPaymentRequest } from "./ProviderPaymentRequest";
 
 interface Project {
   id: string;
@@ -26,6 +27,10 @@ interface Project {
   final_paid: boolean;
   submission_files: string[] | null;
   admin_approved: boolean;
+  provider_payment_method: string | null;
+  provider_payment_id: string | null;
+  provider_payment_requested: boolean;
+  provider_payment_status: string | null;
   created_at: string;
 }
 
@@ -37,6 +42,8 @@ export const ProjectRequests = ({ userId }: ProjectRequestsProps) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [showPaymentRequest, setShowPaymentRequest] = useState(false);
+  const [paymentRequestProject, setPaymentRequestProject] = useState<Project | null>(null);
 
   useEffect(() => {
     loadProjects();
@@ -201,10 +208,28 @@ export const ProjectRequests = ({ userId }: ProjectRequestsProps) => {
                 <span className="text-primary">Payment: </span>
                 {project.advance_percentage}% advance / {project.final_percentage}% after delivery
                 {project.advance_paid && <Badge className="ml-2 bg-green-500/20 text-green-400">Advance Paid</Badge>}
+                {project.final_paid && <Badge className="ml-2 bg-green-500/20 text-green-400">Completed</Badge>}
               </div>
+
+              {/* Payment Status for completed projects */}
+              {project.status === 'completed' && project.final_paid && (
+                <div className="flex items-center gap-2 text-sm">
+                  {project.provider_payment_status === 'paid' ? (
+                    <Badge className="bg-green-500/20 text-green-400 gap-1">
+                      <CheckCircle className="w-3 h-3" />
+                      Payment Received
+                    </Badge>
+                  ) : project.provider_payment_requested ? (
+                    <Badge className="bg-yellow-500/20 text-yellow-400 gap-1">
+                      <Clock className="w-3 h-3" />
+                      Payment Requested
+                    </Badge>
+                  ) : null}
+                </div>
+              )}
             </div>
 
-            <div className="flex gap-2 shrink-0">
+            <div className="flex gap-2 shrink-0 flex-wrap">
               {project.status === "pending" ? (
                 <>
                   <Button
@@ -226,20 +251,54 @@ export const ProjectRequests = ({ userId }: ProjectRequestsProps) => {
                   </Button>
                 </>
               ) : project.status !== "rejected" && (
-                <Button
-                  onClick={() => setSelectedProject(project)}
-                  size="sm"
-                  variant="outline"
-                  className="gap-1"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Open
-                </Button>
+                <>
+                  <Button
+                    onClick={() => setSelectedProject(project)}
+                    size="sm"
+                    variant="outline"
+                    className="gap-1"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Open
+                  </Button>
+                  
+                  {/* Payment Request Button */}
+                  {project.status === 'completed' && project.final_paid && 
+                   !project.provider_payment_requested && project.provider_payment_status !== 'paid' && (
+                    <Button
+                      onClick={() => {
+                        setPaymentRequestProject(project);
+                        setShowPaymentRequest(true);
+                      }}
+                      size="sm"
+                      className="gap-1 bg-green-600 hover:bg-green-700"
+                    >
+                      <Wallet className="w-4 h-4" />
+                      Request Payment
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           </div>
         </motion.div>
       ))}
+
+      {/* Payment Request Modal */}
+      {paymentRequestProject && (
+        <ProviderPaymentRequest
+          isOpen={showPaymentRequest}
+          onClose={() => {
+            setShowPaymentRequest(false);
+            setPaymentRequestProject(null);
+          }}
+          projectId={paymentRequestProject.id}
+          totalAmount={paymentRequestProject.final_budget || 0}
+          providerPaymentMethod={paymentRequestProject.provider_payment_method}
+          providerPaymentId={paymentRequestProject.provider_payment_id}
+          onSuccess={loadProjects}
+        />
+      )}
     </div>
   );
 };

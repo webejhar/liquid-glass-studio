@@ -846,8 +846,8 @@ export default function Account() {
       </header>
 
       <div className="flex relative">
-        {/* Desktop Sidebar */}
-        <aside className="hidden md:block w-64 border-r border-border/50 min-h-[calc(100vh-73px)] backdrop-blur-xl bg-background/60 sticky top-[73px] self-start">
+        {/* Desktop Sidebar - Fixed */}
+        <aside className="hidden md:block w-64 border-r border-border/50 min-h-[calc(100vh-73px)] backdrop-blur-xl bg-background/60 sticky top-[73px] self-start overflow-y-auto max-h-[calc(100vh-73px)]">
           {/* User Info */}
           <div className="p-4 border-b border-border/50">
             <div className="flex items-center gap-3 mb-3">

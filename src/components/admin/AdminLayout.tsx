@@ -105,8 +105,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       </header>
 
       <div className="flex">
-        {/* Sidebar - Desktop */}
-        <aside className="hidden md:block w-64 border-r border-border/50 min-h-[calc(100vh-73px)] backdrop-blur-xl bg-background/60">
+        {/* Sidebar - Desktop - Fixed */}
+        <aside className="hidden md:block w-64 border-r border-border/50 min-h-[calc(100vh-73px)] backdrop-blur-xl bg-background/60 sticky top-[73px] self-start overflow-y-auto max-h-[calc(100vh-73px)]">
           <nav className="p-4 space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
