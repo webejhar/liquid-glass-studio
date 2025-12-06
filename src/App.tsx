@@ -39,6 +39,10 @@ import AdminRoles from "./pages/admin/AdminRoles";
 import AdminContacts from "./pages/admin/AdminContacts";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminProjectOrders from "./pages/admin/AdminProjectOrders";
+import AdminSupportTickets from "./pages/admin/AdminSupportTickets";
+import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminReviews from "./pages/admin/AdminReviews";
 import Providers from "./pages/Providers";
 
 const queryClient = new QueryClient();
@@ -86,6 +90,10 @@ const App = () => (
               <Route path="/admin/contacts" element={<AdminContacts />} />
               <Route path="/admin/products" element={<AdminProducts />} />
               <Route path="/admin/project-orders" element={<AdminProjectOrders />} />
+              <Route path="/admin/support-tickets" element={<AdminSupportTickets />} />
+              <Route path="/admin/announcements" element={<AdminAnnouncements />} />
+              <Route path="/admin/settings" element={<AdminSettings />} />
+              <Route path="/admin/reviews" element={<AdminReviews />} />
               
               <Route path="/providers" element={<Providers />} />
               

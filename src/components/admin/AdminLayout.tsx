@@ -12,7 +12,11 @@ import {
   Calendar,
   CheckSquare,
   Package,
-  Briefcase
+  Briefcase,
+  MessageSquare,
+  Megaphone,
+  Settings,
+  Star
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -31,22 +35,19 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
-    fetchPendingCount();
+    fetchCounts();
   }, []);
 
-  const fetchPendingCount = async () => {
+  const fetchCounts = async () => {
     try {
-      const { count, error } = await supabase
+      const { count: pending } = await supabase
         .from("profiles")
         .select("*", { count: "exact", head: true })
         .in("account_type", ["service_provider", "client"])
         .eq("approval_status", "pending");
-
-      if (!error && count !== null) {
-        setPendingCount(count);
-      }
+      setPendingCount(pending || 0);
     } catch (error) {
-      console.error("Error fetching pending count:", error);
+      console.error("Error fetching counts:", error);
     }
   };
 
@@ -67,14 +68,17 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: "/admin/products", label: "Products", icon: Package, badge: null },
     { path: "/admin/project-orders", label: "Project Orders", icon: Briefcase, badge: null },
     { path: "/admin/meetings", label: "Meetings", icon: Calendar, badge: null },
+    { path: "/admin/support-tickets", label: "Support Tickets", icon: MessageSquare, badge: null },
+    { path: "/admin/reviews", label: "Reviews", icon: Star, badge: null },
     { path: "/admin/verification", label: "Verification", icon: CheckSquare, badge: null },
     { path: "/admin/contacts", label: "Contacts", icon: Mail, badge: null },
+    { path: "/admin/announcements", label: "Announcements", icon: Megaphone, badge: null },
+    { path: "/admin/settings", label: "Settings", icon: Settings, badge: null },
     { path: "/admin/roles", label: "Roles", icon: Shield, badge: null },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
-      {/* Header */}
       <header className="backdrop-blur-xl bg-background/80 border-b border-border/50 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -84,19 +88,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           
           <div className="flex items-center gap-2">
             <AdminNotifications />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               <Menu className="w-5 h-5" />
             </Button>
-            <Button
-              variant="ghost"
-              onClick={handleLogout}
-              className="hidden md:flex items-center gap-2"
-            >
+            <Button variant="ghost" onClick={handleLogout} className="hidden md:flex items-center gap-2">
               <LogOut className="w-4 h-4" />
               Logout
             </Button>
@@ -105,25 +100,18 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       </header>
 
       <div className="flex">
-        {/* Sidebar - Desktop - Fixed */}
         <aside className="hidden md:block w-64 border-r border-border/50 min-h-[calc(100vh-73px)] backdrop-blur-xl bg-background/60 sticky top-[73px] self-start overflow-y-auto max-h-[calc(100vh-73px)]">
           <nav className="p-4 space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
-              
               return (
                 <Link key={item.path} to={item.path}>
-                  <Button
-                    variant={isActive ? "secondary" : "ghost"}
-                    className="w-full justify-start gap-2"
-                  >
+                  <Button variant={isActive ? "secondary" : "ghost"} className="w-full justify-start gap-2">
                     <Icon className="w-4 h-4" />
                     {item.label}
                     {item.badge && (
-                      <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2 py-0.5">
-                        {item.badge}
-                      </span>
+                      <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2 py-0.5">{item.badge}</span>
                     )}
                   </Button>
                 </Link>
@@ -132,54 +120,25 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           </nav>
         </aside>
 
-        {/* Mobile Menu */}
         <AnimatePresence>
           {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 md:hidden"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <motion.aside
-                initial={{ x: -300 }}
-                animate={{ x: 0 }}
-                exit={{ x: -300 }}
-                className="absolute left-0 top-[73px] bottom-0 w-64 backdrop-blur-xl bg-background/95 border-r border-border/50"
-                onClick={(e) => e.stopPropagation()}
-              >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-40 md:hidden" onClick={() => setMobileMenuOpen(false)}>
+              <motion.aside initial={{ x: -300 }} animate={{ x: 0 }} exit={{ x: -300 }} className="absolute left-0 top-[73px] bottom-0 w-64 backdrop-blur-xl bg-background/95 border-r border-border/50" onClick={(e) => e.stopPropagation()}>
                 <nav className="p-4 space-y-2">
                   {navItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
-                    
                     return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <Button
-                          variant={isActive ? "secondary" : "ghost"}
-                          className="w-full justify-start gap-2"
-                        >
+                      <Link key={item.path} to={item.path} onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant={isActive ? "secondary" : "ghost"} className="w-full justify-start gap-2">
                           <Icon className="w-4 h-4" />
                           {item.label}
-                          {item.badge && (
-                            <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2 py-0.5">
-                              {item.badge}
-                            </span>
-                          )}
+                          {item.badge && <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2 py-0.5">{item.badge}</span>}
                         </Button>
                       </Link>
                     );
                   })}
-                  <Button
-                    variant="ghost"
-                    onClick={handleLogout}
-                    className="w-full justify-start gap-2 text-destructive"
-                  >
+                  <Button variant="ghost" onClick={handleLogout} className="w-full justify-start gap-2 text-destructive">
                     <LogOut className="w-4 h-4" />
                     Logout
                   </Button>
@@ -189,11 +148,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           )}
         </AnimatePresence>
 
-        {/* Main Content */}
         <main className="flex-1 p-3 sm:p-4 md:p-8 overflow-x-hidden">
-          <div className="max-w-7xl mx-auto w-full">
-            {children}
-          </div>
+          <div className="max-w-7xl mx-auto w-full">{children}</div>
         </main>
       </div>
     </div>
