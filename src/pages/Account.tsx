@@ -1,8 +1,14 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell, X, ArrowRight, MessageSquare, Briefcase, Menu } from "lucide-react";
+import { User, LogOut, Package, ShoppingCart, Upload, Save, Calendar, DollarSign, CreditCard, Filter, Shield, CheckCircle, XCircle, Clock, Heart, MessageCircle, FileText, Info, RefreshCw, Bell, X, ArrowRight, MessageSquare, Briefcase, Menu, HelpCircle, Gift, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SupportTicket } from "@/components/SupportTicket";
+import { ReferralSystem } from "@/components/ReferralSystem";
+import { ProviderAvailability } from "@/components/ProviderAvailability";
+import { ProviderPortfolio } from "@/components/ProviderPortfolio";
+import { UserReceipts } from "@/components/UserReceipts";
+import { ReviewDisplay } from "@/components/ReviewDisplay";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -135,6 +141,7 @@ export default function Account() {
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [activeSessionsCount, setActiveSessionsCount] = useState(0);
+  const [supportTicketsCount, setSupportTicketsCount] = useState(0);
   
   useSessionTracking();
 
@@ -364,6 +371,13 @@ export default function Account() {
         .eq("user_id", userId)
         .eq("is_active", true);
       setActiveSessionsCount(sessionsCount || 0);
+
+      // Load support tickets count
+      const { count: ticketsCount } = await supabase
+        .from("support_tickets")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId);
+      setSupportTicketsCount(ticketsCount || 0);
 
     } catch (error) {
       console.error("Error loading counts:", error);
@@ -891,7 +905,11 @@ export default function Account() {
     { id: "orders", label: "Orders", icon: Package, badge: orders.length > 0 ? orders.length : null },
     { id: "favorites", label: "Favorites", icon: Heart, badge: favorites.length > 0 ? favorites.length : null },
     ...(profile?.account_type === 'service_provider' 
-      ? [{ id: "project-requests", label: "Project Requests", icon: Briefcase, badge: projectRequestsCount > 0 ? projectRequestsCount : null }]
+      ? [
+          { id: "project-requests", label: "Project Requests", icon: Briefcase, badge: projectRequestsCount > 0 ? projectRequestsCount : null },
+          { id: "portfolio", label: "Portfolio", icon: Star, badge: null },
+          { id: "availability", label: "Availability", icon: Clock, badge: null },
+        ]
       : []
     ),
     ...((profile?.account_type === 'client' || profile?.account_type === 'general')
@@ -900,6 +918,9 @@ export default function Account() {
     ),
     { id: "chat", label: "Messages", icon: MessageSquare, badge: unreadMessagesCount > 0 ? unreadMessagesCount : null },
     { id: "notifications", label: "Notifications", icon: Bell, badge: unreadNotificationsCount > 0 ? unreadNotificationsCount : null },
+    { id: "support", label: "Support", icon: HelpCircle, badge: supportTicketsCount > 0 ? supportTicketsCount : null },
+    { id: "referral", label: "Referrals", icon: Gift, badge: null },
+    { id: "receipts", label: "Receipts", icon: FileText, badge: null },
     { id: "sessions", label: "Security", icon: Shield, badge: activeSessionsCount > 0 ? activeSessionsCount : null },
   ];
 
@@ -1765,6 +1786,67 @@ export default function Account() {
                 </motion.div>
               </TabsContent>
             )}
+
+            {/* Portfolio Tab - For Service Providers */}
+            {profile?.account_type === 'service_provider' && (
+              <TabsContent value="portfolio">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="glass-premium p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl"
+                >
+                  <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">My Portfolio</h2>
+                  <ProviderPortfolio providerId={user?.id || ""} isEditable={true} />
+                </motion.div>
+              </TabsContent>
+            )}
+
+            {/* Availability Tab - For Service Providers */}
+            {profile?.account_type === 'service_provider' && (
+              <TabsContent value="availability">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="glass-premium p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl"
+                >
+                  <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Availability Settings</h2>
+                  <ProviderAvailability providerId={user?.id || ""} />
+                </motion.div>
+              </TabsContent>
+            )}
+
+            {/* Support Tickets Tab */}
+            <TabsContent value="support">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="glass-premium p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl"
+              >
+                <SupportTicket userId={user?.id || ""} />
+              </motion.div>
+            </TabsContent>
+
+            {/* Referral System Tab */}
+            <TabsContent value="referral">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="glass-premium p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl"
+              >
+                <ReferralSystem userId={user?.id || ""} />
+              </motion.div>
+            </TabsContent>
+
+            {/* Payment Receipts Tab */}
+            <TabsContent value="receipts">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="glass-premium p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl"
+              >
+                <UserReceipts userId={user?.id || ""} />
+              </motion.div>
+            </TabsContent>
           </Tabs>
           </div>
         </main>

@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -22,13 +23,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Clock } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Eye, EyeOff, Search, Trash2, Filter } from "lucide-react";
 
 const AdminOrders = () => {
   const { isLoading } = useAdminAuth();
   const { toast } = useToast();
   const [productOrders, setProductOrders] = useState<any[]>([]);
   const [domainOrders, setDomainOrders] = useState<any[]>([]);
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterSeen, setFilterSeen] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchOrders();
@@ -199,6 +203,76 @@ const AdminOrders = () => {
     }
   };
 
+  const markAsSeen = async (table: "product_orders" | "domain_orders", id: string, isSeen: boolean) => {
+    try {
+      const { error } = await supabase
+        .from(table)
+        .update({ is_seen: isSeen } as any)
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast({
+        title: isSeen ? "Marked as seen" : "Marked as unseen",
+      });
+
+      fetchOrders();
+    } catch (error: any) {
+      toast({
+        title: "Error updating status",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteOrder = async (table: "product_orders" | "domain_orders", id: string) => {
+    if (!confirm("Are you sure you want to delete this order?")) return;
+    
+    try {
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Order deleted",
+      });
+
+      fetchOrders();
+    } catch (error: any) {
+      toast({
+        title: "Error deleting order",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const filteredProductOrders = productOrders.filter(order => {
+    const matchesStatus = filterStatus === "all" || order.status === filterStatus;
+    const matchesSeen = filterSeen === "all" || 
+      (filterSeen === "seen" ? order.is_seen : !order.is_seen);
+    const matchesSearch = !searchQuery || 
+      order.product_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.buyer_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.buyer_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesSeen && matchesSearch;
+  });
+
+  const filteredDomainOrders = domainOrders.filter(order => {
+    const matchesStatus = filterStatus === "all" || order.status === filterStatus;
+    const matchesSeen = filterSeen === "all" || 
+      (filterSeen === "seen" ? order.is_seen : !order.is_seen);
+    const matchesSearch = !searchQuery || 
+      order.domain_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.buyer_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.buyer_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesSeen && matchesSearch;
+  });
+
   const getStatusBadge = (status: string) => {
     const config: Record<string, { icon: any; variant: "secondary" | "default" | "destructive" | "outline"; label: string }> = {
       pending: { icon: Clock, variant: "secondary", label: "Pending" },
@@ -230,10 +304,51 @@ const AdminOrders = () => {
           <p className="text-sm sm:text-base text-muted-foreground">View and manage all orders</p>
         </div>
 
+        {/* Filters */}
+        <Card className="backdrop-blur-xl bg-background/60 border-border/50 p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search orders..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 w-full"
+              />
+            </div>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-full sm:w-36">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterSeen} onValueChange={setFilterSeen}>
+              <SelectTrigger className="w-full sm:w-36">
+                <SelectValue placeholder="Seen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="seen">Seen</SelectItem>
+                <SelectItem value="unseen">Unseen</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </Card>
+
         <Tabs defaultValue="products" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="products" className="text-xs sm:text-sm">Products</TabsTrigger>
-            <TabsTrigger value="domains" className="text-xs sm:text-sm">Domains</TabsTrigger>
+            <TabsTrigger value="products" className="text-xs sm:text-sm">
+              Products ({filteredProductOrders.length})
+            </TabsTrigger>
+            <TabsTrigger value="domains" className="text-xs sm:text-sm">
+              Domains ({filteredDomainOrders.length})
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
@@ -242,18 +357,33 @@ const AdminOrders = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">Seen</TableHead>
                       <TableHead className="min-w-[120px]">Product</TableHead>
                       <TableHead className="min-w-[150px]">Buyer</TableHead>
                       <TableHead className="min-w-[80px]">Price</TableHead>
                       <TableHead className="min-w-[120px]">Payment</TableHead>
                       <TableHead className="min-w-[100px]">Status</TableHead>
                       <TableHead className="min-w-[100px]">Date</TableHead>
-                      <TableHead className="text-right min-w-[140px]">Actions</TableHead>
+                      <TableHead className="text-right min-w-[180px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {productOrders.map((order) => (
-                      <TableRow key={order.id}>
+                    {filteredProductOrders.map((order) => (
+                      <TableRow key={order.id} className={!order.is_seen ? "bg-primary/5" : ""}>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => markAsSeen("product_orders", order.id, !order.is_seen)}
+                            className="h-8 w-8"
+                          >
+                            {order.is_seen ? (
+                              <Eye className="w-4 h-4 text-green-500" />
+                            ) : (
+                              <EyeOff className="w-4 h-4 text-yellow-500" />
+                            )}
+                          </Button>
+                        </TableCell>
                         <TableCell className="font-medium">{order.product_name}</TableCell>
                         <TableCell>
                           <div>
@@ -265,44 +395,52 @@ const AdminOrders = () => {
                         <TableCell className="text-xs sm:text-sm">{order.payment_method}</TableCell>
                         <TableCell>{getStatusBadge(order.status)}</TableCell>
                         <TableCell className="text-xs sm:text-sm">{new Date(order.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-right space-y-2">
-                          {/* File Upload */}
-                          {!order.plugin_file_path && (
-                            <div className="mb-2">
-                              <input
-                                type="file"
-                                accept=".zip"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) handleFileUpload(order.id, file);
-                                }}
-                                className="text-xs"
-                              />
-                            </div>
-                          )}
-                          {order.plugin_file_path && (
-                            <div className="text-xs text-green-600 mb-2">
-                              ✓ File uploaded
-                            </div>
-                          )}
-                          
-                          {/* Status Selector */}
-                          <Select
-                            value={order.status}
-                            onValueChange={(value) =>
-                              updateOrderStatus("product_orders", order.id, value)
-                            }
-                          >
-                            <SelectTrigger className="w-[110px] sm:w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="confirmed">Confirmed</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
-                              <SelectItem value="rejected">Rejected</SelectItem>
-                            </SelectContent>
-                          </Select>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2 flex-wrap">
+                            {/* File Upload */}
+                            {!order.plugin_file_path ? (
+                              <div>
+                                <input
+                                  type="file"
+                                  accept=".zip"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handleFileUpload(order.id, file);
+                                  }}
+                                  className="text-xs w-24"
+                                />
+                              </div>
+                            ) : (
+                              <Badge className="bg-green-500/20 text-green-400 text-xs">Uploaded</Badge>
+                            )}
+                            
+                            {/* Status Selector */}
+                            <Select
+                              value={order.status}
+                              onValueChange={(value) =>
+                                updateOrderStatus("product_orders", order.id, value)
+                              }
+                            >
+                              <SelectTrigger className="w-24">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="confirmed">Confirmed</SelectItem>
+                                <SelectItem value="completed">Completed</SelectItem>
+                                <SelectItem value="rejected">Rejected</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => deleteOrder("product_orders", order.id)}
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -318,18 +456,33 @@ const AdminOrders = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">Seen</TableHead>
                       <TableHead className="min-w-[150px]">Domain</TableHead>
                       <TableHead className="min-w-[150px]">Buyer</TableHead>
                       <TableHead className="min-w-[60px]">TLD</TableHead>
                       <TableHead className="min-w-[120px]">Payment</TableHead>
                       <TableHead className="min-w-[100px]">Status</TableHead>
                       <TableHead className="min-w-[100px]">Date</TableHead>
-                      <TableHead className="text-right min-w-[140px]">Actions</TableHead>
+                      <TableHead className="text-right min-w-[180px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {domainOrders.map((order) => (
-                      <TableRow key={order.id}>
+                    {filteredDomainOrders.map((order) => (
+                      <TableRow key={order.id} className={!order.is_seen ? "bg-primary/5" : ""}>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => markAsSeen("domain_orders", order.id, !order.is_seen)}
+                            className="h-8 w-8"
+                          >
+                            {order.is_seen ? (
+                              <Eye className="w-4 h-4 text-green-500" />
+                            ) : (
+                              <EyeOff className="w-4 h-4 text-yellow-500" />
+                            )}
+                          </Button>
+                        </TableCell>
                         <TableCell className="font-medium">{order.domain_name}</TableCell>
                         <TableCell>
                           <div>
@@ -342,21 +495,32 @@ const AdminOrders = () => {
                         <TableCell>{getStatusBadge(order.status)}</TableCell>
                         <TableCell className="text-xs sm:text-sm">{new Date(order.created_at).toLocaleDateString()}</TableCell>
                         <TableCell className="text-right">
-                          <Select
-                            value={order.status}
-                            onValueChange={(value) =>
-                              updateOrderStatus("domain_orders", order.id, value)
-                            }
-                          >
-                            <SelectTrigger className="w-[110px] sm:w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="confirmed">Confirmed</SelectItem>
-                              <SelectItem value="rejected">Rejected</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <div className="flex items-center justify-end gap-2">
+                            <Select
+                              value={order.status}
+                              onValueChange={(value) =>
+                                updateOrderStatus("domain_orders", order.id, value)
+                              }
+                            >
+                              <SelectTrigger className="w-24">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="confirmed">Confirmed</SelectItem>
+                                <SelectItem value="rejected">Rejected</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => deleteOrder("domain_orders", order.id)}
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
