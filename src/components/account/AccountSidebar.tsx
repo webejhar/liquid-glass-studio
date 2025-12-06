@@ -24,6 +24,12 @@ interface AccountSidebarProps {
   onLogout: () => void;
   cartCount: number;
   favoritesCount: number;
+  ordersCount: number;
+  projectRequestsCount: number;
+  yourProjectsCount: number;
+  messagesCount: number;
+  notificationsCount: number;
+  sessionsCount: number;
   onNavigateHome: () => void;
 }
 
@@ -35,6 +41,12 @@ export const AccountSidebar = ({
   onLogout,
   cartCount,
   favoritesCount,
+  ordersCount,
+  projectRequestsCount,
+  yourProjectsCount,
+  messagesCount,
+  notificationsCount,
+  sessionsCount,
   onNavigateHome
 }: AccountSidebarProps) => {
   const getInitials = (name: string) => {
@@ -49,19 +61,19 @@ export const AccountSidebar = ({
   const navItems = [
     { id: "profile", label: "Profile", icon: User, badge: null },
     { id: "cart", label: "Cart", icon: ShoppingCart, badge: cartCount > 0 ? cartCount : null },
-    { id: "orders", label: "Orders", icon: Package, badge: null },
+    { id: "orders", label: "Orders", icon: Package, badge: ordersCount > 0 ? ordersCount : null },
     { id: "favorites", label: "Favorites", icon: Heart, badge: favoritesCount > 0 ? favoritesCount : null },
     ...(profile?.account_type === 'service_provider' 
-      ? [{ id: "project-requests", label: "Project Requests", icon: Briefcase, badge: null }]
+      ? [{ id: "project-requests", label: "Project Requests", icon: Briefcase, badge: projectRequestsCount > 0 ? projectRequestsCount : null }]
       : []
     ),
     ...(profile?.account_type === 'client' || profile?.account_type === 'general'
-      ? [{ id: "your-projects", label: "Your Projects", icon: Briefcase, badge: null }]
+      ? [{ id: "your-projects", label: "Your Projects", icon: Briefcase, badge: yourProjectsCount > 0 ? yourProjectsCount : null }]
       : []
     ),
-    { id: "chat", label: "Messages", icon: MessageSquare, badge: null },
-    { id: "notifications", label: "Notifications", icon: Bell, badge: null },
-    { id: "sessions", label: "Security", icon: Shield, badge: null },
+    { id: "chat", label: "Messages", icon: MessageSquare, badge: messagesCount > 0 ? messagesCount : null },
+    { id: "notifications", label: "Notifications", icon: Bell, badge: notificationsCount > 0 ? notificationsCount : null },
+    { id: "sessions", label: "Security", icon: Shield, badge: sessionsCount > 0 ? sessionsCount : null },
   ];
 
   return (
@@ -97,7 +109,7 @@ export const AccountSidebar = ({
       </div>
 
       {/* Navigation */}
-      <nav className="p-3 space-y-1">
+      <nav className="p-3 space-y-1 max-h-[calc(100vh-320px)] overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -112,7 +124,7 @@ export const AccountSidebar = ({
               <Icon className="w-4 h-4" />
               {item.label}
               {item.badge !== null && (
-                <span className="ml-auto bg-primary text-primary-foreground text-xs rounded-full px-2 py-0.5">
+                <span className="ml-auto bg-primary text-primary-foreground text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
                   {item.badge}
                 </span>
               )}
