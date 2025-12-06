@@ -13,6 +13,7 @@ import { Bell, Check, Trash2, UserPlus, ShoppingBag, Calendar, Globe, MessageSqu
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { adminNotificationSounds } from "@/utils/adminNotificationSounds";
 
 interface Notification {
   id: string;
@@ -69,6 +70,9 @@ export const AdminNotifications = () => {
           setNotifications((prev) => [newNotification, ...prev]);
           setUnreadCount((prev) => prev + 1);
 
+          // Play sound based on notification type
+          adminNotificationSounds.playByType(newNotification.type);
+
           toast({
             title: newNotification.title,
             description: newNotification.message,
@@ -88,6 +92,7 @@ export const AdminNotifications = () => {
           table: "support_tickets",
         },
         (payload) => {
+          adminNotificationSounds.playTicketSound();
           toast({
             title: "New Support Ticket",
             description: `New ticket: ${(payload.new as any).subject}`,
@@ -108,6 +113,7 @@ export const AdminNotifications = () => {
           table: "product_orders",
         },
         (payload) => {
+          adminNotificationSounds.playOrderSound();
           toast({
             title: "New Product Order",
             description: `New order: ${(payload.new as any).product_name}`,
@@ -128,6 +134,7 @@ export const AdminNotifications = () => {
           table: "domain_orders",
         },
         (payload) => {
+          adminNotificationSounds.playOrderSound();
           toast({
             title: "New Domain Order",
             description: `New domain: ${(payload.new as any).domain_name}`,
