@@ -233,22 +233,32 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
       const uploadedUrls: string[] = [];
 
       for (const file of submissionFiles) {
-        const filePath = `submissions/${project.id}/${Date.now()}-${file.name}`;
+        // Use unique filename with timestamp and sanitized name
+        const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const filePath = `${project.id}/${Date.now()}-${sanitizedName}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('chat-images')
-          .upload(filePath, file);
+        // Upload to dedicated project-submissions bucket
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('project-submissions')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+        }
 
         const { data: { publicUrl } } = supabase.storage
-          .from('chat-images')
+          .from('project-submissions')
           .getPublicUrl(filePath);
 
         uploadedUrls.push(publicUrl);
       }
 
-      const { error } = await supabase
+      // Update project with submission files
+      const { error: updateError } = await supabase
         .from("projects")
         .update({
           submission_files: uploadedUrls,
@@ -256,7 +266,10 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
         })
         .eq("id", project.id);
 
-      if (error) throw error;
+      if (updateError) {
+        console.error("Update error:", updateError);
+        throw updateError;
+      }
 
       // Notify client
       await supabase.rpc('create_user_notification', {
@@ -567,13 +580,16 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Upload Final Files *</Label>
+              <Label>Upload Final Files * (All file types supported)</Label>
               <input
                 type="file"
                 multiple
                 onChange={(e) => setSubmissionFiles(Array.from(e.target.files || []))}
                 className="w-full glass-card p-3 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-primary-foreground"
               />
+              <p className="text-xs text-muted-foreground mt-2">
+                Supports: Images, Videos, Documents, Archives, and all other file types (Max 50MB per file)
+              </p>
             </div>
             
             {submissionFiles.length > 0 && (
