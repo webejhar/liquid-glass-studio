@@ -95,7 +95,7 @@ export default function AdminProjectOrders() {
     }
   };
 
-  const handleApprovePayment = async (projectId: string, type: 'advance' | 'final') => {
+  const handleApprovePayment = async (projectId: string, type: 'advance' | 'final', project: Project) => {
     try {
       const updateData: any = {};
       
@@ -103,7 +103,6 @@ export default function AdminProjectOrders() {
         updateData.admin_approved = true;
       } else {
         updateData.status = 'completed';
-        updateData.final_paid = true;
       }
 
       const { error } = await supabase
@@ -112,6 +111,38 @@ export default function AdminProjectOrders() {
         .eq("id", projectId);
 
       if (error) throw error;
+
+      // Send email notifications when admin approves final payment
+      if (type === 'final') {
+        // Notify client
+        if (project.client?.email) {
+          await supabase.functions.invoke('send-project-status-email', {
+            body: {
+              recipientEmail: project.client.email,
+              recipientName: project.client.name || 'Client',
+              projectTitle: project.project_title,
+              status: 'admin_approved',
+              projectId: project.id,
+              amount: project.final_budget
+            }
+          });
+        }
+
+        // Notify provider
+        if (project.provider?.email) {
+          await supabase.functions.invoke('send-project-status-email', {
+            body: {
+              recipientEmail: project.provider.email,
+              recipientName: project.provider.name || 'Provider',
+              projectTitle: project.project_title,
+              status: 'completed',
+              projectId: project.id,
+              amount: project.final_budget
+            }
+          });
+        }
+      }
+
       toast.success(`${type === 'advance' ? 'Advance' : 'Final'} payment approved!`);
       loadProjects();
     } catch (error) {
@@ -278,7 +309,7 @@ export default function AdminProjectOrders() {
                       
                       {project.advance_paid && !project.admin_approved && (
                         <Button
-                          onClick={() => handleApprovePayment(project.id, 'advance')}
+                          onClick={() => handleApprovePayment(project.id, 'advance', project)}
                           size="sm"
                           className="gap-1"
                         >
@@ -287,9 +318,9 @@ export default function AdminProjectOrders() {
                         </Button>
                       )}
                       
-                      {project.status === 'submitted' && !project.final_paid && (
+                      {project.status === 'submitted' && project.final_paid && (
                         <Button
-                          onClick={() => handleApprovePayment(project.id, 'final')}
+                          onClick={() => handleApprovePayment(project.id, 'final', project)}
                           size="sm"
                           className="gap-1 bg-green-600 hover:bg-green-700"
                         >

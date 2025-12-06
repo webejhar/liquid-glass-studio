@@ -64,12 +64,15 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
   const [finalBudget, setFinalBudget] = useState(project.final_budget?.toString() || "");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [paymentReference, setPaymentReference] = useState("");
+  const [submissionFiles, setSubmissionFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
   const [pendingPaymentAction, setPendingPaymentAction] = useState<'advance' | 'final' | null>(null);
+  const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const submissionFileInputRef = useRef<HTMLInputElement>(null);
 
   const isProvider = currentUserId === project.provider_id;
   const isClient = currentUserId === project.client_id;
@@ -227,12 +230,43 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
   };
 
   const handleSubmitProject = async () => {
+    if (submissionFiles.length === 0) {
+      toast.error("Please upload at least one file");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // Update project status to submitted (no files needed)
+      const uploadedUrls: string[] = [];
+
+      for (const file of submissionFiles) {
+        const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const filePath = `${project.id}/${Date.now()}-${sanitizedName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('project-submissions')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('project-submissions')
+          .getPublicUrl(filePath);
+
+        uploadedUrls.push(publicUrl);
+      }
+
+      // Update project with submission files
       const { error: updateError } = await supabase
         .from("projects")
         .update({
+          submission_files: uploadedUrls,
           status: "submitted"
         })
         .eq("id", project.id);
@@ -251,8 +285,29 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
         p_reference_id: project.id
       });
 
+      // Get client email and send email notification
+      const { data: clientProfile } = await supabase
+        .from("profiles")
+        .select("email, name")
+        .eq("user_id", project.client_id)
+        .single();
+
+      if (clientProfile?.email) {
+        await supabase.functions.invoke('send-project-status-email', {
+          body: {
+            recipientEmail: clientProfile.email,
+            recipientName: clientProfile.name || 'Client',
+            projectTitle: project.project_title,
+            status: 'submitted',
+            projectId: project.id
+          }
+        });
+      }
+
       toast.success("Project submitted successfully!");
       setShowSubmitModal(false);
+      setShowSubmitConfirmation(false);
+      setSubmissionFiles([]);
       onProjectUpdate();
     } catch (error: any) {
       console.error("Error submitting project:", error);
@@ -274,11 +329,12 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
 
     setIsLoading(true);
     try {
+      // Update project - set final_paid but status stays "submitted" until admin approves
       const { error } = await supabase
         .from("projects")
         .update({
-          final_paid: true,
-          status: "completed"
+          final_paid: true
+          // Status will be changed to "completed" when admin approves
         })
         .eq("id", project.id);
 
@@ -287,13 +343,34 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
       // Notify admin
       await supabase.rpc('create_admin_notification', {
         p_title: 'Final Payment Received',
-        p_message: `Final payment received for project: ${project.project_title}`,
+        p_message: `Final payment received for project: ${project.project_title}. Pending admin approval.`,
         p_type: 'project_payment',
         p_reference_id: project.id
       });
 
-      toast.success("Final payment submitted!");
+      // Get provider email and send payment received notification
+      const { data: providerProfile } = await supabase
+        .from("profiles")
+        .select("email, name")
+        .eq("user_id", project.provider_id)
+        .single();
+
+      if (providerProfile?.email) {
+        await supabase.functions.invoke('send-project-status-email', {
+          body: {
+            recipientEmail: providerProfile.email,
+            recipientName: providerProfile.name || 'Provider',
+            projectTitle: project.project_title,
+            status: 'payment_received',
+            projectId: project.id,
+            amount: finalAmount
+          }
+        });
+      }
+
+      toast.success("Final payment submitted! Pending admin approval.");
       setShowFinalPaymentModal(false);
+      setPaymentConfirmed(false);
       onProjectUpdate();
     } catch (error: any) {
       console.error("Error processing payment:", error);
@@ -564,41 +641,91 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
         </DialogContent>
       </Dialog>
 
-      {/* Submit Project Modal - Confirmation Based */}
-      <Dialog open={showSubmitModal} onOpenChange={setShowSubmitModal}>
+      {/* Submit Project Modal - With File Upload */}
+      <Dialog open={showSubmitModal} onOpenChange={(open) => {
+        setShowSubmitModal(open);
+        if (!open) {
+          setSubmissionFiles([]);
+          setShowSubmitConfirmation(false);
+        }
+      }}>
         <DialogContent className="glass-premium max-w-md">
           <DialogHeader>
             <DialogTitle className="text-center">Submit Project</DialogTitle>
           </DialogHeader>
-          <div className="space-y-6 py-4">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-primary" />
+          
+          {!showSubmitConfirmation ? (
+            <div className="space-y-4 py-2">
+              <div>
+                <Label>Upload Final Files * (All file types supported)</Label>
+                <input
+                  type="file"
+                  ref={submissionFileInputRef}
+                  multiple
+                  onChange={(e) => setSubmissionFiles(Array.from(e.target.files || []))}
+                  className="w-full glass-card p-3 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-primary-foreground"
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  Supports: Images, Videos, Documents, Archives, and all other file types (Max 50MB per file)
+                </p>
               </div>
-              <h3 className="text-lg font-semibold">Are you sure you have completed this project?</h3>
-              <p className="text-sm text-muted-foreground">
-                By submitting, you confirm that all work has been completed according to the project requirements. 
-                The client will be notified and prompted to make the final payment.
-              </p>
-            </div>
+              
+              {submissionFiles.length > 0 && (
+                <div className="glass-card p-3 rounded-lg">
+                  <p className="text-sm font-semibold mb-2">Files to upload ({submissionFiles.length}):</p>
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {submissionFiles.map((file, i) => (
+                      <p key={i} className="text-xs text-muted-foreground flex items-center gap-2">
+                        <FileText className="w-3 h-3" />
+                        {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-            <div className="flex flex-col gap-3">
               <Button 
-                onClick={handleSubmitProject} 
-                disabled={isLoading} 
+                onClick={() => setShowSubmitConfirmation(true)} 
+                disabled={submissionFiles.length === 0} 
                 className="w-full"
               >
-                {isLoading ? "Submitting..." : "Yes, Submit Project"}
-              </Button>
-              <Button 
-                onClick={() => setShowSubmitModal(false)} 
-                variant="outline" 
-                className="w-full"
-              >
-                No, Go Back
+                Continue to Submit
               </Button>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-6 py-4">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
+                  <CheckCircle className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold">Are you sure you have completed this project?</h3>
+                <p className="text-sm text-muted-foreground">
+                  By submitting, you confirm that all work has been completed according to the project requirements. 
+                  The client will be notified and prompted to make the final payment.
+                </p>
+                <p className="text-xs text-primary">
+                  {submissionFiles.length} file(s) will be uploaded
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <Button 
+                  onClick={handleSubmitProject} 
+                  disabled={isLoading} 
+                  className="w-full"
+                >
+                  {isLoading ? "Uploading & Submitting..." : "Yes, Submit Project"}
+                </Button>
+                <Button 
+                  onClick={() => setShowSubmitConfirmation(false)} 
+                  variant="outline" 
+                  className="w-full"
+                >
+                  No, Go Back
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

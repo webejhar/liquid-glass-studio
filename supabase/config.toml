@@ -39,3 +39,5 @@ verify_jwt = false
 [functions.cleanup-temp-images]
 verify_jwt = false
 
+[functions.send-project-status-email]
+verify_jwt = false
