@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -15,67 +15,89 @@ export default function Contact() {
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
-    const data = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-      service: formData.get('service') as string,
-      subject: formData.get('subject') as string,
-      message: formData.get('message') as string,
-      isFreelancer,
-      linkedinUrl: formData.get('linkedin') as string,
-      behanceUrl: formData.get('behance') as string,
-      websiteUrl: formData.get('website') as string,
-      category: formData.get('category') as string,
-    };
+    
+    const name = (formData.get('name') as string)?.trim();
+    const email = (formData.get('email') as string)?.trim();
+    const phone = (formData.get('phone') as string)?.trim();
+    const service = formData.get('service') as string;
+    const subject = (formData.get('subject') as string)?.trim();
+    const message = (formData.get('message') as string)?.trim();
+
+    // Validation
+    if (!name || !email || !message) {
+      toast.error("Please fill in all required fields");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Please enter a valid email address");
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
-      console.log('Submitting contact form...', data);
+      console.log('Submitting contact form...');
       
+      // Prepare data for database
+      const contactData: any = {
+        name,
+        email,
+        phone: phone || null,
+        service: service || null,
+        subject: subject || null,
+        message,
+        is_freelancer: isFreelancer,
+        status: 'pending'
+      };
+
+      // Add freelancer fields if applicable
+      if (isFreelancer) {
+        contactData.linkedin_url = (formData.get('linkedin') as string)?.trim() || null;
+        contactData.behance_url = (formData.get('behance') as string)?.trim() || null;
+        contactData.website_url = (formData.get('website') as string)?.trim() || null;
+        contactData.category = (formData.get('category') as string)?.trim() || null;
+      }
+
       // Save to database
       const { data: insertedData, error: dbError } = await supabase
         .from('contacts')
-        .insert({
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          service: data.service,
-          subject: data.subject,
-          message: data.message,
-          is_freelancer: data.isFreelancer,
-          linkedin_url: data.linkedinUrl,
-          behance_url: data.behanceUrl,
-          website_url: data.websiteUrl,
-          category: data.category,
-        })
-        .select();
+        .insert(contactData)
+        .select()
+        .single();
 
       if (dbError) {
         console.error('Database error:', dbError);
-        toast.error(`Database error: ${dbError.message}`);
-        throw dbError;
+        throw new Error(dbError.message);
       }
 
       console.log('Contact saved successfully:', insertedData);
 
-      // Send email notification
+      // Try to send email notification (don't fail if this fails)
       try {
-        const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
-          body: data
+        await supabase.functions.invoke('send-contact-email', {
+          body: {
+            name,
+            email,
+            phone: phone || '',
+            service: service || '',
+            subject: subject || '',
+            message,
+            isFreelancer,
+            linkedinUrl: contactData.linkedin_url || '',
+            behanceUrl: contactData.behance_url || '',
+            websiteUrl: contactData.website_url || '',
+            category: contactData.category || ''
+          }
         });
-
-        if (emailError) {
-          console.error("Email error:", emailError);
-          // Don't throw - contact was saved, email is secondary
-          toast.success("Message received! (Email notification pending)");
-        } else {
-          toast.success("Thank you! We'll get back to you soon.");
-        }
       } catch (emailErr) {
         console.error("Email function error:", emailErr);
-        // Contact was still saved successfully
-        toast.success("Message received!");
+        // Email is secondary - contact was saved
       }
+      
+      toast.success("Thank you! Your message has been sent successfully.");
       
       // Redirect to home after 1.5 seconds
       setTimeout(() => {
@@ -83,14 +105,14 @@ export default function Contact() {
       }, 1500);
     } catch (error: any) {
       console.error("Error submitting contact form:", error);
-      toast.error(`Failed to send message: ${error.message || 'Please try again'}`);
+      toast.error(error.message || "Failed to send message. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen pt-8 px-4 pb-20">
+    <div className="min-h-screen pt-24 sm:pt-32 px-3 sm:px-4 pb-20 w-full max-w-full overflow-x-hidden">
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <motion.button
@@ -102,15 +124,16 @@ export default function Contact() {
           <ArrowLeft className="w-4 h-4" />
           Back
         </motion.button>
+        
         <motion.h1
-          className="text-5xl font-bold mb-4 text-center"
+          className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           Get In <span className="text-primary">Touch</span>
         </motion.h1>
         <motion.p
-          className="text-center text-muted-foreground mb-12 text-lg"
+          className="text-center text-muted-foreground mb-8 sm:mb-12 text-base sm:text-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -120,70 +143,78 @@ export default function Contact() {
 
         <motion.form
           onSubmit={handleSubmit}
-          className="glass-card p-8 rounded-2xl space-y-6"
+          className="glass-card p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl space-y-4 sm:space-y-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <label className="block mb-2 font-medium">Full Name *</label>
+              <label className="block mb-2 font-medium text-sm sm:text-base">Full Name *</label>
               <input
                 type="text"
                 name="name"
                 required
-                className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
+                placeholder="Your name"
+                className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent text-sm sm:text-base"
               />
             </div>
             <div>
-              <label className="block mb-2 font-medium">Email *</label>
+              <label className="block mb-2 font-medium text-sm sm:text-base">Email *</label>
               <input
                 type="email"
                 name="email"
                 required
-                className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
+                placeholder="your@email.com"
+                className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent text-sm sm:text-base"
               />
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <label className="block mb-2 font-medium">Phone *</label>
+              <label className="block mb-2 font-medium text-sm sm:text-base">Phone</label>
               <input
                 type="tel"
                 name="phone"
-                required
-                className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
+                placeholder="+880 1234 567890"
+                className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent text-sm sm:text-base"
               />
             </div>
             <div>
-              <label className="block mb-2 font-medium">Service</label>
-              <select name="service" className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-background">
-                <option>UI/UX Design</option>
-                <option>Web Development</option>
-                <option>WordPress</option>
-                <option>Branding</option>
-                <option>Other</option>
+              <label className="block mb-2 font-medium text-sm sm:text-base">Service</label>
+              <select 
+                name="service" 
+                className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-background text-sm sm:text-base"
+              >
+                <option value="">Select a service</option>
+                <option value="UI/UX Design">UI/UX Design</option>
+                <option value="Web Development">Web Development</option>
+                <option value="WordPress">WordPress</option>
+                <option value="Branding">Branding</option>
+                <option value="Other">Other</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label className="block mb-2 font-medium">Subject</label>
+            <label className="block mb-2 font-medium text-sm sm:text-base">Subject</label>
             <input
               type="text"
               name="subject"
-              className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
+              placeholder="What is this about?"
+              className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent text-sm sm:text-base"
             />
           </div>
 
           <div>
-            <label className="block mb-2 font-medium">Message *</label>
+            <label className="block mb-2 font-medium text-sm sm:text-base">Message *</label>
             <textarea
               name="message"
               required
-              rows={6}
-              className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent resize-none"
+              rows={5}
+              placeholder="Tell us about your project..."
+              className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent resize-none text-sm sm:text-base"
             />
           </div>
 
@@ -193,15 +224,15 @@ export default function Contact() {
                 type="checkbox"
                 checked={isFreelancer}
                 onChange={(e) => setIsFreelancer(e.target.checked)}
-                className="w-5 h-5 rounded"
+                className="w-5 h-5 rounded accent-primary"
               />
-              <span>I'm a freelancer</span>
+              <span className="text-sm sm:text-base">I'm a freelancer</span>
             </label>
           </div>
 
           {isFreelancer && (
             <motion.div
-              className="space-y-6 pt-6 border-t border-border"
+              className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 border-t border-border"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
             >
@@ -214,47 +245,50 @@ export default function Contact() {
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <label className="block mb-2 font-medium">
+                  <label className="block mb-2 font-medium text-sm sm:text-base">
                     LinkedIn URL *
                   </label>
                   <input
                     type="url"
                     name="linkedin"
                     required={isFreelancer}
-                    className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
+                    placeholder="https://linkedin.com/in/..."
+                    className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent text-sm sm:text-base"
                   />
                 </div>
                 <div>
-                  <label className="block mb-2 font-medium">
+                  <label className="block mb-2 font-medium text-sm sm:text-base">
                     Behance URL *
                   </label>
                   <input
                     type="url"
                     name="behance"
                     required={isFreelancer}
-                    className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
+                    placeholder="https://behance.net/..."
+                    className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent text-sm sm:text-base"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block mb-2 font-medium">Website URL</label>
+                <label className="block mb-2 font-medium text-sm sm:text-base">Website URL</label>
                 <input
                   type="url"
                   name="website"
-                  className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
+                  placeholder="https://yourwebsite.com"
+                  className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent text-sm sm:text-base"
                 />
               </div>
 
               <div>
-                <label className="block mb-2 font-medium">Category</label>
+                <label className="block mb-2 font-medium text-sm sm:text-base">Category</label>
                 <input
                   type="text"
                   name="category"
                   placeholder="e.g., Web Developer, Designer, etc."
-                  className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent"
+                  className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-transparent text-sm sm:text-base"
                 />
               </div>
             </motion.div>
@@ -263,9 +297,19 @@ export default function Contact() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full glass-button px-8 py-4 rounded-full font-medium hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full glass-button px-8 py-3 sm:py-4 rounded-full font-medium hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
           >
-            {isSubmitting ? "Sending..." : "Send Message"}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <Send className="w-5 h-5" />
+                Send Message
+              </>
+            )}
           </button>
         </motion.form>
       </div>
