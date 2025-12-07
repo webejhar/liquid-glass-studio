@@ -804,6 +804,9 @@ export type Database = {
         Row: {
           admin_approved: boolean | null
           advance_paid: boolean | null
+          advance_payment_document: string | null
+          advance_payment_method: string | null
+          advance_payment_reference: string | null
           advance_percentage: number
           budget_type: string
           client_id: string
@@ -814,6 +817,9 @@ export type Database = {
           delivery_time_value: number
           final_budget: number | null
           final_paid: boolean | null
+          final_payment_document: string | null
+          final_payment_method: string | null
+          final_payment_reference: string | null
           final_percentage: number
           id: string
           project_details: string
@@ -830,6 +836,9 @@ export type Database = {
         Insert: {
           admin_approved?: boolean | null
           advance_paid?: boolean | null
+          advance_payment_document?: string | null
+          advance_payment_method?: string | null
+          advance_payment_reference?: string | null
           advance_percentage: number
           budget_type: string
           client_id: string
@@ -840,6 +849,9 @@ export type Database = {
           delivery_time_value: number
           final_budget?: number | null
           final_paid?: boolean | null
+          final_payment_document?: string | null
+          final_payment_method?: string | null
+          final_payment_reference?: string | null
           final_percentage: number
           id?: string
           project_details: string
@@ -856,6 +868,9 @@ export type Database = {
         Update: {
           admin_approved?: boolean | null
           advance_paid?: boolean | null
+          advance_payment_document?: string | null
+          advance_payment_method?: string | null
+          advance_payment_reference?: string | null
           advance_percentage?: number
           budget_type?: string
           client_id?: string
@@ -866,6 +881,9 @@ export type Database = {
           delivery_time_value?: number
           final_budget?: number | null
           final_paid?: boolean | null
+          final_payment_document?: string | null
+          final_payment_method?: string | null
+          final_payment_reference?: string | null
           final_percentage?: number
           id?: string
           project_details?: string
