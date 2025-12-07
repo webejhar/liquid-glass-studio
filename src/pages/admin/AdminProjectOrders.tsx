@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, Eye, DollarSign, User, Wallet, CheckCircle } from "lucide-react";
+import { Check, Eye, DollarSign, User, Wallet, CheckCircle, CreditCard, FileImage, ExternalLink, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { ProjectProgressTracker } from "@/components/ProjectProgressTracker";
 
 interface Project {
   id: string;
@@ -33,6 +35,12 @@ interface Project {
   provider_payment_status: string | null;
   admin_approved: boolean;
   created_at: string;
+  advance_payment_method?: string | null;
+  advance_payment_reference?: string | null;
+  advance_payment_document?: string | null;
+  final_payment_method?: string | null;
+  final_payment_reference?: string | null;
+  final_payment_document?: string | null;
   client?: { name: string | null; email: string | null };
   provider?: { name: string | null; email: string | null };
 }
@@ -116,6 +124,31 @@ export default function AdminProjectOrders() {
     return { advance, final, adminFee, providerAmount, total: project.final_budget };
   };
 
+  // Auto-download files function
+  const handleAutoDownload = async (urls: string[]) => {
+    for (const url of urls) {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const fileName = url.split('/').pop() || 'download';
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        console.error("Error downloading file:", error);
+        window.open(url, '_blank');
+      }
+    }
+    toast.success("Files downloaded successfully!");
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -141,6 +174,50 @@ export default function AdminProjectOrders() {
                         <div className="flex items-center gap-2"><User className="w-4 h-4 text-muted-foreground" /><span>Client: {project.client?.name || project.client_name}</span></div>
                         <div className="flex items-center gap-2"><User className="w-4 h-4 text-primary" /><span>Provider: {project.provider?.name || "Unknown"}</span></div>
                       </div>
+                      
+                      {/* Payment Method Display */}
+                      {project.advance_paid && project.advance_payment_method && (
+                        <div className="glass-card p-2 rounded-lg text-sm">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <CreditCard className="w-4 h-4 text-green-400" />
+                            <span className="text-green-400 font-medium">Advance via {project.advance_payment_method.toUpperCase()}</span>
+                            <span className="text-muted-foreground">Ref: {project.advance_payment_reference}</span>
+                            {project.advance_payment_document && (
+                              <Button 
+                                onClick={() => window.open(project.advance_payment_document!, '_blank')} 
+                                size="sm" 
+                                variant="ghost" 
+                                className="gap-1 h-6 text-xs"
+                              >
+                                <FileImage className="w-3 h-3" />
+                                View Receipt
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {project.final_paid && project.final_payment_method && (
+                        <div className="glass-card p-2 rounded-lg text-sm">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <CreditCard className="w-4 h-4 text-blue-400" />
+                            <span className="text-blue-400 font-medium">Final via {project.final_payment_method.toUpperCase()}</span>
+                            <span className="text-muted-foreground">Ref: {project.final_payment_reference}</span>
+                            {project.final_payment_document && (
+                              <Button 
+                                onClick={() => window.open(project.final_payment_document!, '_blank')} 
+                                size="sm" 
+                                variant="ghost" 
+                                className="gap-1 h-6 text-xs"
+                              >
+                                <FileImage className="w-3 h-3" />
+                                View Receipt
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       {project.final_budget && (
                         <div className="flex flex-wrap gap-4 text-sm">
                           <span className="flex items-center gap-1"><DollarSign className="w-4 h-4" />Total: ${payments.total.toFixed(2)}</span>
@@ -180,24 +257,188 @@ export default function AdminProjectOrders() {
             })}
           </div>
         )}
+        
+        {/* Project Details Modal */}
         <Dialog open={showDetails} onOpenChange={setShowDetails}>
-          <DialogContent className="glass-premium max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="glass-premium max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Project Details</DialogTitle></DialogHeader>
             {selectedProject && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div><Label className="text-muted-foreground">Project Title</Label><p className="font-semibold">{selectedProject.project_title}</p></div>
-                  <div><Label className="text-muted-foreground">Status</Label><div>{getStatusBadge(selectedProject.status)}</div></div>
-                </div>
-                <div><Label className="text-muted-foreground">Project Details</Label><p className="text-sm">{selectedProject.project_details}</p></div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div><Label className="text-muted-foreground">Client</Label><p>{selectedProject.client?.name || selectedProject.client_name}</p><p className="text-sm text-muted-foreground">{selectedProject.client?.email}</p></div>
-                  <div><Label className="text-muted-foreground">Provider</Label><p>{selectedProject.provider?.name || "Unknown"}</p><p className="text-sm text-muted-foreground">{selectedProject.provider?.email}</p></div>
-                </div>
-                {selectedProject.submission_files && selectedProject.submission_files.length > 0 && (
-                  <div><Label className="text-muted-foreground">Submission Files</Label><div className="flex flex-wrap gap-2 mt-2">{selectedProject.submission_files.map((url, i) => <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="text-primary underline text-sm">File {i + 1}</a>)}</div></div>
-                )}
-              </div>
+              <Tabs defaultValue="details" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="details">Details</TabsTrigger>
+                  <TabsTrigger value="payments">Payments</TabsTrigger>
+                  <TabsTrigger value="progress">Progress</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="details" className="space-y-4 mt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div><Label className="text-muted-foreground">Project Title</Label><p className="font-semibold">{selectedProject.project_title}</p></div>
+                    <div><Label className="text-muted-foreground">Status</Label><div>{getStatusBadge(selectedProject.status)}</div></div>
+                  </div>
+                  <div><Label className="text-muted-foreground">Project Details</Label><p className="text-sm whitespace-pre-wrap">{selectedProject.project_details}</p></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div><Label className="text-muted-foreground">Client</Label><p>{selectedProject.client?.name || selectedProject.client_name}</p><p className="text-sm text-muted-foreground">{selectedProject.client?.email}</p></div>
+                    <div><Label className="text-muted-foreground">Provider</Label><p>{selectedProject.provider?.name || "Unknown"}</p><p className="text-sm text-muted-foreground">{selectedProject.provider?.email}</p></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div><Label className="text-muted-foreground">Budget Type</Label><p>{selectedProject.budget_type === 'high' ? 'High Budget' : 'Low Budget'}</p></div>
+                    <div><Label className="text-muted-foreground">Delivery Time</Label><p>{selectedProject.delivery_time_value} {selectedProject.delivery_time_unit}</p></div>
+                  </div>
+                  {selectedProject.submission_files && selectedProject.submission_files.length > 0 && (
+                    <div>
+                      <Label className="text-muted-foreground">Submission Files</Label>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {selectedProject.submission_files.map((url, i) => (
+                          <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="text-primary underline text-sm flex items-center gap-1">
+                            <ExternalLink className="w-3 h-3" />
+                            File {i + 1}
+                          </a>
+                        ))}
+                        <Button 
+                          onClick={() => handleAutoDownload(selectedProject.submission_files || [])} 
+                          size="sm" 
+                          variant="outline" 
+                          className="gap-1"
+                        >
+                          <Download className="w-4 h-4" />
+                          Download All
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="payments" className="space-y-4 mt-4">
+                  {/* Advance Payment */}
+                  <div className="glass-card p-4 rounded-xl space-y-3">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <CreditCard className="w-5 h-5 text-green-400" />
+                      Advance Payment ({selectedProject.advance_percentage}%)
+                    </h4>
+                    {selectedProject.advance_paid ? (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Status:</span>
+                          <Badge className="bg-green-500/20 text-green-400">Paid</Badge>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Amount:</span>
+                          <span className="font-semibold">${((selectedProject.final_budget || 0) * selectedProject.advance_percentage / 100).toFixed(2)}</span>
+                        </div>
+                        {selectedProject.advance_payment_method && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Method:</span>
+                            <span className="font-semibold">{selectedProject.advance_payment_method.toUpperCase()}</span>
+                          </div>
+                        )}
+                        {selectedProject.advance_payment_reference && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Reference:</span>
+                            <span className="font-mono text-primary">{selectedProject.advance_payment_reference}</span>
+                          </div>
+                        )}
+                        {selectedProject.advance_payment_document && (
+                          <div className="mt-3">
+                            <Label className="text-muted-foreground text-xs">Payment Receipt</Label>
+                            <div className="mt-2 border border-border rounded-lg overflow-hidden">
+                              {selectedProject.advance_payment_document.includes('.pdf') ? (
+                                <a href={selectedProject.advance_payment_document} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-4 hover:bg-muted/20 transition">
+                                  <FileImage className="w-8 h-8 text-primary" />
+                                  <span>View PDF Receipt</span>
+                                </a>
+                              ) : (
+                                <img src={selectedProject.advance_payment_document} alt="Payment Receipt" className="w-full max-h-64 object-contain cursor-pointer" onClick={() => window.open(selectedProject.advance_payment_document!, '_blank')} />
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-yellow-400 text-sm">Payment pending</p>
+                    )}
+                  </div>
+
+                  {/* Final Payment */}
+                  <div className="glass-card p-4 rounded-xl space-y-3">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <CreditCard className="w-5 h-5 text-blue-400" />
+                      Final Payment ({selectedProject.final_percentage}%)
+                    </h4>
+                    {selectedProject.final_paid ? (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Status:</span>
+                          <Badge className="bg-green-500/20 text-green-400">Paid</Badge>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Amount:</span>
+                          <span className="font-semibold">${((selectedProject.final_budget || 0) * selectedProject.final_percentage / 100).toFixed(2)}</span>
+                        </div>
+                        {selectedProject.final_payment_method && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Method:</span>
+                            <span className="font-semibold">{selectedProject.final_payment_method.toUpperCase()}</span>
+                          </div>
+                        )}
+                        {selectedProject.final_payment_reference && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Reference:</span>
+                            <span className="font-mono text-primary">{selectedProject.final_payment_reference}</span>
+                          </div>
+                        )}
+                        {selectedProject.final_payment_document && (
+                          <div className="mt-3">
+                            <Label className="text-muted-foreground text-xs">Payment Receipt</Label>
+                            <div className="mt-2 border border-border rounded-lg overflow-hidden">
+                              {selectedProject.final_payment_document.includes('.pdf') ? (
+                                <a href={selectedProject.final_payment_document} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-4 hover:bg-muted/20 transition">
+                                  <FileImage className="w-8 h-8 text-primary" />
+                                  <span>View PDF Receipt</span>
+                                </a>
+                              ) : (
+                                <img src={selectedProject.final_payment_document} alt="Payment Receipt" className="w-full max-h-64 object-contain cursor-pointer" onClick={() => window.open(selectedProject.final_payment_document!, '_blank')} />
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-sm">Not yet paid</p>
+                    )}
+                  </div>
+
+                  {/* Summary */}
+                  {selectedProject.final_budget && (
+                    <div className="glass-card p-4 rounded-xl space-y-2">
+                      <h4 className="font-semibold flex items-center gap-2">
+                        <DollarSign className="w-5 h-5 text-primary" />
+                        Payment Summary
+                      </h4>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Total Budget:</span>
+                        <span className="font-bold">${selectedProject.final_budget.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Admin Fee (5%):</span>
+                        <span className="text-primary">${(selectedProject.final_budget * 0.05).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Provider Amount (95%):</span>
+                        <span className="text-green-400 font-bold">${(selectedProject.final_budget * 0.95).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="progress" className="mt-4">
+                  <ProjectProgressTracker 
+                    project={selectedProject} 
+                    isProvider={false} 
+                    isClient={false} 
+                    isAdmin={true}
+                  />
+                </TabsContent>
+              </Tabs>
             )}
           </DialogContent>
         </Dialog>

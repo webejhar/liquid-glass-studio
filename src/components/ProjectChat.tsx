@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Send, Paperclip, FileText, DollarSign, Upload, Download, CreditCard, Image, Video, File, CheckCircle } from "lucide-react";
+import { ArrowLeft, Send, Paperclip, FileText, DollarSign, Upload, Download, CreditCard, Image, Video, File, CheckCircle, ImagePlus, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PaymentConfirmationDialog } from "@/components/PaymentConfirmationDialog";
+import { ProjectProgressTracker } from "@/components/ProjectProgressTracker";
 
 interface Project {
   id: string;
@@ -32,6 +33,14 @@ interface Project {
   admin_approved: boolean;
   provider_payment_method?: string;
   provider_payment_id?: string;
+  provider_payment_requested?: boolean;
+  provider_payment_status?: string | null;
+  advance_payment_method?: string | null;
+  advance_payment_reference?: string | null;
+  advance_payment_document?: string | null;
+  final_payment_method?: string | null;
+  final_payment_reference?: string | null;
+  final_payment_document?: string | null;
 }
 
 interface Message {
@@ -70,9 +79,13 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
   const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
   const [pendingPaymentAction, setPendingPaymentAction] = useState<'advance' | 'final' | null>(null);
   const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false);
+  const [paymentDocument, setPaymentDocument] = useState<File | null>(null);
+  const [isUploadingDocument, setIsUploadingDocument] = useState(false);
+  const [showProgressTracker, setShowProgressTracker] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const submissionFileInputRef = useRef<HTMLInputElement>(null);
+  const paymentDocInputRef = useRef<HTMLInputElement>(null);
 
   const isProvider = currentUserId === project.provider_id;
   const isClient = currentUserId === project.client_id;
@@ -183,6 +196,56 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
     }
   };
 
+  // Upload payment document to storage
+  const uploadPaymentDocument = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `payment-docs/${project.id}/${Date.now()}-${file.name}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('project-submissions')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('project-submissions')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error("Error uploading payment document:", error);
+      return null;
+    }
+  };
+
+  // Auto-download files function
+  const handleAutoDownload = async (urls: string[]) => {
+    for (const url of urls) {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const fileName = url.split('/').pop() || 'download';
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+        
+        // Small delay between downloads
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        console.error("Error downloading file:", error);
+        // Fallback: open in new tab
+        window.open(url, '_blank');
+      }
+    }
+    toast.success("Files downloaded successfully!");
+  };
+
   const handleOrderProject = async () => {
     if (!finalBudget || parseFloat(finalBudget) <= 0) {
       toast.error("Please enter a valid budget");
@@ -199,12 +262,23 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
 
     setIsLoading(true);
     try {
+      // Upload payment document if provided
+      let documentUrl = null;
+      if (paymentDocument) {
+        setIsUploadingDocument(true);
+        documentUrl = await uploadPaymentDocument(paymentDocument);
+        setIsUploadingDocument(false);
+      }
+
       const { error } = await supabase
         .from("projects")
         .update({
           final_budget: parseFloat(finalBudget),
           status: "in_progress",
-          advance_paid: true
+          advance_paid: true,
+          advance_payment_method: paymentMethod,
+          advance_payment_reference: paymentReference,
+          advance_payment_document: documentUrl
         })
         .eq("id", project.id);
 
@@ -213,19 +287,21 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
       // Send notification to admin
       await supabase.rpc('create_admin_notification', {
         p_title: 'Project Payment Received',
-        p_message: `Advance payment received for project: ${project.project_title}`,
+        p_message: `Advance payment received for project: ${project.project_title} via ${paymentMethod.toUpperCase()}. Reference: ${paymentReference}`,
         p_type: 'project_payment',
         p_reference_id: project.id
       });
 
       toast.success("Order placed! Payment pending admin approval.");
       setShowPaymentModal(false);
+      setPaymentDocument(null);
       onProjectUpdate();
     } catch (error: any) {
       console.error("Error ordering project:", error);
       toast.error(error.message || "Failed to place order");
     } finally {
       setIsLoading(false);
+      setIsUploadingDocument(false);
     }
   };
 
@@ -329,11 +405,22 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
 
     setIsLoading(true);
     try {
+      // Upload payment document if provided
+      let documentUrl = null;
+      if (paymentDocument) {
+        setIsUploadingDocument(true);
+        documentUrl = await uploadPaymentDocument(paymentDocument);
+        setIsUploadingDocument(false);
+      }
+
       // Update project - set final_paid but status stays "submitted" until admin approves
       const { error } = await supabase
         .from("projects")
         .update({
-          final_paid: true
+          final_paid: true,
+          final_payment_method: paymentMethod,
+          final_payment_reference: paymentReference,
+          final_payment_document: documentUrl
           // Status will be changed to "completed" when admin approves
         })
         .eq("id", project.id);
@@ -343,7 +430,7 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
       // Notify admin
       await supabase.rpc('create_admin_notification', {
         p_title: 'Final Payment Received',
-        p_message: `Final payment received for project: ${project.project_title}. Pending admin approval.`,
+        p_message: `Final payment received for project: ${project.project_title} via ${paymentMethod.toUpperCase()}. Reference: ${paymentReference}`,
         p_type: 'project_payment',
         p_reference_id: project.id
       });
@@ -371,12 +458,14 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
       toast.success("Final payment submitted! Pending admin approval.");
       setShowFinalPaymentModal(false);
       setPaymentConfirmed(false);
+      setPaymentDocument(null);
       onProjectUpdate();
     } catch (error: any) {
       console.error("Error processing payment:", error);
       toast.error(error.message || "Failed to process payment");
     } finally {
       setIsLoading(false);
+      setIsUploadingDocument(false);
     }
   };
 
@@ -446,7 +535,7 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
           )}
           {project.submission_files && project.submission_files.length > 0 && (project.final_paid || isProvider) && (
             <Button
-              onClick={() => project.submission_files?.forEach(url => window.open(url, '_blank'))}
+              onClick={() => handleAutoDownload(project.submission_files || [])}
               size="sm"
               variant="outline"
               className="gap-1 flex-1 sm:flex-none"
@@ -458,7 +547,28 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
         </div>
       </div>
 
-      {/* Messages */}
+      {/* Progress Tracker Toggle */}
+      <div 
+        className="glass-card px-4 py-2 cursor-pointer flex items-center justify-between"
+        onClick={() => setShowProgressTracker(!showProgressTracker)}
+      >
+        <span className="text-sm font-medium flex items-center gap-2">
+          <FileText className="w-4 h-4 text-primary" />
+          Project Progress Tracker
+        </span>
+        {showProgressTracker ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+      </div>
+
+      {/* Progress Tracker */}
+      {showProgressTracker && (
+        <div className="px-2 py-2 max-h-[200px] overflow-y-auto">
+          <ProjectProgressTracker 
+            project={project} 
+            isProvider={isProvider} 
+            isClient={isClient} 
+          />
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background/50">
         {messages.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
@@ -592,6 +702,30 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
                 onChange={(e) => setPaymentReference(e.target.value)}
                 placeholder="Enter transaction ID"
               />
+            </div>
+
+            {/* Payment Document Upload */}
+            <div>
+              <Label className="flex items-center gap-2">
+                <ImagePlus className="w-4 h-4" />
+                Payment Screenshot/Document (Optional)
+              </Label>
+              <input
+                type="file"
+                ref={paymentDocInputRef}
+                onChange={(e) => setPaymentDocument(e.target.files?.[0] || null)}
+                accept="image/*,.pdf"
+                className="w-full glass-card p-3 rounded-lg mt-1 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-primary-foreground file:text-sm"
+              />
+              {paymentDocument && (
+                <p className="text-xs text-green-400 mt-1 flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  {paymentDocument.name}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Upload payment receipt or transaction screenshot for verification
+              </p>
             </div>
 
             <div className="glass-card p-4 rounded-lg space-y-2">
@@ -759,6 +893,29 @@ export const ProjectChat = ({ project, currentUserId, onBack, onProjectUpdate }:
                 onChange={(e) => setPaymentReference(e.target.value)}
                 placeholder="Enter transaction ID"
               />
+            </div>
+
+            {/* Payment Document Upload */}
+            <div>
+              <Label className="flex items-center gap-2">
+                <ImagePlus className="w-4 h-4" />
+                Payment Screenshot/Document (Optional)
+              </Label>
+              <input
+                type="file"
+                onChange={(e) => setPaymentDocument(e.target.files?.[0] || null)}
+                accept="image/*,.pdf"
+                className="w-full glass-card p-3 rounded-lg mt-1 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-primary-foreground file:text-sm"
+              />
+              {paymentDocument && (
+                <p className="text-xs text-green-400 mt-1 flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  {paymentDocument.name}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Upload payment receipt or transaction screenshot for verification
+              </p>
             </div>
 
             <div className="glass-card p-4 rounded-lg space-y-2">
