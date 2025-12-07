@@ -187,48 +187,48 @@ export default function Shop() {
   };
 
   return (
-    <div className="min-h-screen pt-32 px-4 pb-20">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen pt-24 sm:pt-32 px-3 sm:px-4 pb-20 w-full max-w-full overflow-x-hidden">
+      <div className="max-w-7xl mx-auto w-full">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-12"
+          className="mb-8 sm:mb-12"
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
             Premium <span className="text-primary">Plugins</span>
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-base sm:text-lg">
             Professional WordPress plugins to power your business
           </p>
         </motion.div>
 
         {/* Search Bar */}
-        <div className="mb-12">
-          <div className="relative glass-card p-1 rounded-full max-w-2xl mx-auto">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+        <div className="mb-8 sm:mb-12 w-full">
+          <div className="relative glass-card p-1 rounded-full max-w-2xl mx-auto w-full">
+            <Search className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 sm:w-5 sm:h-5" />
             <input
               type="text"
               placeholder="Search plugins..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent px-14 py-4 outline-none"
+              className="w-full bg-transparent px-10 sm:px-14 py-3 sm:py-4 outline-none text-sm sm:text-base"
             />
           </div>
         </div>
 
         {/* Plugins Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 w-full">
           {filteredPlugins.map((plugin, index) => (
             <motion.div
               key={plugin.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="glass-card rounded-2xl overflow-hidden hover:scale-105 transition-transform cursor-pointer relative group"
+              className="glass-card rounded-xl sm:rounded-2xl overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer relative group"
               onClick={() => setSelectedPlugin(plugin)}
             >
-              <div className="relative h-64">
+              <div className="relative h-48 sm:h-56 lg:h-64">
                 <img 
                   src={plugin.image} 
                   alt={plugin.name}
@@ -241,10 +241,10 @@ export default function Shop() {
                     e.stopPropagation();
                     handleToggleFavorite(plugin);
                   }}
-                  className="absolute top-4 right-4 glass-button p-3 rounded-full hover:scale-110 transition z-10"
+                  className="absolute top-3 right-3 sm:top-4 sm:right-4 glass-button p-2 sm:p-3 rounded-full hover:scale-110 transition z-10"
                 >
                   <Heart
-                    className={`w-5 h-5 ${
+                    className={`w-4 h-4 sm:w-5 sm:h-5 ${
                       favoriteIds.includes(plugin.id)
                         ? "fill-red-500 text-red-500"
                         : "text-foreground"
@@ -253,24 +253,24 @@ export default function Shop() {
                 </button>
               </div>
               
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-2xl font-bold">{plugin.name}</h3>
-                  <span className="text-3xl font-bold text-primary">${plugin.price}</span>
+              <div className="p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
+                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">{plugin.name}</h3>
+                  <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary shrink-0">${plugin.price}</span>
                 </div>
-                <p className="text-muted-foreground mb-4 line-clamp-2">
+                <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 line-clamp-2">
                   {plugin.description}
                 </p>
                 
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handlePurchase(plugin);
                     }}
-                    className="glass-button flex-1 px-6 py-3 rounded-lg hover:scale-105 transition flex items-center justify-center gap-2"
+                    className="glass-button flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg hover:scale-105 transition flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
-                    <ShoppingCart className="w-5 h-5" />
+                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
                     Buy Now
                   </button>
                 </div>

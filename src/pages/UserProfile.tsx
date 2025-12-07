@@ -264,8 +264,8 @@ export default function UserProfile() {
   const categories = profile.category?.split(", ").filter(Boolean) || [];
 
   return (
-    <div className="min-h-screen pt-20 sm:pt-24 px-3 sm:px-4 md:px-6 lg:px-8 pb-16">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen pt-20 sm:pt-24 px-3 sm:px-4 md:px-6 lg:px-8 pb-16 w-full max-w-full overflow-x-hidden">
+      <div className="max-w-4xl mx-auto w-full">
         <Button
           onClick={() => navigate(-1)}
           variant="ghost"
