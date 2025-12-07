@@ -57,7 +57,7 @@ const App = () => (
           <LoadingScreen />
           <CustomCursor />
           <AnimatedBackground />
-          <div className="relative z-10">
+          <div className="relative z-10 w-full max-w-full overflow-x-hidden">
             <Header />
             <Routes>
               <Route path="/" element={<Home />} />

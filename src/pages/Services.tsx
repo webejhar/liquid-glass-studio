@@ -51,8 +51,8 @@ export default function Services() {
   const [selectedService, setSelectedService] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen pt-24 sm:pt-32 px-4 pb-20">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen pt-24 sm:pt-32 px-3 sm:px-4 pb-20 w-full max-w-full overflow-x-hidden">
+      <div className="max-w-7xl mx-auto w-full">
         <motion.h1
           className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-center"
           initial={{ opacity: 0, y: 20 }}

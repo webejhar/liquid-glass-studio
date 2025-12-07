@@ -31,8 +31,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen pt-32 px-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen pt-24 sm:pt-32 px-3 sm:px-4 w-full max-w-full overflow-x-hidden">
+      <div className="max-w-7xl mx-auto w-full">
         {/* Hero Section */}
         <section className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12 items-center mb-20 md:mb-32">
           <motion.div

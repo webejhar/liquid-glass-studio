@@ -73,24 +73,24 @@ export default function Providers() {
   const getInitials = (name: string | null) => name ? name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "P";
 
   return (
-    <div className="min-h-screen pt-20 sm:pt-24 px-3 sm:px-4 md:px-6 lg:px-8 pb-16">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
-          <Button onClick={() => navigate(-1)} variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
-          <div>
-            <h1 className="text-3xl font-bold">Find Service Providers</h1>
-            <p className="text-muted-foreground">Search and hire skilled professionals for your projects</p>
+    <div className="min-h-screen pt-20 sm:pt-24 px-3 sm:px-4 md:px-6 lg:px-8 pb-16 w-full max-w-full overflow-x-hidden">
+      <div className="max-w-7xl mx-auto w-full">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
+          <Button onClick={() => navigate(-1)} variant="ghost" size="icon" className="shrink-0"><ArrowLeft className="w-5 h-5" /></Button>
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold">Find Service Providers</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Search and hire skilled professionals</p>
           </div>
         </div>
 
-        <motion.div className="glass-premium p-4 rounded-2xl mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name, service, tags..." className="pl-10 glass-card" />
+        <motion.div className="glass-premium p-3 sm:p-4 rounded-xl sm:rounded-2xl mb-6 sm:mb-8 w-full" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+              <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name, service, tags..." className="pl-9 sm:pl-10 glass-card w-full text-sm sm:text-base" />
             </div>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full md:w-[200px] glass-card"><Filter className="w-4 h-4 mr-2" /><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-full glass-card text-sm sm:text-base"><Filter className="w-4 h-4 mr-2 shrink-0" /><SelectValue /></SelectTrigger>
               <SelectContent>{SERVICE_CATEGORIES.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent>
             </Select>
           </div>
@@ -99,46 +99,46 @@ export default function Providers() {
         {isLoading ? (
           <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>
         ) : filteredProviders.length === 0 ? (
-          <motion.div className="glass-card p-12 rounded-2xl text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <User className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-xl font-semibold mb-2">No Providers Found</h3>
-            <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
+          <motion.div className="glass-card p-8 sm:p-12 rounded-xl sm:rounded-2xl text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <User className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg sm:text-xl font-semibold mb-2">No Providers Found</h3>
+            <p className="text-sm sm:text-base text-muted-foreground">Try adjusting your search or filter criteria</p>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredProviders.map((provider, index) => (
-              <motion.div key={provider.user_id} className="glass-card p-6 rounded-2xl hover:scale-[1.02] transition-all cursor-pointer group" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} onClick={() => navigate(`/profile/${provider.user_id}`)}>
-                <div className="flex items-start gap-4 mb-4">
-                  <Avatar className="w-16 h-16 border-2 border-primary/20 group-hover:border-primary/50 transition-colors">
+              <motion.div key={provider.user_id} className="glass-card p-4 sm:p-6 rounded-xl sm:rounded-2xl hover:scale-[1.02] transition-all cursor-pointer group" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} onClick={() => navigate(`/profile/${provider.user_id}`)}>
+                <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+                  <Avatar className="w-12 h-12 sm:w-16 sm:h-16 border-2 border-primary/20 group-hover:border-primary/50 transition-colors shrink-0">
                     <AvatarImage src={provider.avatar_url || undefined} />
-                    <AvatarFallback>{getInitials(provider.name)}</AvatarFallback>
+                    <AvatarFallback className="text-sm sm:text-base">{getInitials(provider.name)}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-lg truncate">{provider.name || "Provider"}</h3>
+                      <h3 className="font-semibold text-base sm:text-lg truncate">{provider.name || "Provider"}</h3>
                       {provider.verification_status === "verified" && <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />}
                     </div>
-                    {provider.category && <div className="flex items-center gap-1 text-sm text-muted-foreground"><Briefcase className="w-4 h-4" />{provider.category}</div>}
+                    {provider.category && <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground"><Briefcase className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" /><span className="truncate">{provider.category}</span></div>}
                   </div>
                 </div>
-                {provider.bio && <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{provider.bio}</p>}
+                {provider.bio && <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">{provider.bio}</p>}
                 {provider.skills && provider.skills.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
+                  <div className="flex flex-wrap gap-1 mb-2 sm:mb-3">
                     {provider.skills.slice(0, 3).map((skill, i) => <Badge key={i} variant="secondary" className="text-xs">{skill}</Badge>)}
                     {provider.skills.length > 3 && <Badge variant="outline" className="text-xs">+{provider.skills.length - 3}</Badge>}
                   </div>
                 )}
                 {provider.tags && provider.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1 mb-3 sm:mb-4">
                     {provider.tags.slice(0, 3).map((tag, i) => <span key={i} className="text-xs text-primary flex items-center gap-0.5"><Tag className="w-3 h-3" />{tag}</span>)}
                   </div>
                 )}
-                <Button className="w-full mt-4 group-hover:bg-primary/90" onClick={(e) => { e.stopPropagation(); navigate(`/profile/${provider.user_id}`); }}>View Profile & Hire</Button>
+                <Button className="w-full text-xs sm:text-sm group-hover:bg-primary/90" onClick={(e) => { e.stopPropagation(); navigate(`/profile/${provider.user_id}`); }}>View Profile & Hire</Button>
               </motion.div>
             ))}
           </div>
         )}
-        {!isLoading && filteredProviders.length > 0 && <p className="text-center text-muted-foreground mt-8">Showing {filteredProviders.length} provider{filteredProviders.length !== 1 ? 's' : ''}</p>}
+        {!isLoading && filteredProviders.length > 0 && <p className="text-center text-sm sm:text-base text-muted-foreground mt-6 sm:mt-8">Showing {filteredProviders.length} provider{filteredProviders.length !== 1 ? 's' : ''}</p>}
       </div>
     </div>
   );

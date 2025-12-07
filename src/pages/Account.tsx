@@ -758,13 +758,35 @@ export default function Account() {
   };
 
   const uploadProfilePicture = async (file: File) => {
+    if (!user) return;
     setUploadingProfilePic(true);
-    const url = await handleFileUpload(file, 'profile-pictures', 'avatars');
-    if (url) {
-      setFormData({ ...formData, avatar_url: url });
-      toast.success("Profile picture uploaded!");
+    try {
+      const url = await handleFileUpload(file, 'profile-pictures', 'avatars');
+      if (url) {
+        // Update formData locally
+        setFormData(prev => ({ ...prev, avatar_url: url }));
+        
+        // Save to database immediately
+        const { error } = await supabase
+          .from("profiles")
+          .update({ avatar_url: url, updated_at: new Date().toISOString() })
+          .eq("user_id", user.id);
+        
+        if (error) {
+          console.error("Error saving avatar:", error);
+          toast.error("Failed to save profile picture");
+        } else {
+          toast.success("Profile picture updated!");
+          // Reload profile to sync state
+          await loadProfile(user.id);
+        }
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload profile picture");
+    } finally {
+      setUploadingProfilePic(false);
     }
-    setUploadingProfilePic(false);
   };
 
   const handleCropComplete = async (croppedFile: File) => {

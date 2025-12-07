@@ -76,14 +76,14 @@ export const Header = () => {
       {/* Normal Header - Only visible at top */}
       <motion.header
         className={cn(
-          "fixed top-0 w-full z-50 transition-all duration-500",
+          "fixed top-0 left-0 right-0 w-full z-50 transition-all duration-500",
           scrolled && "opacity-0 pointer-events-none"
         )}
         initial={{ y: 0 }}
         animate={{ y: scrolled ? -100 : 0 }}
         transition={{ type: "spring", stiffness: 100 }}
       >
-        <nav className="glass-card px-4 sm:px-6 py-3 sm:py-4 mx-2 sm:mx-4 my-2 sm:my-4 rounded-xl sm:rounded-2xl backdrop-blur-xl bg-background/30">
+        <nav className="glass-card px-3 sm:px-4 md:px-6 py-3 sm:py-4 mx-2 sm:mx-4 my-2 sm:my-4 rounded-xl sm:rounded-2xl backdrop-blur-xl bg-background/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link to="/" className="flex items-center gap-2 group">
