@@ -85,7 +85,7 @@ export const PluginDetailsModal = ({ isOpen, onClose, plugin, onPurchase }: Plug
             <div>
               <h3 className="text-xl font-semibold mb-3">Requirements</h3>
               <div className="glass-card p-4 rounded-lg space-y-2">
-                {plugin.requirements.map((req, index) => (
+                {(plugin.requirements || []).map((req, index) => (
                   <p key={index} className="text-sm text-muted-foreground">• {req}</p>
                 ))}
               </div>
