@@ -294,6 +294,7 @@ export default function Shop() {
 
   return (
     <div className="min-h-screen pt-24 sm:pt-32 px-3 sm:px-4 pb-20 w-full max-w-full overflow-x-hidden">
+      <SEOHead title="Shop" description="Browse premium WordPress plugins, themes, and digital products." />
       <div className="max-w-7xl mx-auto w-full">
         {/* Header */}
         <motion.div
