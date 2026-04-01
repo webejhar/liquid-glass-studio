@@ -73,7 +73,7 @@ export default function Shop() {
       if (error) throw error;
       
       // Combine database products with default plugins
-      const dbProducts = (data || []).map(p => ({
+      const dbProducts = (data || []).map((p: any) => ({
         id: p.id,
         name: p.name,
         price: p.sale_price || p.price,
@@ -83,6 +83,8 @@ export default function Shop() {
         image: p.images?.[0] || null,
         tags: p.tags || [],
         images: p.images || [],
+        faq: p.faq || [],
+        bullets: p.bullets || [],
         isDatabase: true
       }));
 
