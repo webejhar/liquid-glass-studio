@@ -7,6 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { PluginDetailsModal } from "@/components/PluginDetailsModal";
 import { ProductPurchaseModal } from "@/components/ProductPurchaseModal";
 import { useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
 // Default plugins removed - all products come from database now
 const defaultPlugins: any[] = [];
 
