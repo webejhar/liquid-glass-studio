@@ -1,9 +1,11 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { useState, useEffect } from "react";
-import { Check, ExternalLink, Monitor, Tablet, Smartphone, X, Image } from "lucide-react";
+import { ExternalLink, Monitor, Tablet, Smartphone, X, Image, ChevronDown, Github, MessageSquare, HelpCircle, List, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const categories = [
   "All",
@@ -19,6 +21,11 @@ const categories = [
   "Graphics Design",
 ];
 
+interface FaqItem {
+  question: string;
+  answer: string;
+}
+
 interface PortfolioItem {
   id: string;
   title: string;
@@ -28,77 +35,25 @@ interface PortfolioItem {
   images: string[] | null;
   tags: string[] | null;
   is_featured: boolean;
+  faq: FaqItem[] | null;
+  bullets: string[] | null;
+  client_name: string | null;
+  completion_date: string | null;
+  technologies_used: string[] | null;
+  live_url: string | null;
+  github_url: string | null;
+  testimonial: string | null;
+  budget_range: string | null;
+  duration: string | null;
 }
-
-const defaultProjects = [
-  {
-    id: "default-1",
-    title: "Modern Business Site",
-    category: "Business",
-    description: "Complete business website with admin panel",
-    project_url: "https://tyzo.com.bd/",
-    images: null,
-    tags: ["React", "Next.js", "TailwindCSS"],
-    is_featured: false
-  },
-  {
-    id: "default-2",
-    title: "Creative Agency",
-    category: "Agency",
-    description: "Stunning agency portfolio with animations",
-    project_url: "https://tyzo.com.bd/",
-    images: null,
-    tags: ["Figma", "Webflow", "GSAP"],
-    is_featured: false
-  },
-  {
-    id: "default-3",
-    title: "Learning Platform",
-    category: "LMS",
-    description: "Full-featured LMS with video streaming",
-    project_url: "https://tyzo.com.bd/",
-    images: null,
-    tags: ["WordPress", "LearnDash", "Elementor"],
-    is_featured: false
-  },
-  {
-    id: "default-4",
-    title: "Designer Portfolio",
-    category: "Portfolio",
-    description: "Interactive portfolio with case studies",
-    project_url: "https://tyzo.com.bd/",
-    images: null,
-    tags: ["React", "Framer Motion", "Three.js"],
-    is_featured: false
-  },
-  {
-    id: "default-5",
-    title: "Fashion E-commerce",
-    category: "E-commerce",
-    description: "Modern online store with cart & checkout",
-    project_url: "https://tyzo.com.bd/",
-    images: null,
-    tags: ["React", "Stripe", "Supabase"],
-    is_featured: false
-  },
-  {
-    id: "default-6",
-    title: "Product Landing",
-    category: "Landing",
-    description: "High-converting product landing page",
-    project_url: "https://tyzo.com.bd/",
-    images: null,
-    tags: ["Figma", "HTML", "TailwindCSS"],
-    is_featured: false
-  },
-];
 
 export default function Portfolio() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedProject, setSelectedProject] = useState<PortfolioItem | null>(null);
   const [deviceView, setDeviceView] = useState<"laptop" | "tablet" | "mobile">("laptop");
-  const [projects, setProjects] = useState<PortfolioItem[]>(defaultProjects);
+  const [projects, setProjects] = useState<PortfolioItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedImageIdx, setSelectedImageIdx] = useState(0);
 
   useEffect(() => {
     loadPortfolios();
@@ -109,12 +64,12 @@ export default function Portfolio() {
       const { data, error } = await supabase
         .from("provider_portfolios")
         .select("*")
+        .order("is_featured", { ascending: false })
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      
-      // Combine database portfolios with defaults
-      const dbPortfolios: PortfolioItem[] = (data || []).map(p => ({
+
+      const dbPortfolios: PortfolioItem[] = (data || []).map((p: any) => ({
         id: p.id,
         title: p.title,
         category: p.category,
@@ -122,10 +77,20 @@ export default function Portfolio() {
         project_url: p.project_url,
         images: p.images,
         tags: p.tags,
-        is_featured: p.is_featured || false
+        is_featured: p.is_featured || false,
+        faq: Array.isArray(p.faq) ? p.faq : [],
+        bullets: p.bullets || [],
+        client_name: p.client_name,
+        completion_date: p.completion_date,
+        technologies_used: p.technologies_used || [],
+        live_url: p.live_url,
+        github_url: p.github_url,
+        testimonial: p.testimonial,
+        budget_range: p.budget_range,
+        duration: p.duration,
       }));
 
-      setProjects([...dbPortfolios, ...defaultProjects]);
+      setProjects(dbPortfolios);
     } catch (error) {
       console.error("Error loading portfolios:", error);
     } finally {
@@ -138,12 +103,14 @@ export default function Portfolio() {
       ? projects
       : projects.filter((p) => p.category === selectedCategory);
 
-  const handleProjectClick = (project: PortfolioItem) => {
-    setSelectedProject(project);
+  const deviceSizes = {
+    laptop: { width: "100%", maxWidth: "100%" },
+    tablet: { width: "768px", maxWidth: "768px" },
+    mobile: { width: "375px", maxWidth: "375px" },
   };
 
   return (
-    <div className="min-h-screen pt-24 sm:pt-32 px-3 sm:px-4 pb-20 w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen pt-20 sm:pt-24 px-3 sm:px-4 pb-20 w-full max-w-full overflow-x-hidden">
       <SEOHead title="Portfolio" description="View our portfolio of web design and development projects." />
       <div className="max-w-7xl mx-auto">
         <motion.h1
@@ -151,47 +118,63 @@ export default function Portfolio() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          My <span className="text-primary">Portfolio</span>
+          Our <span className="text-primary">Portfolio</span>
         </motion.h1>
+        <motion.p
+          className="text-center text-muted-foreground mb-6 max-w-xl mx-auto text-sm"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          Explore our completed projects across various categories
+        </motion.p>
 
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 sm:mb-12">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`glass-card px-3 sm:px-5 py-1.5 sm:py-2 rounded-full transition text-xs sm:text-sm ${
-                selectedCategory === cat
-                  ? "bg-primary/20 border-primary"
-                  : "hover:bg-primary/10"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        {/* Category Filter Dropdown */}
+        <motion.div
+          className="flex justify-center mb-8"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-56 glass-card">
+              <SelectValue placeholder="Select Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </motion.div>
 
         {isLoading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="text-center py-20 glass-card rounded-xl">
+            <Image className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <p className="text-muted-foreground">No portfolio items found</p>
+          </div>
         ) : (
-          /* Responsive Grid: Desktop 3, Tablet 2, Mobile 2 */
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
             {filteredProjects.map((project, i) => (
               <motion.div
                 key={project.id}
-                className="glass-card rounded-xl sm:rounded-2xl overflow-hidden hover:scale-[1.02] transition group cursor-pointer"
+                className="glass-card rounded-xl overflow-hidden group cursor-pointer"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                onClick={() => handleProjectClick(project)}
+                transition={{ delay: i * 0.04 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                onClick={() => { setSelectedProject(project); setSelectedImageIdx(0); setDeviceView("laptop"); }}
               >
                 <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative overflow-hidden">
                   {project.images && project.images[0] ? (
-                    <img 
-                      src={project.images[0]} 
+                    <img
+                      src={project.images[0]}
                       alt={project.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
                     <span className="text-3xl sm:text-4xl font-bold opacity-50">
@@ -203,197 +186,247 @@ export default function Portfolio() {
                       Featured
                     </Badge>
                   )}
-                </div>
-                <div className="p-3 sm:p-5">
-                  <div className="flex items-center justify-between mb-2 gap-2">
-                    <h3 className="text-sm sm:text-lg font-semibold truncate">{project.title}</h3>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleProjectClick(project);
-                      }}
-                      className="glass-button p-1.5 sm:p-2 rounded-full hover:scale-110 transition shrink-0"
-                    >
-                      <Check className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </button>
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
+                    <Eye className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
+                </div>
+                <div className="p-3 sm:p-4">
+                  <h3 className="text-sm sm:text-base font-semibold truncate mb-1">{project.title}</h3>
                   {project.category && (
                     <Badge variant="outline" className="text-xs mb-2">{project.category}</Badge>
                   )}
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {project.description}
-                  </p>
-                  {project.tags && (
-                    <div className="flex flex-wrap gap-1">
-                      {project.tags.slice(0, 3).map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-xs px-2 py-0.5 rounded-full glass-card"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  <p className="text-xs text-muted-foreground line-clamp-2">{project.description}</p>
                 </div>
               </motion.div>
             ))}
           </div>
         )}
 
-        {/* Portfolio Details Modal */}
-        {selectedProject && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            onClick={() => setSelectedProject(null)}
-          >
+        {/* Fullscreen Portfolio Detail */}
+        <AnimatePresence>
+          {selectedProject && (
             <motion.div
-              className="glass-card p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              onClick={(e) => e.stopPropagation()}
+              className="fixed inset-0 z-50 bg-background overflow-y-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
             >
-              <div className="flex justify-between items-start mb-4 sm:mb-6">
-                <div>
-                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">
-                    {selectedProject.title}
-                  </h2>
-                  {selectedProject.category && (
-                    <Badge className="mb-2">{selectedProject.category}</Badge>
-                  )}
-                </div>
+              {/* Top bar */}
+              <div className="sticky top-0 z-10 backdrop-blur-xl bg-background/90 border-b border-border/30 px-4 py-3 flex items-center justify-between">
+                <h2 className="font-semibold text-sm sm:text-base truncate">{selectedProject.title}</h2>
                 <button
                   onClick={() => setSelectedProject(null)}
-                  className="glass-button p-2 rounded-full flex-shrink-0 hover:scale-105 transition"
+                  className="glass-button p-2 rounded-full hover:scale-105 transition shrink-0"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-                <div>
-                  <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Project Brief</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
-                    {selectedProject.description}
-                  </p>
-
-                  {selectedProject.tags && selectedProject.tags.length > 0 && (
-                    <>
-                      <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Tech Stack</h3>
-                      <div className="flex flex-wrap gap-2 mb-6">
-                        {selectedProject.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="px-4 py-2 rounded-full glass-card"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {/* Images Gallery */}
-                  {selectedProject.images && selectedProject.images.length > 0 && (
-                    <>
-                      <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Gallery</h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
-                        {selectedProject.images.map((img, idx) => (
-                          <img 
-                            key={idx} 
-                            src={img} 
-                            alt={`${selectedProject.title} - ${idx + 1}`}
-                            className="w-full h-24 object-cover rounded-lg cursor-pointer hover:scale-105 transition"
+              <div className="max-w-6xl mx-auto px-3 sm:px-6 py-6 space-y-8">
+                {/* Hero section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Image Gallery */}
+                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
+                    {selectedProject.images && selectedProject.images.length > 0 ? (
+                      <div className="space-y-3">
+                        <div className="glass-card rounded-xl overflow-hidden aspect-video">
+                          <img
+                            src={selectedProject.images[selectedImageIdx]}
+                            alt={selectedProject.title}
+                            className="w-full h-full object-cover"
                           />
-                        ))}
+                        </div>
+                        {selectedProject.images.length > 1 && (
+                          <div className="flex gap-2 overflow-x-auto pb-1">
+                            {selectedProject.images.map((img, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => setSelectedImageIdx(idx)}
+                                className={`shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition ${
+                                  idx === selectedImageIdx ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"
+                                }`}
+                              >
+                                <img src={img} alt="" className="w-full h-full object-cover" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </>
-                  )}
+                    ) : (
+                      <div className="glass-card rounded-xl aspect-video flex items-center justify-center">
+                        <Image className="w-16 h-16 text-muted-foreground opacity-30" />
+                      </div>
+                    )}
+                  </motion.div>
 
-                  {selectedProject.project_url && (
-                    <a
-                      href={selectedProject.project_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="glass-button px-6 py-3 rounded-full inline-flex items-center gap-2 hover:scale-105 transition"
-                    >
-                      Live Preview
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  )}
+                  {/* Details */}
+                  <motion.div className="space-y-4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
+                    <div>
+                      <h1 className="text-2xl sm:text-3xl font-bold mb-2">{selectedProject.title}</h1>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {selectedProject.category && <Badge>{selectedProject.category}</Badge>}
+                        {selectedProject.is_featured && <Badge variant="secondary">⭐ Featured</Badge>}
+                      </div>
+                    </div>
+
+                    {selectedProject.description && (
+                      <p className="text-sm text-muted-foreground leading-relaxed">{selectedProject.description}</p>
+                    )}
+
+                    {/* Meta info */}
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      {selectedProject.client_name && (
+                        <div className="glass-card p-3 rounded-lg">
+                          <span className="text-muted-foreground block mb-1">Client</span>
+                          <span className="font-medium">{selectedProject.client_name}</span>
+                        </div>
+                      )}
+                      {selectedProject.duration && (
+                        <div className="glass-card p-3 rounded-lg">
+                          <span className="text-muted-foreground block mb-1">Duration</span>
+                          <span className="font-medium">{selectedProject.duration}</span>
+                        </div>
+                      )}
+                      {selectedProject.budget_range && (
+                        <div className="glass-card p-3 rounded-lg">
+                          <span className="text-muted-foreground block mb-1">Budget</span>
+                          <span className="font-medium">{selectedProject.budget_range}</span>
+                        </div>
+                      )}
+                      {selectedProject.completion_date && (
+                        <div className="glass-card p-3 rounded-lg">
+                          <span className="text-muted-foreground block mb-1">Completed</span>
+                          <span className="font-medium">{selectedProject.completion_date}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Links */}
+                    <div className="flex flex-wrap gap-2">
+                      {(selectedProject.live_url || selectedProject.project_url) && (
+                        <a
+                          href={selectedProject.live_url || selectedProject.project_url!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="glass-button px-4 py-2 rounded-full text-xs inline-flex items-center gap-2 hover:scale-105 transition"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Live Preview
+                        </a>
+                      )}
+                      {selectedProject.github_url && (
+                        <a
+                          href={selectedProject.github_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="glass-button px-4 py-2 rounded-full text-xs inline-flex items-center gap-2 hover:scale-105 transition"
+                        >
+                          <Github className="w-3 h-3" /> GitHub
+                        </a>
+                      )}
+                    </div>
+                  </motion.div>
                 </div>
 
-                <div>
-                  {selectedProject.project_url && (
-                    <>
-                      <div className="flex gap-2 mb-4">
-                        <button
-                          onClick={() => setDeviceView("laptop")}
-                          className={`glass-button p-2 rounded-lg ${
-                            deviceView === "laptop" && "bg-primary/20"
-                          }`}
-                        >
-                          <Monitor className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => setDeviceView("tablet")}
-                          className={`glass-button p-2 rounded-lg ${
-                            deviceView === "tablet" && "bg-primary/20"
-                          }`}
-                        >
-                          <Tablet className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => setDeviceView("mobile")}
-                          className={`glass-button p-2 rounded-lg ${
-                            deviceView === "mobile" && "bg-primary/20"
-                          }`}
-                        >
-                          <Smartphone className="w-5 h-5" />
-                        </button>
-                      </div>
+                {/* Bullets / Key Features */}
+                {selectedProject.bullets && selectedProject.bullets.length > 0 && (
+                  <motion.div className="glass-card p-5 rounded-xl" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                      <List className="w-4 h-4 text-primary" /> Key Features
+                    </h3>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {selectedProject.bullets.map((b, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                          <span className="text-primary mt-0.5">•</span>
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                )}
 
+                {/* Tech Stack */}
+                {((selectedProject.tags && selectedProject.tags.length > 0) || (selectedProject.technologies_used && selectedProject.technologies_used.length > 0)) && (
+                  <motion.div className="glass-card p-5 rounded-xl" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+                    <h3 className="font-semibold mb-3">Technologies & Tools</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {[...(selectedProject.technologies_used || []), ...(selectedProject.tags || [])].map((t, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">{t}</Badge>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Testimonial */}
+                {selectedProject.testimonial && (
+                  <motion.div className="glass-card p-5 rounded-xl" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4 text-primary" /> Client Testimonial
+                    </h3>
+                    <blockquote className="text-sm text-muted-foreground italic border-l-2 border-primary pl-4">
+                      "{selectedProject.testimonial}"
+                      {selectedProject.client_name && (
+                        <span className="block mt-2 not-italic font-medium text-foreground">— {selectedProject.client_name}</span>
+                      )}
+                    </blockquote>
+                  </motion.div>
+                )}
+
+                {/* FAQ */}
+                {selectedProject.faq && selectedProject.faq.length > 0 && (
+                  <motion.div className="glass-card p-5 rounded-xl" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                      <HelpCircle className="w-4 h-4 text-primary" /> FAQ
+                    </h3>
+                    <Accordion type="multiple" className="w-full">
+                      {selectedProject.faq.map((item, i) => (
+                        <AccordionItem key={i} value={`faq-${i}`}>
+                          <AccordionTrigger className="text-sm">{item.question}</AccordionTrigger>
+                          <AccordionContent className="text-sm text-muted-foreground">{item.answer}</AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </motion.div>
+                )}
+
+                {/* Responsive Preview */}
+                {(selectedProject.live_url || selectedProject.project_url) && (
+                  <motion.div className="space-y-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+                    <h3 className="font-semibold">Live Preview</h3>
+                    <div className="flex gap-2 mb-3">
+                      {[
+                        { key: "laptop" as const, icon: Monitor, label: "Desktop (1280px)" },
+                        { key: "tablet" as const, icon: Tablet, label: "Tablet (768px)" },
+                        { key: "mobile" as const, icon: Smartphone, label: "Mobile (375px)" },
+                      ].map(({ key, icon: Icon, label }) => (
+                        <button
+                          key={key}
+                          onClick={() => setDeviceView(key)}
+                          title={label}
+                          className={`glass-button p-2 rounded-lg transition ${deviceView === key ? "bg-primary/20 text-primary" : ""}`}
+                        >
+                          <Icon className="w-4 h-4" />
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex justify-center">
                       <div
-                        className={`glass-card rounded-xl overflow-hidden transition-all ${
-                          deviceView === "laptop"
-                            ? "w-full"
-                            : deviceView === "tablet"
-                            ? "w-3/4 mx-auto"
-                            : "w-1/2 mx-auto"
-                        }`}
+                        className="glass-card rounded-xl overflow-hidden transition-all duration-300 border-2 border-border/50"
+                        style={deviceSizes[deviceView]}
                       >
                         <iframe
-                          src={selectedProject.project_url}
-                          className="w-full h-96 border-0"
+                          src={selectedProject.live_url || selectedProject.project_url!}
+                          className="w-full border-0"
+                          style={{ height: deviceView === "mobile" ? "667px" : deviceView === "tablet" ? "600px" : "500px" }}
                           title="Preview"
                         />
                       </div>
-                    </>
-                  )}
-
-                  {!selectedProject.project_url && selectedProject.images && selectedProject.images[0] && (
-                    <div className="glass-card rounded-xl overflow-hidden">
-                      <img 
-                        src={selectedProject.images[0]} 
-                        alt={selectedProject.title}
-                        className="w-full h-auto"
-                      />
                     </div>
-                  )}
-
-                  {!selectedProject.project_url && (!selectedProject.images || selectedProject.images.length === 0) && (
-                    <div className="glass-card rounded-xl p-12 flex flex-col items-center justify-center text-muted-foreground">
-                      <Image className="w-16 h-16 mb-4 opacity-50" />
-                      <p>No preview available</p>
-                    </div>
-                  )}
-                </div>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
-          </motion.div>
-        )}
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
