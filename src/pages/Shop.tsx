@@ -6,94 +6,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PluginDetailsModal } from "@/components/PluginDetailsModal";
 import { ProductPurchaseModal } from "@/components/ProductPurchaseModal";
-import elementorImage from "@/assets/elementor-pro.png";
-import dokanImage from "@/assets/dokan-pro.png";
 import { useNavigate } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
-
-// Plugin products data
-const defaultPlugins = [
-  {
-    id: 1,
-    name: "Elementor Pro",
-    price: 59,
-    category: "Plugin",
-    description: "The most advanced WordPress website builder. Create high-end, pixel perfect websites at record speeds. Any theme, any page, any design.",
-    image: elementorImage,
-    version: "3.25.0",
-    tags: ["WordPress", "Page Builder", "Drag & Drop"],
-    features: [
-      "90+ Professional Widgets - Form Widget, Slider Widget, WooCommerce Builder, and more",
-      "Theme Builder - Design your entire WordPress theme visually including headers, footers, single posts, archives",
-      "WooCommerce Builder - Create custom product pages, shop pages, and checkout pages",
-      "Popup Builder - Design custom popups for any marketing campaign or engagement",
-      "Dynamic Content - Display custom fields, post information, and site data anywhere",
-      "Global Widgets - Save and reuse widgets across your entire website",
-      "Motion Effects - Add parallax scrolling, mouse effects, and advanced animations",
-      "Custom CSS - Add custom CSS to any element for full design control",
-      "Role Manager - Control access to features based on user roles"
-    ],
-    benefits: [
-      "Save Time - Build websites 10x faster with drag and drop editing",
-      "No Coding Required - Visual design means anyone can build professional sites",
-      "Mobile Responsive - All designs automatically work perfectly on mobile devices",
-      "SEO Friendly - Clean code and fast loading times improve search rankings",
-      "Regular Updates - Constant new features and improvements added monthly",
-      "World-Class Support - Access to expert support team and extensive documentation",
-      "Unlimited Websites - Use on as many sites as you need with one license"
-    ],
-    requirements: [
-      "WordPress 6.0 or higher",
-      "PHP 7.4 or higher (8.0+ recommended)",
-      "MySQL 5.6 or higher",
-      "At least 128MB of memory allocated to PHP",
-      "Modern web browser (Chrome, Firefox, Safari, Edge)"
-    ]
-  },
-  {
-    id: 2,
-    name: "Dokan Pro",
-    price: 149,
-    category: "Plugin",
-    description: "Transform your WordPress site into a fully-featured multi-vendor marketplace. Empower vendors to run their own stores while you earn commission on every sale.",
-    image: dokanImage,
-    version: "3.12.0",
-    tags: ["WordPress", "Multi-vendor", "Marketplace"],
-    features: [
-      "Multi-Vendor Marketplace - Allow unlimited vendors to sell on your platform",
-      "Commission Management - Set global or per-vendor commission rates automatically",
-      "Vendor Dashboard - Complete storefront management for each vendor",
-      "Product Management - Vendors can add, edit, and manage their own products",
-      "Order Management - Vendors receive and process their own orders",
-      "Withdrawal System - Automated vendor payment withdrawals and requests",
-      "Coupon Management - Vendors can create their own discount coupons",
-      "Shipping Management - Multiple shipping methods and vendor-specific shipping",
-      "Review System - Customer reviews and ratings for products and vendors",
-      "Vendor Verification - Admin approval system for new vendor applications",
-      "Reports & Analytics - Detailed sales reports and analytics for vendors",
-      "Frontend Vendor Registration - Easy vendor signup from the frontend"
-    ],
-    benefits: [
-      "Passive Income - Earn commission on every sale without managing inventory",
-      "Scalable Platform - Grow from 10 to 10,000 vendors seamlessly",
-      "Automated Operations - Vendors manage their own products, orders, and customers",
-      "Multiple Revenue Streams - Commission, subscription fees, and featured listings",
-      "Vendor Independence - Each vendor has their own branded storefront",
-      "Built-in Trust - Review system and verification builds marketplace credibility",
-      "WooCommerce Integration - Leverages the power of WooCommerce ecosystem"
-    ],
-    requirements: [
-      "WordPress 6.0 or higher",
-      "WooCommerce 8.0 or higher",
-      "PHP 7.4 or higher (8.0+ recommended)",
-      "MySQL 5.6 or higher",
-      "At least 256MB of memory allocated to PHP",
-      "HTTPS/SSL certificate recommended for payment processing"
-    ]
-  }
-];
+// Default plugins removed - all products come from database now
+const defaultPlugins: any[] = [];
 
 // Filter options
 const filterOptions = {
