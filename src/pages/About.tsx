@@ -9,6 +9,7 @@ export default function About() {
 
   return (
     <div className="min-h-screen pt-32 px-4">
+      <SEOHead title="About" description="Learn about Webejhar - creative digital designer and developer." />
       <Button
         variant="ghost"
         size="sm"
