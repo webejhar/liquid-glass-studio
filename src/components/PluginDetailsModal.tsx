@@ -72,7 +72,7 @@ export const PluginDetailsModal = ({ isOpen, onClose, plugin, onPurchase }: Plug
             <div>
               <h3 className="text-xl font-semibold mb-3">Benefits</h3>
               <div className="grid gap-3">
-                {plugin.benefits.map((benefit, index) => (
+                {(plugin.benefits || []).map((benefit, index) => (
                   <div key={index} className="flex items-start gap-3 glass-card p-3 rounded-lg">
                     <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                     <span className="text-sm">{benefit}</span>
