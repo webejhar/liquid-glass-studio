@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Send, Loader2 } from "lucide-react";
@@ -113,6 +114,7 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen pt-24 sm:pt-32 px-3 sm:px-4 pb-20 w-full max-w-full overflow-x-hidden">
+      <SEOHead title="Contact" description="Get in touch with Webejhar for your next project." />
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <motion.button

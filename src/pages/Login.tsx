@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Mail, Lock } from "lucide-react";
@@ -64,6 +65,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-20">
+      <SEOHead title="Login" description="Sign in to your Webejhar account." />
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

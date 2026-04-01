@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 import { useState } from "react";
 import { Palette, Code, Smartphone, Globe, Package, Zap } from "lucide-react";
 
@@ -52,6 +53,7 @@ export default function Services() {
 
   return (
     <div className="min-h-screen pt-24 sm:pt-32 px-3 sm:px-4 pb-20 w-full max-w-full overflow-x-hidden">
+      <SEOHead title="Services" description="Explore our professional design, development, and branding services." />
       <div className="max-w-7xl mx-auto w-full">
         <motion.h1
           className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-center"

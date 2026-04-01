@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ export default function About() {
 
   return (
     <div className="min-h-screen pt-32 px-4">
+      <SEOHead title="About" description="Learn about Webejhar - creative digital designer and developer." />
       <Button
         variant="ghost"
         size="sm"

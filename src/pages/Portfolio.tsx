@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 import { useState, useEffect } from "react";
 import { Check, ExternalLink, Monitor, Tablet, Smartphone, X, Image } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -143,6 +144,7 @@ export default function Portfolio() {
 
   return (
     <div className="min-h-screen pt-24 sm:pt-32 px-3 sm:px-4 pb-20 w-full max-w-full overflow-x-hidden">
+      <SEOHead title="Portfolio" description="View our portfolio of web design and development projects." />
       <div className="max-w-7xl mx-auto">
         <motion.h1
           className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-center"
