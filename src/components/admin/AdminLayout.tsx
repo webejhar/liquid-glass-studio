@@ -67,6 +67,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: "/admin/pending-approval", label: "Pending Approval", icon: CheckSquare, badge: pendingCount > 0 ? pendingCount : null },
     { path: "/admin/orders", label: "Orders", icon: ShoppingBag, badge: null },
     { path: "/admin/products", label: "Products", icon: Package, badge: null },
+    { path: "/admin/portfolio", label: "Portfolio", icon: Image, badge: null },
     { path: "/admin/project-orders", label: "Project Orders", icon: Briefcase, badge: null },
     { path: "/admin/meetings", label: "Meetings", icon: Calendar, badge: null },
     { path: "/admin/support-tickets", label: "Support Tickets", icon: MessageSquare, badge: null },
