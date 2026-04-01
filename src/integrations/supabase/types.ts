@@ -937,39 +937,72 @@ export type Database = {
       }
       provider_portfolios: {
         Row: {
+          budget_range: string | null
+          bullets: string[] | null
           category: string | null
+          client_name: string | null
+          completion_date: string | null
           created_at: string
+          custom_fields: Json | null
           description: string | null
+          duration: string | null
+          faq: Json | null
+          github_url: string | null
           id: string
           images: string[] | null
           is_featured: boolean | null
+          live_url: string | null
           project_url: string | null
           provider_id: string
           tags: string[] | null
+          technologies_used: string[] | null
+          testimonial: string | null
           title: string
         }
         Insert: {
+          budget_range?: string | null
+          bullets?: string[] | null
           category?: string | null
+          client_name?: string | null
+          completion_date?: string | null
           created_at?: string
+          custom_fields?: Json | null
           description?: string | null
+          duration?: string | null
+          faq?: Json | null
+          github_url?: string | null
           id?: string
           images?: string[] | null
           is_featured?: boolean | null
+          live_url?: string | null
           project_url?: string | null
           provider_id: string
           tags?: string[] | null
+          technologies_used?: string[] | null
+          testimonial?: string | null
           title: string
         }
         Update: {
+          budget_range?: string | null
+          bullets?: string[] | null
           category?: string | null
+          client_name?: string | null
+          completion_date?: string | null
           created_at?: string
+          custom_fields?: Json | null
           description?: string | null
+          duration?: string | null
+          faq?: Json | null
+          github_url?: string | null
           id?: string
           images?: string[] | null
           is_featured?: boolean | null
+          live_url?: string | null
           project_url?: string | null
           provider_id?: string
           tags?: string[] | null
+          technologies_used?: string[] | null
+          testimonial?: string | null
           title?: string
         }
         Relationships: []
