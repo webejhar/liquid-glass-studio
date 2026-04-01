@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 import { useState } from "react";
 import { Palette, Code, Smartphone, Globe, Package, Zap } from "lucide-react";
 
