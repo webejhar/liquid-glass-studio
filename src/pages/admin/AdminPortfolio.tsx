@@ -64,7 +64,7 @@ export default function AdminPortfolio() {
   const [newFaqQ, setNewFaqQ] = useState("");
   const [newFaqA, setNewFaqA] = useState("");
   const [newCategory, setNewCategory] = useState("");
-  const [customCategories, setCustomCateg] = useState<string[]>([]);
+  const [customCategories, setCustomCategories] = useState<string[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => { loadPortfolios(); }, []);
