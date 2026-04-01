@@ -591,9 +591,11 @@ export type Database = {
       }
       products: {
         Row: {
+          bullets: string[] | null
           category: string | null
           created_at: string | null
           description: string | null
+          faq: Json | null
           file_path: string | null
           id: string
           images: string[] | null
@@ -605,9 +607,11 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          bullets?: string[] | null
           category?: string | null
           created_at?: string | null
           description?: string | null
+          faq?: Json | null
           file_path?: string | null
           id?: string
           images?: string[] | null
@@ -619,9 +623,11 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          bullets?: string[] | null
           category?: string | null
           created_at?: string | null
           description?: string | null
+          faq?: Json | null
           file_path?: string | null
           id?: string
           images?: string[] | null
