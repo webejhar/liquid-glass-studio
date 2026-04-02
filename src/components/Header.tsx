@@ -24,7 +24,7 @@ export const Header = () => {
   const navigate = useNavigate();
 
   const hideHeader =
-    ["/contact", "/meeting", "/about", "/email-generator", "/image-generator", "/login", "/register", "/forgot-password", "/account"].includes(location.pathname) ||
+    ["/contact", "/meeting", "/email-generator", "/image-generator", "/login", "/register", "/forgot-password", "/account"].includes(location.pathname) ||
     location.pathname.startsWith("/admin");
 
   const [isChatActive, setIsChatActive] = useState(false);
