@@ -17,7 +17,7 @@ export const Footer = () => {
   const [secretKey, setSecretKey] = useState("");
   const [isChatActive, setIsChatActive] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const hideFooterPaths = ['/contact', '/meeting', '/about', '/email-generator', '/login', '/register', '/forgot-password', '/account'];
+  const hideFooterPaths = ['/contact', '/meeting', '/email-generator', '/login', '/register', '/forgot-password', '/account'];
 
   useEffect(() => {
     const checkChatActive = () => setIsChatActive(document.body.classList.contains('chat-active'));

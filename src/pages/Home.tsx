@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { Plus, Minus, Facebook, Linkedin, Globe, ExternalLink, ArrowRight, Code, Palette, Zap, Shield, Users, Award, Star, CheckCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-image.png";
 import { DomainChecker } from "@/components/DomainChecker";
 import { ProductPurchaseModal } from "@/components/ProductPurchaseModal";
@@ -35,6 +35,7 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>([]);
   const [isMobile, setIsMobile] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -178,7 +179,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Portfolio Showcase */}
+        {/* Portfolio Showcase - Device Mockup Style */}
         <section className="mb-32">
           <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <h2 className="text-4xl font-bold mb-4">
@@ -189,63 +190,104 @@ export default function Home() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-8">
             {portfolios.map((item, index) => (
               <motion.div
                 key={item.id}
-                className="glass-card rounded-2xl overflow-hidden group cursor-pointer"
-                initial={{ opacity: 0, y: 30 }}
+                className="glass-card rounded-2xl overflow-hidden"
+                initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
               >
-                <div className="relative h-48 overflow-hidden">
-                  {item.images && item.images[0] ? (
-                    <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                      <Code className="w-12 h-12 text-primary/50" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                    <div className="flex gap-2">
-                      {item.live_url && (
-                        <a href={item.live_url} target="_blank" rel="noopener noreferrer" className="glass-button p-2 rounded-full text-xs" onClick={e => e.stopPropagation()}>
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                      )}
-                      {item.project_url && (
-                        <a href={item.project_url} target="_blank" rel="noopener noreferrer" className="glass-button p-2 rounded-full text-xs" onClick={e => e.stopPropagation()}>
-                          <Globe className="w-4 h-4" />
-                        </a>
+                <div className="flex flex-col md:flex-row">
+                  {/* Device Mockup Preview - Left Side */}
+                  <div className="md:w-1/2 p-6 md:p-8 flex items-center justify-center bg-gradient-to-br from-primary/5 via-transparent to-accent/5">
+                    <div className="relative w-full max-w-md">
+                      {item.images && item.images[0] ? (
+                        <div className="relative">
+                          {/* Desktop mockup */}
+                          <div className="relative z-10 rounded-lg overflow-hidden border-2 border-muted/30 shadow-2xl">
+                            <div className="bg-muted/20 px-3 py-1.5 flex items-center gap-1.5 border-b border-muted/20">
+                              <div className="w-2 h-2 rounded-full bg-destructive/60" />
+                              <div className="w-2 h-2 rounded-full bg-yellow-500/60" />
+                              <div className="w-2 h-2 rounded-full bg-green-500/60" />
+                            </div>
+                            <img
+                              src={item.images[0]}
+                              alt={item.title}
+                              className="w-full h-auto object-cover"
+                              style={{ maxHeight: '240px' }}
+                            />
+                          </div>
+                          {/* Tablet mockup */}
+                          {item.images[1] ? (
+                            <div className="absolute -right-4 -bottom-4 w-[45%] z-20 rounded-lg overflow-hidden border-2 border-muted/30 shadow-xl">
+                              <img src={item.images[1]} alt="" className="w-full h-auto object-cover" style={{ maxHeight: '160px' }} />
+                            </div>
+                          ) : (
+                            <div className="absolute -right-4 -bottom-4 w-[45%] z-20 rounded-lg overflow-hidden border-2 border-muted/30 shadow-xl">
+                              <img src={item.images[0]} alt="" className="w-full h-auto object-cover" style={{ maxHeight: '160px' }} />
+                            </div>
+                          )}
+                          {/* Mobile mockup */}
+                          <div className="absolute -left-2 -bottom-2 w-[22%] z-30 rounded-lg overflow-hidden border-2 border-muted/30 shadow-xl">
+                            <img src={item.images[item.images.length > 2 ? 2 : 0]} alt="" className="w-full h-auto object-cover" style={{ maxHeight: '120px' }} />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-full aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl flex items-center justify-center">
+                          <Code className="w-16 h-16 text-primary/30" />
+                        </div>
                       )}
                     </div>
                   </div>
-                  {item.is_featured && (
-                    <Badge className="absolute top-3 left-3 bg-primary/90">Featured</Badge>
-                  )}
-                </div>
-                <div className="p-5 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <h3 className="font-bold text-lg">{item.title}</h3>
-                    {item.category && (
-                      <Badge variant="secondary" className="text-xs shrink-0">{item.category}</Badge>
+
+                  {/* Details - Right Side */}
+                  <div className="md:w-1/2 p-6 md:p-8 flex flex-col justify-center space-y-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm italic text-muted-foreground font-medium">
+                        Portfolio-{index + 1}
+                      </span>
+                      {item.is_featured && (
+                        <Badge className="bg-primary/90 text-xs">Featured</Badge>
+                      )}
+                    </div>
+
+                    <h3 className="text-2xl md:text-3xl font-bold">{item.title}</h3>
+
+                    {item.description && (
+                      <p className="text-muted-foreground leading-relaxed line-clamp-4">
+                        {item.description}
+                      </p>
                     )}
-                  </div>
-                  {item.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-                  )}
-                  {item.technologies_used && item.technologies_used.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {item.technologies_used.slice(0, 4).map((tech, i) => (
-                        <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">{tech}</span>
-                      ))}
-                      {item.technologies_used.length > 4 && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">+{item.technologies_used.length - 4}</span>
-                      )}
+
+                    {item.category && (
+                      <div>
+                        <Badge variant="secondary" className="text-xs">{item.category}</Badge>
+                      </div>
+                    )}
+
+                    {item.technologies_used && item.technologies_used.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {item.technologies_used.slice(0, 5).map((tech, i) => (
+                          <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">{tech}</span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="pt-2">
+                      <button
+                        onClick={() => navigate(`/portfolio?project=${item.id}`)}
+                        className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors font-medium group"
+                      >
+                        <span className="border-b border-primary/30 group-hover:border-primary transition-colors">
+                          Visit Details
+                        </span>
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </button>
                     </div>
-                  )}
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -258,41 +300,6 @@ export default function Home() {
               </Link>
             </motion.div>
           )}
-        </section>
-
-        {/* Services Overview */}
-        <section className="mb-32">
-          <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-4xl font-bold mb-4">
-              Services <span className="text-primary">Offered</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">End-to-end digital solutions tailored to your business needs</p>
-          </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { icon: Palette, title: "UI/UX Design", desc: "User-centered design with wireframes, prototypes, and pixel-perfect interfaces that convert visitors into customers.", color: "from-purple-500/20 to-pink-500/20" },
-              { icon: Code, title: "Full-Stack Development", desc: "Custom web apps with React, Next.js, Node.js, and modern frameworks. From landing pages to complex platforms.", color: "from-blue-500/20 to-cyan-500/20" },
-              { icon: Globe, title: "WordPress Solutions", desc: "Expert Elementor Pro builds, custom themes, WooCommerce stores, and plugin development for any business.", color: "from-green-500/20 to-emerald-500/20" },
-              { icon: Zap, title: "Speed Optimization", desc: "Performance auditing, Core Web Vitals optimization, and caching strategies for blazing-fast websites.", color: "from-yellow-500/20 to-orange-500/20" },
-              { icon: Shield, title: "SEO & Security", desc: "On-page SEO, technical audits, SSL configuration, malware protection, and security hardening.", color: "from-red-500/20 to-rose-500/20" },
-              { icon: Users, title: "Consulting & Support", desc: "Strategic tech consulting, ongoing maintenance, training sessions, and dedicated support plans.", color: "from-indigo-500/20 to-violet-500/20" },
-            ].map((service, i) => (
-              <motion.div
-                key={i}
-                className="glass-card p-6 rounded-2xl hover:scale-[1.03] transition-all duration-300 group"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${service.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                  <service.icon className="w-7 h-7 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">{service.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{service.desc}</p>
-              </motion.div>
-            ))}
-          </div>
         </section>
 
         {/* Process / How I Work */}
