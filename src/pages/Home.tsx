@@ -390,8 +390,8 @@ export default function Home() {
             <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" animate={{ x: ['-100%', '200%'] }} transition={{ duration: 3, repeat: Infinity, repeatDelay: 2, ease: "easeInOut" }} />
             <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-4xl font-bold mb-4">AI Email <span className="text-primary">Generator</span></h2>
-                <p className="text-muted-foreground text-lg">Generate professional email templates in seconds using our AI-powered system.</p>
+                <h2 className="text-4xl font-bold mb-4">Email <span className="text-primary">Generator</span></h2>
+                <p className="text-muted-foreground text-lg">Generate professional email templates in seconds.</p>
               </div>
               <div className="flex justify-center md:justify-end">
                 <Link to="/email-generator">
