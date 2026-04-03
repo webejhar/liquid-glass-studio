@@ -78,13 +78,11 @@ export default function Home() {
               <span className="text-glow">Designer</span> &{" "}
               <span className="text-primary">Developer</span>
             </motion.h1>
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground/80 mb-6 md:mb-8 leading-relaxed max-w-lg">
-              I craft{" "}
-              <Link to="/portfolio" className="text-primary/90 hover:text-primary font-semibold hover:underline underline-offset-4 transition-colors">custom websites</Link>,{" "}
-              build{" "}
-              <Link to="/shop" className="text-primary/90 hover:text-primary font-semibold hover:underline underline-offset-4 transition-colors">premium plugins</Link>,{" "}
-              and deliver pixel-perfect digital experiences. Let's{" "}
-              <Link to="/contact" className="text-primary/90 hover:text-primary font-semibold hover:underline underline-offset-4 transition-colors">work together</Link>.
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground/70 mb-6 md:mb-8 leading-relaxed max-w-lg">
+              I build custom WordPress and Elementor sites with a focus on clean design, speed, SEO, and real results. Explore my{" "}
+              <Link to="/portfolio" className="uppercase text-lg sm:text-xl md:text-2xl font-bold text-muted-foreground/50 hover:text-primary/70 underline-offset-4 hover:underline transition-colors">portfolio</Link>{" "}
+              to see{" "}
+              <Link to="/portfolio" className="uppercase text-lg sm:text-xl md:text-2xl font-bold text-muted-foreground/50 hover:text-primary/70 underline-offset-4 hover:underline transition-colors">my work</Link>.
             </p>
             <div className="flex flex-wrap gap-3 md:gap-4">
               <Link to="/portfolio" className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground font-medium hover:shadow-[0_0_25px_hsl(var(--primary)/0.5)] transition-all duration-300 hover:scale-105">
