@@ -81,9 +81,9 @@ export default function Home() {
             </motion.h1>
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground/70 mb-6 md:mb-8 leading-relaxed max-w-lg">
               I build custom WordPress and Elementor sites with a focus on clean design, speed, SEO, and real results. Explore my{" "}
-              <Link to="/portfolio" className="uppercase text-lg sm:text-xl md:text-2xl font-bold text-muted-foreground/50 hover:text-primary/70 underline-offset-4 hover:underline transition-colors">portfolio</Link>{" "}
+              <Link to="/portfolio" className="text-muted-foreground/40 hover:text-primary/60 underline-offset-4 hover:underline transition-colors tracking-wide font-light italic">portfolio</Link>{" "}
               to see{" "}
-              <Link to="/portfolio" className="uppercase text-lg sm:text-xl md:text-2xl font-bold text-muted-foreground/50 hover:text-primary/70 underline-offset-4 hover:underline transition-colors">my work</Link>.
+              <Link to="/portfolio" className="text-muted-foreground/40 hover:text-primary/60 underline-offset-4 hover:underline transition-colors tracking-wide font-light italic">my work</Link>.
             </p>
             <div className="flex flex-wrap gap-3 md:gap-4">
               <Link to="/portfolio" className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground font-medium hover:shadow-[0_0_25px_hsl(var(--primary)/0.5)] transition-all duration-300 hover:scale-105">
@@ -204,74 +204,72 @@ export default function Home() {
             </Link>
           </motion.div>
 
-          <div className="relative">
+          <div className="relative space-y-0">
             {portfolios.map((item, index) => (
               <motion.div
                 key={item.id}
-                className="glass-card rounded-2xl overflow-hidden mb-0 relative"
+                className="glass-card rounded-2xl overflow-hidden relative shadow-lg"
                 style={{
                   position: "sticky",
-                  top: `${100 + index * 40}px`,
+                  top: `${80 + index * 50}px`,
                   zIndex: index + 1,
+                  marginBottom: index < portfolios.length - 1 ? "20px" : "0px",
                 }}
-                initial={{ opacity: 0, y: 80 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0, y: 100, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
               >
-                <div className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
+                <div className="flex flex-col md:flex-row">
                   {/* Image */}
                   <div className="md:w-1/2 relative overflow-hidden group">
                     {item.images && item.images[0] ? (
                       <img
                         src={item.images[0]}
                         alt={item.title}
-                        className="w-full h-full object-cover min-h-[220px] md:min-h-[280px] group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover min-h-[220px] md:min-h-[300px] group-hover:scale-105 transition-transform duration-700"
                       />
                     ) : (
-                      <div className="w-full h-full min-h-[220px] md:min-h-[280px] bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                      <div className="w-full h-full min-h-[220px] md:min-h-[300px] bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
                         <Code className="w-12 h-12 text-primary/30" />
                       </div>
                     )}
-                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
-                      {item.category && (
+                    <div className="absolute top-3 right-3">
+                      <span className="text-xs font-mono text-muted-foreground/60 bg-background/70 backdrop-blur-sm px-2 py-1 rounded-full">
+                        Portfolio-{index + 1}
+                      </span>
+                    </div>
+                    {item.category && (
+                      <div className="absolute top-3 left-3">
                         <span className="px-2.5 py-1 rounded-full text-xs bg-background/80 backdrop-blur-sm border border-border/50 font-medium">
                           {item.category}
                         </span>
-                      )}
-                      {item.is_featured && (
-                        <span className="px-2.5 py-1 rounded-full text-xs bg-primary/90 text-primary-foreground font-medium">
-                          Featured
-                        </span>
-                      )}
-                    </div>
-                    {item.technologies_used && item.technologies_used.length > 0 && (
-                      <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-1">
-                        {item.technologies_used.slice(0, 4).map((tech, i) => (
-                          <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-background/70 backdrop-blur-sm border border-border/30">
-                            {tech}
-                          </span>
-                        ))}
                       </div>
                     )}
                   </div>
                   {/* Details */}
                   <div className="md:w-1/2 p-5 sm:p-6 md:p-8 flex flex-col justify-center space-y-3">
-                    <span className="text-xs text-muted-foreground font-mono">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
                     <h3 className="text-xl sm:text-2xl font-bold">{item.title}</h3>
                     {item.description && (
                       <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
                         {item.description}
                       </p>
                     )}
+                    {item.technologies_used && item.technologies_used.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {item.technologies_used.slice(0, 5).map((tech, i) => (
+                          <span key={i} className="text-[11px] px-2.5 py-1 rounded-full bg-primary/10 text-primary/80 border border-primary/20">
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <button
                       onClick={() => navigate(`/portfolio?project=${item.id}`)}
-                      className="inline-flex items-center gap-1.5 text-primary text-sm font-medium group mt-2 w-fit"
+                      className="inline-flex items-center gap-1.5 text-primary text-sm font-medium group mt-3 w-fit"
                     >
                       <span className="border-b border-transparent group-hover:border-primary transition-colors">
-                        View Details
+                        Visit Details
                       </span>
                       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -279,8 +277,8 @@ export default function Home() {
                 </div>
               </motion.div>
             ))}
-            {/* Spacer for sticky scroll effect */}
-            <div className="h-20" />
+            {/* Spacer for last sticky card */}
+            <div style={{ height: `${portfolios.length * 50}px` }} />
           </div>
         </section>
 

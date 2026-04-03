@@ -34,7 +34,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [pendingCount, setPendingCount] = useState(0);
+  const [counts, setCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     fetchCounts();
@@ -42,12 +42,22 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   const fetchCounts = async () => {
     try {
-      const { count: pending } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true })
-        .in("account_type", ["service_provider", "client"])
-        .eq("approval_status", "pending");
-      setPendingCount(pending || 0);
+      const [pending, meetings, tickets, orders, contacts, projects] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact", head: true }).in("account_type", ["service_provider", "client"]).eq("approval_status", "pending"),
+        supabase.from("meeting_bookings").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("support_tickets").select("*", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
+        supabase.from("product_orders").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("contacts").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("projects").select("*", { count: "exact", head: true }).eq("status", "pending"),
+      ]);
+      setCounts({
+        pending: pending.count || 0,
+        meetings: meetings.count || 0,
+        tickets: tickets.count || 0,
+        orders: orders.count || 0,
+        contacts: contacts.count || 0,
+        projects: projects.count || 0,
+      });
     } catch (error) {
       console.error("Error fetching counts:", error);
     }
@@ -65,17 +75,17 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard, badge: null },
     { path: "/admin/users", label: "All Users", icon: Users, badge: null },
-    { path: "/admin/pending-approval", label: "Pending Approval", icon: CheckSquare, badge: pendingCount > 0 ? pendingCount : null },
-    { path: "/admin/orders", label: "Orders", icon: ShoppingBag, badge: null },
+    { path: "/admin/pending-approval", label: "Pending Approval", icon: CheckSquare, badge: counts.pending > 0 ? counts.pending : null },
+    { path: "/admin/orders", label: "Orders", icon: ShoppingBag, badge: counts.orders > 0 ? counts.orders : null },
     { path: "/admin/products", label: "Products", icon: Package, badge: null },
     { path: "/admin/portfolio", label: "Portfolio", icon: Image, badge: null },
     { path: "/admin/testimonials", label: "Testimonials", icon: MessageCircle, badge: null },
-    { path: "/admin/project-orders", label: "Project Orders", icon: Briefcase, badge: null },
-    { path: "/admin/meetings", label: "Meetings", icon: Calendar, badge: null },
-    { path: "/admin/support-tickets", label: "Support Tickets", icon: MessageSquare, badge: null },
+    { path: "/admin/project-orders", label: "Project Orders", icon: Briefcase, badge: counts.projects > 0 ? counts.projects : null },
+    { path: "/admin/meetings", label: "Meetings", icon: Calendar, badge: counts.meetings > 0 ? counts.meetings : null },
+    { path: "/admin/support-tickets", label: "Support Tickets", icon: MessageSquare, badge: counts.tickets > 0 ? counts.tickets : null },
     { path: "/admin/reviews", label: "Reviews", icon: Star, badge: null },
     { path: "/admin/verification", label: "Verification", icon: CheckSquare, badge: null },
-    { path: "/admin/contacts", label: "Contacts", icon: Mail, badge: null },
+    { path: "/admin/contacts", label: "Contacts", icon: Mail, badge: counts.contacts > 0 ? counts.contacts : null },
     { path: "/admin/announcements", label: "Announcements", icon: Megaphone, badge: null },
     { path: "/admin/settings", label: "Settings", icon: Settings, badge: null },
     { path: "/admin/roles", label: "Roles", icon: Shield, badge: null },
