@@ -1,0 +1,2 @@
+ALTER TABLE public.admin_notifications DROP CONSTRAINT admin_notifications_type_check;
+ALTER TABLE public.admin_notifications ADD CONSTRAINT admin_notifications_type_check CHECK (type = ANY (ARRAY['user_registration'::text, 'product_order'::text, 'domain_order'::text, 'meeting_booking'::text, 'contact'::text, 'support_ticket'::text, 'project'::text]));
