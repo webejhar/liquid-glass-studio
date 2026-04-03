@@ -8,6 +8,7 @@ import { DomainChecker } from "@/components/DomainChecker";
 import { ProductPurchaseModal } from "@/components/ProductPurchaseModal";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 
 interface Product {
   id: number;
