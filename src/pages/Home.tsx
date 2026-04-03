@@ -81,9 +81,9 @@ export default function Home() {
             </motion.h1>
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground/70 mb-6 md:mb-8 leading-relaxed max-w-lg">
               I build custom WordPress and Elementor sites with a focus on clean design, speed, SEO, and real results. Explore my{" "}
-              <Link to="/portfolio" className="uppercase text-lg sm:text-xl md:text-2xl font-bold text-muted-foreground/50 hover:text-primary/70 underline-offset-4 hover:underline transition-colors">portfolio</Link>{" "}
+              <Link to="/portfolio" className="text-muted-foreground/40 hover:text-primary/60 underline-offset-4 hover:underline transition-colors tracking-wide font-light italic">portfolio</Link>{" "}
               to see{" "}
-              <Link to="/portfolio" className="uppercase text-lg sm:text-xl md:text-2xl font-bold text-muted-foreground/50 hover:text-primary/70 underline-offset-4 hover:underline transition-colors">my work</Link>.
+              <Link to="/portfolio" className="text-muted-foreground/40 hover:text-primary/60 underline-offset-4 hover:underline transition-colors tracking-wide font-light italic">my work</Link>.
             </p>
             <div className="flex flex-wrap gap-3 md:gap-4">
               <Link to="/portfolio" className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground font-medium hover:shadow-[0_0_25px_hsl(var(--primary)/0.5)] transition-all duration-300 hover:scale-105">
