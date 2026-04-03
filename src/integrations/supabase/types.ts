@@ -244,40 +244,67 @@ export type Database = {
       }
       domain_orders: {
         Row: {
+          address_line1: string | null
+          address_line2: string | null
           buyer_email: string
           buyer_name: string | null
+          buyer_phone: string | null
+          city: string | null
+          country: string | null
           created_at: string
           domain_name: string
           id: string
+          is_seen: boolean
+          order_notes: string | null
           payment_method: string
           payment_reference: string
+          postal_code: string | null
           price: number | null
+          state_region: string | null
           status: string
           tld: string
           user_id: string | null
         }
         Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
           buyer_email: string
           buyer_name?: string | null
+          buyer_phone?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           domain_name: string
           id?: string
+          is_seen?: boolean
+          order_notes?: string | null
           payment_method: string
           payment_reference: string
+          postal_code?: string | null
           price?: number | null
+          state_region?: string | null
           status?: string
           tld: string
           user_id?: string | null
         }
         Update: {
+          address_line1?: string | null
+          address_line2?: string | null
           buyer_email?: string
           buyer_name?: string | null
+          buyer_phone?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           domain_name?: string
           id?: string
+          is_seen?: boolean
+          order_notes?: string | null
           payment_method?: string
           payment_reference?: string
+          postal_code?: string | null
           price?: number | null
+          state_region?: string | null
           status?: string
           tld?: string
           user_id?: string | null
@@ -517,6 +544,86 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_orders: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          buyer_email: string
+          buyer_name: string | null
+          buyer_phone: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          id: string
+          is_seen: boolean
+          order_notes: string | null
+          payment_method: string
+          payment_reference: string
+          portfolio_category: string | null
+          portfolio_id: string | null
+          portfolio_title: string
+          postal_code: string | null
+          price: number
+          state_region: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          buyer_email: string
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          is_seen?: boolean
+          order_notes?: string | null
+          payment_method: string
+          payment_reference: string
+          portfolio_category?: string | null
+          portfolio_id?: string | null
+          portfolio_title: string
+          postal_code?: string | null
+          price?: number
+          state_region?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          buyer_email?: string
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          is_seen?: boolean
+          order_notes?: string | null
+          payment_method?: string
+          payment_reference?: string
+          portfolio_category?: string | null
+          portfolio_id?: string | null
+          portfolio_title?: string
+          postal_code?: string | null
+          price?: number
+          state_region?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_orders_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "provider_portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_categories: {
         Row: {
           created_at: string | null
@@ -540,50 +647,80 @@ export type Database = {
       }
       product_orders: {
         Row: {
+          address_line1: string | null
+          address_line2: string | null
           buyer_email: string
           buyer_name: string | null
+          buyer_phone: string | null
+          city: string | null
+          country: string | null
           created_at: string
           id: string
+          is_seen: boolean
           order_id: string | null
+          order_notes: string | null
           payment_method: string
           payment_reference: string
           plugin_file_path: string | null
+          postal_code: string | null
           product_category: string
-          product_id: number
+          product_id: string
           product_name: string
           product_price: number
+          product_source_id: string | null
+          state_region: string | null
           status: string
           user_id: string | null
         }
         Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
           buyer_email: string
           buyer_name?: string | null
+          buyer_phone?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           id?: string
+          is_seen?: boolean
           order_id?: string | null
+          order_notes?: string | null
           payment_method: string
           payment_reference: string
           plugin_file_path?: string | null
+          postal_code?: string | null
           product_category: string
-          product_id: number
+          product_id: string
           product_name: string
           product_price: number
+          product_source_id?: string | null
+          state_region?: string | null
           status?: string
           user_id?: string | null
         }
         Update: {
+          address_line1?: string | null
+          address_line2?: string | null
           buyer_email?: string
           buyer_name?: string | null
+          buyer_phone?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           id?: string
+          is_seen?: boolean
           order_id?: string | null
+          order_notes?: string | null
           payment_method?: string
           payment_reference?: string
           plugin_file_path?: string | null
+          postal_code?: string | null
           product_category?: string
-          product_id?: number
+          product_id?: string
           product_name?: string
           product_price?: number
+          product_source_id?: string | null
+          state_region?: string | null
           status?: string
           user_id?: string | null
         }
@@ -957,7 +1094,9 @@ export type Database = {
           id: string
           images: string[] | null
           is_featured: boolean | null
+          is_for_sale: boolean
           live_url: string | null
+          price: number
           project_url: string | null
           provider_id: string
           tags: string[] | null
@@ -980,7 +1119,9 @@ export type Database = {
           id?: string
           images?: string[] | null
           is_featured?: boolean | null
+          is_for_sale?: boolean
           live_url?: string | null
+          price?: number
           project_url?: string | null
           provider_id: string
           tags?: string[] | null
@@ -1003,7 +1144,9 @@ export type Database = {
           id?: string
           images?: string[] | null
           is_featured?: boolean | null
+          is_for_sale?: boolean
           live_url?: string | null
+          price?: number
           project_url?: string | null
           provider_id?: string
           tags?: string[] | null
