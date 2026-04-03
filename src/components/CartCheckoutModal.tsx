@@ -1,15 +1,6 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, CheckCircle } from "lucide-react";
-import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { useCart } from "@/contexts/CartContext";
-import { useNavigate } from "react-router-dom";
-import { PaymentConfirmationDialog } from "@/components/PaymentConfirmationDialog";
+import { MultiStepCheckoutModal, type CheckoutPayload } from "@/components/checkout/MultiStepCheckoutModal";
 
 interface CartCheckoutModalProps {
   isOpen: boolean;
@@ -18,365 +9,70 @@ interface CartCheckoutModalProps {
 
 export const CartCheckoutModal = ({ isOpen, onClose }: CartCheckoutModalProps) => {
   const { cart, getTotalPrice, clearCart } = useCart();
-  const [name, setName] = useState("");
-  const [binanceId, setBinanceId] = useState("");
-  const [bkashTrxId, setBkashTrxId] = useState("");
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState<'binance' | 'bkash'>('binance');
-  const navigate = useNavigate();
-  
-  // USD to BDT conversion rate (update this periodically or fetch from an API)
-  const USD_TO_BDT = 110; // Current approximate rate
-  
-  const getDisplayTotal = () => {
-    const total = getTotalPrice();
-    if (selectedPayment === 'binance') {
-      return `$${total.toFixed(2)} USD`;
-    } else {
-      const bdtPrice = (total * USD_TO_BDT).toFixed(2);
-      return `৳${bdtPrice} BDT`;
-    }
-  };
+  const handleSubmit = async (payload: CheckoutPayload) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast.error("Please login to continue your purchase");
-      navigate("/login");
-      onClose();
-      return;
+      throw new Error("Please login to complete the cart checkout.");
     }
-    setIsLoggedIn(true);
+
+    const orderId = crypto.randomUUID();
+    const orderInserts = cart.map((item) => ({
+      order_id: orderId,
+      product_id: String(item.id),
+      product_source_id: null,
+      product_name: item.name,
+      product_price: item.price,
+      product_category: item.category,
+      buyer_name: payload.buyerName,
+      buyer_email: payload.buyerEmail,
+      buyer_phone: payload.buyerPhone,
+      address_line1: payload.addressLine1,
+      address_line2: payload.addressLine2 || null,
+      city: payload.city,
+      state_region: payload.stateRegion || null,
+      postal_code: payload.postalCode || null,
+      country: payload.country,
+      order_notes: payload.orderNotes || null,
+      payment_method: payload.paymentMethod,
+      payment_reference: payload.paymentReference,
+      user_id: user.id,
+    }));
+
+    const { error: insertError } = await supabase.from("product_orders").insert(orderInserts);
+    if (insertError) throw insertError;
+
+    const { error: emailError } = await supabase.functions.invoke("send-cart-order-email", {
+      body: {
+        orderId,
+        cartItems: cart,
+        totalPrice: getTotalPrice(),
+        ...payload,
+        timestamp: new Date().toISOString(),
+      },
+    });
+
+    if (emailError) console.error("Cart order email error:", emailError);
+
+    await clearCart();
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard!");
-  };
-
-  const handleBinanceSubmit = () => {
-    if (!binanceId.trim() || !email.trim()) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-    setShowPaymentConfirm(true);
-  };
-
-  const completeBinancePayment = async () => {
-    setShowPaymentConfirm(false);
-    setIsSubmitting(true);
-    try {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      const orderId = crypto.randomUUID();
-
-      // Insert all items with the same order_id
-      const orderInserts = cart.map((item) => ({
-        order_id: orderId,
-        product_id: item.id,
-        product_name: item.name,
-        product_price: item.price,
-        product_category: item.category,
-        buyer_name: name || null,
-        buyer_email: email,
-        payment_method: 'Binance',
-        payment_reference: binanceId,
-        user_id: user?.id || null
-      }));
-
-      const { error: insertError } = await supabase
-        .from('product_orders')
-        .insert(orderInserts);
-
-      if (insertError) throw insertError;
-
-      // Send email with all cart items
-      const { error: emailError } = await supabase.functions.invoke('send-cart-order-email', {
-        body: {
-          orderId,
-          cartItems: cart,
-          totalPrice: getTotalPrice(),
-          buyerName: name || 'Not provided',
-          buyerEmail: email,
-          paymentMethod: 'Binance',
-          paymentReference: binanceId,
-          timestamp: new Date().toISOString()
-        }
-      });
-
-      if (emailError) console.error("Email error:", emailError);
-
-      clearCart();
-      setShowConfirmation(true);
-      setTimeout(() => {
-        onClose();
-        setShowConfirmation(false);
-        setBinanceId("");
-        setEmail("");
-        setName("");
-      }, 3000);
-    } catch (error: any) {
-      console.error("Purchase error:", error);
-      toast.error("Failed to process order. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleBkashSubmit = () => {
-    if (!bkashTrxId.trim() || !email.trim()) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-    setShowPaymentConfirm(true);
-  };
-
-  const completeBkashPayment = async () => {
-    setShowPaymentConfirm(false);
-    setIsSubmitting(true);
-    try {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      const orderId = crypto.randomUUID();
-
-      const orderInserts = cart.map((item) => ({
-        order_id: orderId,
-        product_id: item.id,
-        product_name: item.name,
-        product_price: item.price,
-        product_category: item.category,
-        buyer_name: name || null,
-        buyer_email: email,
-        payment_method: 'bKash',
-        payment_reference: bkashTrxId,
-        user_id: user?.id || null
-      }));
-
-      const { error: insertError } = await supabase
-        .from('product_orders')
-        .insert(orderInserts);
-
-      if (insertError) throw insertError;
-
-      const { error: emailError } = await supabase.functions.invoke('send-cart-order-email', {
-        body: {
-          orderId,
-          cartItems: cart,
-          totalPrice: getTotalPrice(),
-          buyerName: name || 'Not provided',
-          buyerEmail: email,
-          paymentMethod: 'bKash',
-          paymentReference: bkashTrxId,
-          timestamp: new Date().toISOString()
-        }
-      });
-
-      if (emailError) console.error("Email error:", emailError);
-
-      clearCart();
-      setShowConfirmation(true);
-      setTimeout(() => {
-        onClose();
-        setShowConfirmation(false);
-        setBkashTrxId("");
-        setEmail("");
-        setName("");
-      }, 3000);
-    } catch (error: any) {
-      console.error("Purchase error:", error);
-      toast.error("Failed to process order. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (showConfirmation) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="glass-premium max-w-sm sm:max-w-md mx-4">
-          <div className="text-center py-6 sm:py-8">
-            <CheckCircle className="w-12 h-12 sm:w-16 sm:h-16 text-primary mx-auto mb-3 sm:mb-4" />
-            <h3 className="text-xl sm:text-2xl font-bold mb-2">Thank you!</h3>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Your order has been received. We'll contact you shortly with download/access instructions.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+  if (cart.length === 0) return null;
 
   return (
-    <>
-      <PaymentConfirmationDialog
-        isOpen={showPaymentConfirm}
-        onConfirm={selectedPayment === 'binance' ? completeBinancePayment : completeBkashPayment}
-        onCancel={() => setShowPaymentConfirm(false)}
-      />
-      
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="glass-premium max-w-md max-h-[90vh] overflow-y-auto mx-4">
-        <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl text-glow">
-            Complete Your Purchase
-          </DialogTitle>
-          <div className="flex items-center justify-between pt-2">
-            <span className="text-xs sm:text-sm text-muted-foreground">{cart.length} item(s) • Total:</span>
-            <span className="text-lg sm:text-xl font-bold text-primary">{getDisplayTotal()}</span>
-          </div>
-        </DialogHeader>
-
-        <Tabs defaultValue="binance" className="mt-4" onValueChange={(value) => setSelectedPayment(value as 'binance' | 'bkash')}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="binance" className="text-xs sm:text-sm">Binance (USD)</TabsTrigger>
-            <TabsTrigger value="bkash" className="text-xs sm:text-sm">bKash (BDT)</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="binance" className="space-y-3 sm:space-y-4 mt-4">
-            <div className="glass-card p-3 sm:p-4 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs sm:text-sm">Pay to:</p>
-                <p className="text-xs sm:text-sm font-semibold text-primary">${getTotalPrice().toFixed(2)} USD</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 bg-background/50 px-2 sm:px-3 py-2 rounded text-xs sm:text-sm break-all">1158996624</code>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => copyToClipboard("1158996624")}
-                  className="flex-shrink-0"
-                >
-                  <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="binance-name" className="text-xs sm:text-sm">Your Name (Optional)</Label>
-                <Input
-                  id="binance-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="John Doe"
-                  className="mt-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="binance-id" className="text-xs sm:text-sm">Type your Binance ID *</Label>
-                <Input
-                  id="binance-id"
-                  value={binanceId}
-                  onChange={(e) => setBinanceId(e.target.value)}
-                  placeholder="Enter Binance ID"
-                  required
-                  className="mt-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="binance-email" className="text-xs sm:text-sm">Type E-mail *</Label>
-                <Input
-                  id="binance-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  className="mt-2 text-sm"
-                />
-              </div>
-
-              <Button
-                onClick={handleBinanceSubmit}
-                disabled={isSubmitting}
-                className="w-full text-sm"
-                variant="liquid"
-              >
-                {isSubmitting ? "Processing..." : "Complete Payment"}
-              </Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="bkash" className="space-y-3 sm:space-y-4 mt-4">
-            <div className="glass-card p-3 sm:p-4 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs sm:text-sm">bKash Personal</p>
-                <p className="text-xs sm:text-sm font-semibold text-primary">৳{(getTotalPrice() * USD_TO_BDT).toFixed(2)} BDT</p>
-              </div>
-              <p className="text-xs sm:text-sm mb-2">Number:</p>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 bg-background/50 px-2 sm:px-3 py-2 rounded text-xs sm:text-sm break-all">+8801340125311</code>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => copyToClipboard("+8801340125311")}
-                  className="flex-shrink-0"
-                >
-                  <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="bkash-name" className="text-xs sm:text-sm">Your Name (Optional)</Label>
-                <Input
-                  id="bkash-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="John Doe"
-                  className="mt-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="bkash-trxid" className="text-xs sm:text-sm">Type TrxID *</Label>
-                <Input
-                  id="bkash-trxid"
-                  value={bkashTrxId}
-                  onChange={(e) => setBkashTrxId(e.target.value)}
-                  placeholder="Enter Transaction ID"
-                  required
-                  className="mt-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="bkash-email" className="text-xs sm:text-sm">Type E-mail *</Label>
-                <Input
-                  id="bkash-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  className="mt-2 text-sm"
-                />
-              </div>
-
-              <Button
-                onClick={handleBkashSubmit}
-                disabled={isSubmitting}
-                className="w-full text-sm"
-                variant="liquid"
-              >
-                {isSubmitting ? "Processing..." : "Complete Payment"}
-              </Button>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </DialogContent>
-    </Dialog>
-    </>
+    <MultiStepCheckoutModal
+      isOpen={isOpen}
+      onClose={onClose}
+      item={{
+        title: "Cart Checkout",
+        category: `${cart.length} item${cart.length > 1 ? "s" : ""}`,
+        price: getTotalPrice(),
+        subtitle: "All selected products will be submitted together with one order number.",
+      }}
+      onSubmit={handleSubmit}
+      successMessage="Your cart order has been placed. We'll review it and contact you with the next steps."
+    />
   );
 };

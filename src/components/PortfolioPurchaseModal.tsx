@@ -1,23 +1,29 @@
 import { supabase } from "@/integrations/supabase/client";
 import { MultiStepCheckoutModal, type CheckoutPayload } from "@/components/checkout/MultiStepCheckoutModal";
 
-interface PurchaseModalProps {
+interface PortfolioPurchaseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  domainName: string;
-  tld: string;
-  price: number; // Price in USD
+  portfolio: {
+    id: string;
+    title: string;
+    category?: string | null;
+    price: number;
+    image?: string | null;
+  };
 }
 
-export const PurchaseModal = ({ isOpen, onClose, domainName, tld, price }: PurchaseModalProps) => {
+export function PortfolioPurchaseModal({ isOpen, onClose, portfolio }: PortfolioPurchaseModalProps) {
   const handleSubmit = async (payload: CheckoutPayload) => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const orderData = {
-      domain_name: domainName,
-      tld,
+    const { error } = await supabase.from("portfolio_orders").insert({
+      portfolio_id: portfolio.id,
+      portfolio_title: portfolio.title,
+      portfolio_category: portfolio.category || null,
+      price: portfolio.price,
       buyer_name: payload.buyerName,
       buyer_email: payload.buyerEmail,
       buyer_phone: payload.buyerPhone,
@@ -31,20 +37,9 @@ export const PurchaseModal = ({ isOpen, onClose, domainName, tld, price }: Purch
       payment_method: payload.paymentMethod,
       payment_reference: payload.paymentReference,
       user_id: user?.id || null,
-      price,
-    };
-
-    const { error: insertError } = await supabase.from("domain_orders").insert(orderData);
-    if (insertError) throw insertError;
-
-    const { error: emailError } = await supabase.functions.invoke("send-order-email", {
-      body: {
-        ...orderData,
-        timestamp: new Date().toISOString(),
-      },
     });
 
-    if (emailError) console.error("Domain order email error:", emailError);
+    if (error) throw error;
   };
 
   return (
@@ -52,13 +47,14 @@ export const PurchaseModal = ({ isOpen, onClose, domainName, tld, price }: Purch
       isOpen={isOpen}
       onClose={onClose}
       item={{
-        title: `${domainName}${tld}`,
-        category: "Domain",
-        price,
-        subtitle: "Secure your domain with billing, address, and payment details in one flow.",
+        title: portfolio.title,
+        category: portfolio.category || "Portfolio",
+        price: portfolio.price,
+        image: portfolio.image,
+        subtitle: "This portfolio will be sent to admin with all your checkout details.",
       }}
       onSubmit={handleSubmit}
-      successMessage="Your domain order has been received. We'll verify it and contact you soon."
+      successMessage="Your portfolio order has been received. We will review your payment and contact you soon."
     />
   );
-};
+}

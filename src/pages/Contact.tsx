@@ -63,18 +63,14 @@ export default function Contact() {
       }
 
       // Save to database
-      const { data: insertedData, error: dbError } = await supabase
+      const { error: dbError } = await supabase
         .from('contacts')
-        .insert(contactData)
-        .select()
-        .single();
+        .insert(contactData);
 
       if (dbError) {
         console.error('Database error:', dbError);
         throw new Error(dbError.message);
       }
-
-      console.log('Contact saved successfully:', insertedData);
 
       // Try to send email notification (don't fail if this fails)
       try {
