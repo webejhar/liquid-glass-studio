@@ -78,20 +78,24 @@ export default function Home() {
               <span className="text-glow">Designer</span> &{" "}
               <span className="text-primary">Developer</span>
             </motion.h1>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground/70 mb-2 md:mb-3 leading-relaxed">
-              A professional WordPress Developer and Web Designer specializing in modern, high-performing websites.
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground/80 mb-6 md:mb-8 leading-relaxed max-w-lg">
+              I craft{" "}
+              <Link to="/portfolio" className="text-primary/90 hover:text-primary font-semibold hover:underline underline-offset-4 transition-colors">custom websites</Link>,{" "}
+              build{" "}
+              <Link to="/shop" className="text-primary/90 hover:text-primary font-semibold hover:underline underline-offset-4 transition-colors">premium plugins</Link>,{" "}
+              and deliver pixel-perfect digital experiences. Let's{" "}
+              <Link to="/contact" className="text-primary/90 hover:text-primary font-semibold hover:underline underline-offset-4 transition-colors">work together</Link>.
             </p>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground/70 mb-2 md:mb-3 leading-relaxed">
-              I help businesses and individuals build strong online identities through custom WordPress development, Elementor websites, UI design, and digital branding. My services also include SEO optimization, speed optimization, website security, and Figma to WordPress conversion. Whether it's a custom website, Shopify or Wix build, or a performance upgrade, I focus on clean design, usability, and real business results.
-            </p>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground/70 leading-relaxed">
-              I write about software development on my{" "}
-              <Link to="/blog" className="text-primary/90 hover:text-primary text-lg sm:text-xl md:text-2xl font-semibold hover:underline underline-offset-4 transition-colors">blog</Link>.
-              {" "}Want to know how I may help your project? Check out my{" "}
-              <Link to="/portfolio" className="text-primary/90 hover:text-primary text-lg sm:text-xl md:text-2xl font-semibold hover:underline underline-offset-4 transition-colors">project portfolio</Link>
-              {" "}and{" "}
-              <Link to="/about" className="text-primary/90 hover:text-primary text-lg sm:text-xl md:text-2xl font-semibold hover:underline underline-offset-4 transition-colors">online resume</Link>.
-            </p>
+            <div className="flex flex-wrap gap-3 md:gap-4">
+              <Link to="/portfolio" className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground font-medium hover:shadow-[0_0_25px_hsl(var(--primary)/0.5)] transition-all duration-300 hover:scale-105">
+                Explore My Work
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link to="/contact" className="group inline-flex items-center gap-2 px-6 py-3 rounded-full border border-primary/30 text-foreground font-medium hover:border-primary hover:shadow-[0_0_25px_hsl(var(--primary)/0.3)] transition-all duration-300 hover:scale-105">
+                Let's Talk
+                <ExternalLink className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+              </Link>
+            </div>
           </motion.div>
 
           <motion.div
