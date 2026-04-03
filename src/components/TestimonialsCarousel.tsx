@@ -148,24 +148,26 @@ export function TestimonialsCarousel() {
             <motion.div
               key={current}
               custom={direction}
-              initial={(dir: number) => ({
-                x: dir > 0 ? 280 : -280,
-                opacity: 0,
-                scale: 0.85,
-                rotateY: dir > 0 ? 15 : -15,
-              })}
-              animate={{
-                x: 0,
-                opacity: 1,
-                scale: 1,
-                rotateY: 0,
+              variants={{
+                enter: (dir: number) => ({
+                  x: dir > 0 ? 280 : -280,
+                  opacity: 0,
+                  scale: 0.85,
+                }),
+                center: {
+                  x: 0,
+                  opacity: 1,
+                  scale: 1,
+                },
+                exit: (dir: number) => ({
+                  x: dir > 0 ? -280 : 280,
+                  opacity: 0,
+                  scale: 0.85,
+                }),
               }}
-              exit={(dir: number) => ({
-                x: dir > 0 ? -280 : 280,
-                opacity: 0,
-                scale: 0.85,
-                rotateY: dir > 0 ? -15 : 15,
-              })}
+              initial="enter"
+              animate="center"
+              exit="exit"
               transition={{ type: "spring", stiffness: 260, damping: 26, mass: 0.9 }}
               className="glass-card rounded-2xl p-6"
             >
