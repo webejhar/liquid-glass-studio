@@ -436,6 +436,9 @@ export default function Home() {
       {selectedProduct && (
         <ProductPurchaseModal isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} product={selectedProduct} />
       )}
+      <CvDownloadDialog open={cvDialogOpen} onOpenChange={setCvDialogOpen} />
     </div>
+  );
+}
   );
 }
