@@ -44,6 +44,7 @@ import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminReviews from "./pages/admin/AdminReviews";
 import AdminPortfolio from "./pages/admin/AdminPortfolio";
+import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import Providers from "./pages/Providers";
 
 const queryClient = new QueryClient();
