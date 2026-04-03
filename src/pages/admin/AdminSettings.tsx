@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Settings, Save, RefreshCw } from "lucide-react";
+import { Settings, Save, RefreshCw, Upload, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -147,6 +147,69 @@ export default function AdminSettings() {
     return groups;
   };
 
+  const [cvUploading, setCvUploading] = useState(false);
+  const [cvUrl, setCvUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadCv = async () => {
+      const { data } = await supabase
+        .from("platform_settings")
+        .select("setting_value")
+        .eq("setting_key", "cv_file_url")
+        .maybeSingle();
+      if (data?.setting_value) {
+        const val = typeof data.setting_value === "string" ? data.setting_value.replace(/^"|"$/g, "") : String(data.setting_value);
+        if (val && val !== "null") setCvUrl(val);
+      }
+    };
+    loadCv();
+  }, []);
+
+  const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCvUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `cv/resume.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("temp-images")
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("temp-images").getPublicUrl(path);
+      const publicUrl = urlData.publicUrl;
+
+      // Upsert platform_settings
+      const { data: existing } = await supabase
+        .from("platform_settings")
+        .select("id")
+        .eq("setting_key", "cv_file_url")
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from("platform_settings")
+          .update({ setting_value: JSON.stringify(publicUrl), updated_at: new Date().toISOString() })
+          .eq("id", existing.id);
+      } else {
+        await supabase.from("platform_settings").insert({
+          setting_key: "cv_file_url",
+          setting_value: JSON.stringify(publicUrl),
+          setting_type: "string",
+          description: "CV/Resume file URL for download",
+        });
+      }
+
+      setCvUrl(publicUrl);
+      toast.success("CV uploaded successfully!");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to upload CV");
+    } finally {
+      setCvUploading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <AdminLayout>
@@ -178,6 +241,28 @@ export default function AdminSettings() {
             </Button>
           </div>
         </div>
+
+        {/* CV Upload Section */}
+        <motion.div className="glass-card p-6 rounded-xl" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary" />
+            CV / Resume
+          </h2>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            {cvUrl && (
+              <a href={cvUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline truncate max-w-xs">
+                Current CV
+              </a>
+            )}
+            <label className="cursor-pointer">
+              <input type="file" accept=".pdf,.doc,.docx" onChange={handleCvUpload} className="hidden" />
+              <Button variant="outline" size="sm" className="gap-2 pointer-events-none" disabled={cvUploading}>
+                <Upload className="w-4 h-4" />
+                {cvUploading ? "Uploading..." : "Upload New CV"}
+              </Button>
+            </label>
+          </div>
+        </motion.div>
 
         {Object.entries(groupedSettings).map(([group, groupSettings]) => {
           if (groupSettings.length === 0) return null;

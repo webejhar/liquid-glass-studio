@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
-import { Plus, Minus, Facebook, Linkedin, Globe, ExternalLink, ArrowRight, Code, Palette, Zap, Shield, Users, Award, Star, CheckCircle } from "lucide-react";
+import { Plus, Minus, Facebook, Linkedin, Globe, ExternalLink, ArrowRight, Code, Palette, Zap, Shield, Users, Award, Star, CheckCircle, Download } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-image.png";
 import { DomainChecker } from "@/components/DomainChecker";
@@ -9,6 +9,7 @@ import { ProductPurchaseModal } from "@/components/ProductPurchaseModal";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
+import { CvDownloadDialog } from "@/components/CvDownloadDialog";
 
 interface Product {
   id: number;
@@ -36,6 +37,7 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>([]);
   const [isMobile, setIsMobile] = useState(false);
+  const [cvDialogOpen, setCvDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -177,9 +179,9 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-              <Link to="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-primary/30 font-medium text-sm hover:border-primary/60 transition-colors mt-8">
-                Download CV <ExternalLink className="w-4 h-4" />
-              </Link>
+              <button onClick={() => setCvDialogOpen(true)} className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-primary/30 font-medium text-sm hover:border-primary/60 hover:scale-105 transition-all mt-8">
+                Download CV <Download className="w-4 h-4" />
+              </button>
             </motion.div>
           </div>
         </section>
@@ -434,6 +436,7 @@ export default function Home() {
       {selectedProduct && (
         <ProductPurchaseModal isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} product={selectedProduct} />
       )}
+      <CvDownloadDialog open={cvDialogOpen} onOpenChange={setCvDialogOpen} />
     </div>
   );
 }
