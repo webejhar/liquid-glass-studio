@@ -203,15 +203,20 @@ export default function Home() {
             </Link>
           </motion.div>
 
-          <div className="space-y-6">
+          <div className="relative">
             {portfolios.map((item, index) => (
               <motion.div
                 key={item.id}
-                className="glass-card rounded-2xl overflow-hidden"
-                initial={{ opacity: 0, y: 30 }}
+                className="glass-card rounded-2xl overflow-hidden mb-0 relative"
+                style={{
+                  position: "sticky",
+                  top: `${100 + index * 40}px`,
+                  zIndex: index + 1,
+                }}
+                initial={{ opacity: 0, y: 80 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ delay: index * 0.08, duration: 0.4 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               >
                 <div className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
                   {/* Image */}
@@ -227,7 +232,6 @@ export default function Home() {
                         <Code className="w-12 h-12 text-primary/30" />
                       </div>
                     )}
-                    {/* Tags overlay */}
                     <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
                       {item.category && (
                         <span className="px-2.5 py-1 rounded-full text-xs bg-background/80 backdrop-blur-sm border border-border/50 font-medium">
@@ -240,7 +244,6 @@ export default function Home() {
                         </span>
                       )}
                     </div>
-                    {/* Tech tags overlay bottom */}
                     {item.technologies_used && item.technologies_used.length > 0 && (
                       <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-1">
                         {item.technologies_used.slice(0, 4).map((tech, i) => (
@@ -251,7 +254,6 @@ export default function Home() {
                       </div>
                     )}
                   </div>
-
                   {/* Details */}
                   <div className="md:w-1/2 p-5 sm:p-6 md:p-8 flex flex-col justify-center space-y-3">
                     <span className="text-xs text-muted-foreground font-mono">
@@ -276,6 +278,8 @@ export default function Home() {
                 </div>
               </motion.div>
             ))}
+            {/* Spacer for sticky scroll effect */}
+            <div className="h-20" />
           </div>
         </section>
 
