@@ -60,6 +60,7 @@ export default function Home() {
     <div className="min-h-screen pt-24 sm:pt-32 px-3 sm:px-4 w-full max-w-full overflow-x-hidden">
       <SEOHead title="Home" description="Professional UI/UX design, web development, and WordPress solutions by Webejhar." />
       <div className="max-w-7xl mx-auto w-full">
+
         {/* Hero Section */}
         <section className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12 items-center mb-20 md:mb-32">
           <motion.div
@@ -77,19 +78,20 @@ export default function Home() {
               <span className="text-glow">Designer</span> &{" "}
               <span className="text-primary">Developer</span>
             </motion.h1>
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 md:mb-8 leading-relaxed">
-              Crafting stunning UI/UX designs, building powerful web experiences, and
-              creating premium digital products. Specialized in Elementor, WordPress,
-              React, and modern web technologies.
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground/70 mb-2 md:mb-3 leading-relaxed">
+              A professional WordPress Developer and Web Designer specializing in modern, high-performing websites.
             </p>
-            <div className="flex flex-wrap gap-3 md:gap-4">
-              <Link to="/portfolio" className="glass-button px-6 py-3 md:px-8 md:py-4 rounded-full font-medium hover:scale-105 transition-transform text-sm md:text-base">
-                View Portfolio
-              </Link>
-              <Link to="/contact" className="glass-card px-6 py-3 md:px-8 md:py-4 rounded-full font-medium hover:scale-105 transition-transform border-primary/30 text-sm md:text-base">
-                Contact Me
-              </Link>
-            </div>
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground/70 mb-2 md:mb-3 leading-relaxed">
+              I help businesses and individuals build strong online identities through custom WordPress development, Elementor websites, UI design, and digital branding. My services also include SEO optimization, speed optimization, website security, and Figma to WordPress conversion. Whether it's a custom website, Shopify or Wix build, or a performance upgrade, I focus on clean design, usability, and real business results.
+            </p>
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground/70 leading-relaxed">
+              I write about software development on my{" "}
+              <Link to="/blog" className="text-primary/90 hover:text-primary text-lg sm:text-xl md:text-2xl font-semibold hover:underline underline-offset-4 transition-colors">blog</Link>.
+              {" "}Want to know how I may help your project? Check out my{" "}
+              <Link to="/portfolio" className="text-primary/90 hover:text-primary text-lg sm:text-xl md:text-2xl font-semibold hover:underline underline-offset-4 transition-colors">project portfolio</Link>
+              {" "}and{" "}
+              <Link to="/about" className="text-primary/90 hover:text-primary text-lg sm:text-xl md:text-2xl font-semibold hover:underline underline-offset-4 transition-colors">online resume</Link>.
+            </p>
           </motion.div>
 
           <motion.div
@@ -138,7 +140,7 @@ export default function Home() {
                   { title: "Branding", desc: "Complete brand identity solutions" },
                   { title: "Digital Products", desc: "Premium themes & plugins" },
                 ].map((item, i) => (
-                  <motion.div key={i} className="glass-card p-6 rounded-xl hover:scale-105 transition" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
+                  <motion.div key={i} className="glass-card p-6 rounded-xl hover:scale-[1.02] transition" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
                     <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
                     <p className="text-muted-foreground">{item.desc}</p>
                   </motion.div>
@@ -172,134 +174,107 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-              <Link to="/contact" className="glass-button px-6 py-3 rounded-full inline-flex items-center gap-2 hover:scale-105 transition mt-8">
+              <Link to="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-primary/30 font-medium text-sm hover:border-primary/60 transition-colors mt-8">
                 Download CV <ExternalLink className="w-4 h-4" />
               </Link>
             </motion.div>
           </div>
         </section>
 
-        {/* Portfolio Showcase - Device Mockup Style */}
+        {/* Portfolio Showcase */}
         <section className="mb-32">
-          <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-4xl font-bold mb-4">
-              Recent <span className="text-primary">Projects</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              A showcase of my latest work — from custom websites to full-stack applications
-            </p>
+          <motion.div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-4" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-2">
+                Recent <span className="text-primary">Projects</span>
+              </h2>
+              <p className="text-muted-foreground text-sm sm:text-base">
+                A showcase of my latest work
+              </p>
+            </div>
+            <Link
+              to="/portfolio"
+              className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors font-medium text-sm group"
+            >
+              View All Projects
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </motion.div>
 
-          <div className="space-y-8">
+          <div className="space-y-6">
             {portfolios.map((item, index) => (
               <motion.div
                 key={item.id}
                 className="glass-card rounded-2xl overflow-hidden"
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ delay: index * 0.08, duration: 0.4 }}
               >
-                <div className="flex flex-col md:flex-row">
-                  {/* Device Mockup Preview - Left Side */}
-                  <div className="md:w-1/2 p-6 md:p-8 flex items-center justify-center bg-gradient-to-br from-primary/5 via-transparent to-accent/5">
-                    <div className="relative w-full max-w-md">
-                      {item.images && item.images[0] ? (
-                        <div className="relative">
-                          {/* Desktop mockup */}
-                          <div className="relative z-10 rounded-lg overflow-hidden border-2 border-muted/30 shadow-2xl">
-                            <div className="bg-muted/20 px-3 py-1.5 flex items-center gap-1.5 border-b border-muted/20">
-                              <div className="w-2 h-2 rounded-full bg-destructive/60" />
-                              <div className="w-2 h-2 rounded-full bg-yellow-500/60" />
-                              <div className="w-2 h-2 rounded-full bg-green-500/60" />
-                            </div>
-                            <img
-                              src={item.images[0]}
-                              alt={item.title}
-                              className="w-full h-auto object-cover"
-                              style={{ maxHeight: '240px' }}
-                            />
-                          </div>
-                          {/* Tablet mockup */}
-                          {item.images[1] ? (
-                            <div className="absolute -right-4 -bottom-4 w-[45%] z-20 rounded-lg overflow-hidden border-2 border-muted/30 shadow-xl">
-                              <img src={item.images[1]} alt="" className="w-full h-auto object-cover" style={{ maxHeight: '160px' }} />
-                            </div>
-                          ) : (
-                            <div className="absolute -right-4 -bottom-4 w-[45%] z-20 rounded-lg overflow-hidden border-2 border-muted/30 shadow-xl">
-                              <img src={item.images[0]} alt="" className="w-full h-auto object-cover" style={{ maxHeight: '160px' }} />
-                            </div>
-                          )}
-                          {/* Mobile mockup */}
-                          <div className="absolute -left-2 -bottom-2 w-[22%] z-30 rounded-lg overflow-hidden border-2 border-muted/30 shadow-xl">
-                            <img src={item.images[item.images.length > 2 ? 2 : 0]} alt="" className="w-full h-auto object-cover" style={{ maxHeight: '120px' }} />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="w-full aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl flex items-center justify-center">
-                          <Code className="w-16 h-16 text-primary/30" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Details - Right Side */}
-                  <div className="md:w-1/2 p-6 md:p-8 flex flex-col justify-center space-y-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm italic text-muted-foreground font-medium">
-                        Portfolio-{index + 1}
-                      </span>
-                      {item.is_featured && (
-                        <Badge className="bg-primary/90 text-xs">Featured</Badge>
-                      )}
-                    </div>
-
-                    <h3 className="text-2xl md:text-3xl font-bold">{item.title}</h3>
-
-                    {item.description && (
-                      <p className="text-muted-foreground leading-relaxed line-clamp-4">
-                        {item.description}
-                      </p>
-                    )}
-
-                    {item.category && (
-                      <div>
-                        <Badge variant="secondary" className="text-xs">{item.category}</Badge>
+                <div className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
+                  {/* Image */}
+                  <div className="md:w-1/2 relative overflow-hidden group">
+                    {item.images && item.images[0] ? (
+                      <img
+                        src={item.images[0]}
+                        alt={item.title}
+                        className="w-full h-full object-cover min-h-[220px] md:min-h-[280px] group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full min-h-[220px] md:min-h-[280px] bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                        <Code className="w-12 h-12 text-primary/30" />
                       </div>
                     )}
-
+                    {/* Tags overlay */}
+                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                      {item.category && (
+                        <span className="px-2.5 py-1 rounded-full text-xs bg-background/80 backdrop-blur-sm border border-border/50 font-medium">
+                          {item.category}
+                        </span>
+                      )}
+                      {item.is_featured && (
+                        <span className="px-2.5 py-1 rounded-full text-xs bg-primary/90 text-primary-foreground font-medium">
+                          Featured
+                        </span>
+                      )}
+                    </div>
+                    {/* Tech tags overlay bottom */}
                     {item.technologies_used && item.technologies_used.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {item.technologies_used.slice(0, 5).map((tech, i) => (
-                          <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">{tech}</span>
+                      <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-1">
+                        {item.technologies_used.slice(0, 4).map((tech, i) => (
+                          <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-background/70 backdrop-blur-sm border border-border/30">
+                            {tech}
+                          </span>
                         ))}
                       </div>
                     )}
+                  </div>
 
-                    <div className="pt-2">
-                      <button
-                        onClick={() => navigate(`/portfolio?project=${item.id}`)}
-                        className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors font-medium group"
-                      >
-                        <span className="border-b border-primary/30 group-hover:border-primary transition-colors">
-                          Visit Details
-                        </span>
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </button>
-                    </div>
+                  {/* Details */}
+                  <div className="md:w-1/2 p-5 sm:p-6 md:p-8 flex flex-col justify-center space-y-3">
+                    <span className="text-xs text-muted-foreground font-mono">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-bold">{item.title}</h3>
+                    {item.description && (
+                      <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
+                        {item.description}
+                      </p>
+                    )}
+                    <button
+                      onClick={() => navigate(`/portfolio?project=${item.id}`)}
+                      className="inline-flex items-center gap-1.5 text-primary text-sm font-medium group mt-2 w-fit"
+                    >
+                      <span className="border-b border-transparent group-hover:border-primary transition-colors">
+                        View Details
+                      </span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </button>
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
-
-          {portfolios.length > 0 && (
-            <motion.div className="text-center mt-10" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              <Link to="/portfolio" className="glass-button px-8 py-3 rounded-full inline-flex items-center gap-2 hover:scale-105 transition font-medium">
-                View All Projects <ArrowRight className="w-4 h-4" />
-              </Link>
-            </motion.div>
-          )}
         </section>
 
         {/* Process / How I Work */}
@@ -308,14 +283,14 @@ export default function Home() {
             <h2 className="text-4xl font-bold mb-4">
               How I <span className="text-primary">Work</span>
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">A streamlined process to deliver exceptional results on every project</p>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">A streamlined process to deliver exceptional results</p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
-              { step: "01", title: "Discovery", desc: "Understanding your goals, target audience, and project requirements through in-depth consultation." },
-              { step: "02", title: "Design", desc: "Creating wireframes and visual designs with multiple revisions until the perfect look is achieved." },
-              { step: "03", title: "Development", desc: "Building your project with clean, scalable code and regular progress updates throughout." },
-              { step: "04", title: "Launch", desc: "Thorough testing, deployment, and post-launch support to ensure everything runs smoothly." },
+              { step: "01", title: "Discovery", desc: "Understanding your goals, target audience, and project requirements." },
+              { step: "02", title: "Design", desc: "Creating wireframes and visual designs with revisions until perfect." },
+              { step: "03", title: "Development", desc: "Building with clean, scalable code and regular progress updates." },
+              { step: "04", title: "Launch", desc: "Testing, deployment, and post-launch support." },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -338,7 +313,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Stats / Numbers */}
+        {/* Stats */}
         <section className="mb-32">
           <motion.div
             className="glass-premium p-8 md:p-12 rounded-3xl"
@@ -378,10 +353,10 @@ export default function Home() {
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
-              { title: "Pixel-Perfect Design", desc: "Every detail is carefully crafted to ensure a flawless user experience across all devices and screen sizes." },
-              { title: "Fast Delivery", desc: "Efficient workflows and clear communication mean your project is delivered on time, every time." },
-              { title: "Clean & Scalable Code", desc: "Well-structured, maintainable code that's ready for future growth and easy to hand off." },
-              { title: "Ongoing Support", desc: "Post-launch maintenance, updates, and dedicated support to keep your project running perfectly." },
+              { title: "Pixel-Perfect Design", desc: "Every detail carefully crafted for a flawless experience across all devices." },
+              { title: "Fast Delivery", desc: "Efficient workflows and clear communication for on-time delivery." },
+              { title: "Clean & Scalable Code", desc: "Well-structured, maintainable code ready for future growth." },
+              { title: "Ongoing Support", desc: "Post-launch maintenance and dedicated support." },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -403,7 +378,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* AI Email Generator Section */}
+        {/* AI Email Generator */}
         <section className="mb-32">
           <motion.div className="relative glass-premium p-12 rounded-3xl overflow-hidden" initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" animate={{ x: ['-100%', '200%'] }} transition={{ duration: 3, repeat: Infinity, repeatDelay: 2, ease: "easeInOut" }} />
@@ -414,8 +389,8 @@ export default function Home() {
               </div>
               <div className="flex justify-center md:justify-end">
                 <Link to="/email-generator">
-                  <motion.button className="glass-button px-8 py-4 rounded-full text-lg font-medium" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    Try Now
+                  <motion.button className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    Try Now <ArrowRight className="w-4 h-4" />
                   </motion.button>
                 </Link>
               </div>
@@ -423,7 +398,7 @@ export default function Home() {
           </motion.div>
         </section>
 
-        {/* CTA Section */}
+        {/* CTA */}
         <section className="mb-32">
           <motion.div
             className="glass-card p-8 md:p-14 rounded-3xl text-center relative overflow-hidden"
@@ -434,12 +409,12 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
             <div className="relative z-10">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Have a Project in <span className="text-primary">Mind?</span></h2>
-              <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-8">Let's collaborate and bring your vision to life. Get a free consultation and project estimate today.</p>
+              <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-8">Let's collaborate and bring your vision to life. Get a free consultation today.</p>
               <div className="flex flex-wrap gap-4 justify-center">
-                <Link to="/contact" className="glass-button px-8 py-4 rounded-full font-medium hover:scale-105 transition-transform inline-flex items-center gap-2">
+                <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors">
                   Start a Project <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link to="/meeting" className="glass-card px-8 py-4 rounded-full font-medium hover:scale-105 transition-transform border-primary/30">
+                <Link to="/meeting" className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-primary/30 font-medium hover:border-primary/60 transition-colors">
                   Book a Meeting
                 </Link>
               </div>
@@ -447,7 +422,7 @@ export default function Home() {
           </motion.div>
         </section>
 
-        {/* Client Testimonials */}
+        {/* Testimonials */}
         <section className="mb-32">
           <motion.h2 className="text-4xl font-bold mb-12 text-center" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
             Client <span className="text-primary">Testimonials</span>
@@ -461,7 +436,7 @@ export default function Home() {
                   { name: "Emma Williams", role: "Freelance Designer", image: "EW", quote: "The custom plugin saved me countless hours. Highly recommended!" },
                   { name: "David Brown", role: "Business Owner", image: "DB", quote: "Professional and creative. My site is performing better than ever." },
                 ].map((testimonial, i) => (
-                  <motion.div key={`${testimonial.name}-${i}`} className="glass-card p-8 rounded-2xl min-w-[350px] sm:min-w-[400px] flex-shrink-0" style={{ transform: "perspective(1000px) rotateY(-5deg)" }}>
+                  <motion.div key={`${testimonial.name}-${i}`} className="glass-card p-8 rounded-2xl min-w-[350px] sm:min-w-[400px] flex-shrink-0">
                     <div className="flex items-center gap-4 mb-4">
                       <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold">{testimonial.image}</div>
                       <div>
