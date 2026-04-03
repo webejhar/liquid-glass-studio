@@ -89,7 +89,7 @@ export default function EmailGenerator() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          Generate professional email templates instantly
+          Generate professional email templates in seconds
         </motion.p>
 
         <div className="grid lg:grid-cols-2 gap-8">

@@ -428,42 +428,8 @@ export default function Home() {
           </motion.div>
         </section>
 
-        {/* Testimonials */}
-        <section className="mb-32">
-          <motion.h2 className="text-4xl font-bold mb-12 text-center" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-            Client <span className="text-primary">Testimonials</span>
-          </motion.h2>
-          <div className="relative overflow-hidden">
-            <motion.div className="flex gap-6" animate={{ x: [0, -1920] }} transition={{ x: { repeat: Infinity, repeatType: "loop", duration: 30, ease: "linear" } }}>
-              {[...Array(2)].flatMap(() =>
-                [
-                  { name: "Sarah Johnson", role: "CEO, TechStartup Inc", image: "SJ", quote: "Webejhar delivered an exceptional website that exceeded all our expectations." },
-                  { name: "Michael Chen", role: "Marketing Director", image: "MC", quote: "Fast turnaround, excellent communication, and pixel-perfect results." },
-                  { name: "Emma Williams", role: "Freelance Designer", image: "EW", quote: "The custom plugin saved me countless hours. Highly recommended!" },
-                  { name: "David Brown", role: "Business Owner", image: "DB", quote: "Professional and creative. My site is performing better than ever." },
-                ].map((testimonial, i) => (
-                  <motion.div key={`${testimonial.name}-${i}`} className="glass-card p-8 rounded-2xl min-w-[350px] sm:min-w-[400px] flex-shrink-0">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold">{testimonial.image}</div>
-                      <div>
-                        <p className="font-semibold text-lg">{testimonial.name}</p>
-                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-1 mb-4">
-                      {Array.from({ length: 5 }).map((_, j) => (
-                        <svg key={j} className="w-5 h-5 fill-primary text-primary" viewBox="0 0 24 24">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                        </svg>
-                      ))}
-                    </div>
-                    <p className="text-muted-foreground italic">"{testimonial.quote}"</p>
-                  </motion.div>
-                ))
-              )}
-            </motion.div>
-          </div>
-        </section>
+        {/* Testimonials - Dynamic from DB */}
+        <TestimonialsCarousel />
       </div>
 
       {selectedProduct && (
