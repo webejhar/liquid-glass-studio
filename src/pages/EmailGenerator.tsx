@@ -81,7 +81,7 @@ export default function EmailGenerator() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          AI Email <span className="text-primary">Generator</span>
+          Email <span className="text-primary">Generator</span>
         </motion.h1>
         <motion.p
           className="text-center text-muted-foreground mb-12 text-lg"
