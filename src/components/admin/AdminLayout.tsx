@@ -34,7 +34,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [pendingCount, setPendingCount] = useState(0);
+  const [counts, setCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     fetchCounts();
@@ -42,12 +42,22 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   const fetchCounts = async () => {
     try {
-      const { count: pending } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true })
-        .in("account_type", ["service_provider", "client"])
-        .eq("approval_status", "pending");
-      setPendingCount(pending || 0);
+      const [pending, meetings, tickets, orders, contacts, projects] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact", head: true }).in("account_type", ["service_provider", "client"]).eq("approval_status", "pending"),
+        supabase.from("meeting_bookings").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("support_tickets").select("*", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
+        supabase.from("product_orders").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("contacts").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("projects").select("*", { count: "exact", head: true }).eq("status", "pending"),
+      ]);
+      setCounts({
+        pending: pending.count || 0,
+        meetings: meetings.count || 0,
+        tickets: tickets.count || 0,
+        orders: orders.count || 0,
+        contacts: contacts.count || 0,
+        projects: projects.count || 0,
+      });
     } catch (error) {
       console.error("Error fetching counts:", error);
     }
