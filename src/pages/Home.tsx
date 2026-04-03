@@ -179,9 +179,9 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-              <Link to="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-primary/30 font-medium text-sm hover:border-primary/60 transition-colors mt-8">
-                Download CV <ExternalLink className="w-4 h-4" />
-              </Link>
+              <button onClick={() => setCvDialogOpen(true)} className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-primary/30 font-medium text-sm hover:border-primary/60 hover:scale-105 transition-all mt-8">
+                Download CV <Download className="w-4 h-4" />
+              </button>
             </motion.div>
           </div>
         </section>
