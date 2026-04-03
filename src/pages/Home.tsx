@@ -8,6 +8,7 @@ import { DomainChecker } from "@/components/DomainChecker";
 import { ProductPurchaseModal } from "@/components/ProductPurchaseModal";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 
 interface Product {
   id: number;
@@ -78,13 +79,11 @@ export default function Home() {
               <span className="text-glow">Designer</span> &{" "}
               <span className="text-primary">Developer</span>
             </motion.h1>
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground/80 mb-6 md:mb-8 leading-relaxed max-w-lg">
-              I craft{" "}
-              <Link to="/portfolio" className="text-primary/90 hover:text-primary font-semibold hover:underline underline-offset-4 transition-colors">custom websites</Link>,{" "}
-              build{" "}
-              <Link to="/shop" className="text-primary/90 hover:text-primary font-semibold hover:underline underline-offset-4 transition-colors">premium plugins</Link>,{" "}
-              and deliver pixel-perfect digital experiences. Let's{" "}
-              <Link to="/contact" className="text-primary/90 hover:text-primary font-semibold hover:underline underline-offset-4 transition-colors">work together</Link>.
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground/70 mb-6 md:mb-8 leading-relaxed max-w-lg">
+              I build custom WordPress and Elementor sites with a focus on clean design, speed, SEO, and real results. Explore my{" "}
+              <Link to="/portfolio" className="uppercase text-lg sm:text-xl md:text-2xl font-bold text-muted-foreground/50 hover:text-primary/70 underline-offset-4 hover:underline transition-colors">portfolio</Link>{" "}
+              to see{" "}
+              <Link to="/portfolio" className="uppercase text-lg sm:text-xl md:text-2xl font-bold text-muted-foreground/50 hover:text-primary/70 underline-offset-4 hover:underline transition-colors">my work</Link>.
             </p>
             <div className="flex flex-wrap gap-3 md:gap-4">
               <Link to="/portfolio" className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground font-medium hover:shadow-[0_0_25px_hsl(var(--primary)/0.5)] transition-all duration-300 hover:scale-105">
@@ -205,15 +204,20 @@ export default function Home() {
             </Link>
           </motion.div>
 
-          <div className="space-y-6">
+          <div className="relative">
             {portfolios.map((item, index) => (
               <motion.div
                 key={item.id}
-                className="glass-card rounded-2xl overflow-hidden"
-                initial={{ opacity: 0, y: 30 }}
+                className="glass-card rounded-2xl overflow-hidden mb-0 relative"
+                style={{
+                  position: "sticky",
+                  top: `${100 + index * 40}px`,
+                  zIndex: index + 1,
+                }}
+                initial={{ opacity: 0, y: 80 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ delay: index * 0.08, duration: 0.4 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               >
                 <div className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
                   {/* Image */}
@@ -229,7 +233,6 @@ export default function Home() {
                         <Code className="w-12 h-12 text-primary/30" />
                       </div>
                     )}
-                    {/* Tags overlay */}
                     <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
                       {item.category && (
                         <span className="px-2.5 py-1 rounded-full text-xs bg-background/80 backdrop-blur-sm border border-border/50 font-medium">
@@ -242,7 +245,6 @@ export default function Home() {
                         </span>
                       )}
                     </div>
-                    {/* Tech tags overlay bottom */}
                     {item.technologies_used && item.technologies_used.length > 0 && (
                       <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-1">
                         {item.technologies_used.slice(0, 4).map((tech, i) => (
@@ -253,7 +255,6 @@ export default function Home() {
                       </div>
                     )}
                   </div>
-
                   {/* Details */}
                   <div className="md:w-1/2 p-5 sm:p-6 md:p-8 flex flex-col justify-center space-y-3">
                     <span className="text-xs text-muted-foreground font-mono">
@@ -278,6 +279,8 @@ export default function Home() {
                 </div>
               </motion.div>
             ))}
+            {/* Spacer for sticky scroll effect */}
+            <div className="h-20" />
           </div>
         </section>
 
@@ -388,8 +391,8 @@ export default function Home() {
             <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" animate={{ x: ['-100%', '200%'] }} transition={{ duration: 3, repeat: Infinity, repeatDelay: 2, ease: "easeInOut" }} />
             <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-4xl font-bold mb-4">AI Email <span className="text-primary">Generator</span></h2>
-                <p className="text-muted-foreground text-lg">Generate professional email templates in seconds using our AI-powered system.</p>
+                <h2 className="text-4xl font-bold mb-4">Email <span className="text-primary">Generator</span></h2>
+                <p className="text-muted-foreground text-lg">Generate professional email templates in seconds.</p>
               </div>
               <div className="flex justify-center md:justify-end">
                 <Link to="/email-generator">
@@ -426,42 +429,8 @@ export default function Home() {
           </motion.div>
         </section>
 
-        {/* Testimonials */}
-        <section className="mb-32">
-          <motion.h2 className="text-4xl font-bold mb-12 text-center" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-            Client <span className="text-primary">Testimonials</span>
-          </motion.h2>
-          <div className="relative overflow-hidden">
-            <motion.div className="flex gap-6" animate={{ x: [0, -1920] }} transition={{ x: { repeat: Infinity, repeatType: "loop", duration: 30, ease: "linear" } }}>
-              {[...Array(2)].flatMap(() =>
-                [
-                  { name: "Sarah Johnson", role: "CEO, TechStartup Inc", image: "SJ", quote: "Webejhar delivered an exceptional website that exceeded all our expectations." },
-                  { name: "Michael Chen", role: "Marketing Director", image: "MC", quote: "Fast turnaround, excellent communication, and pixel-perfect results." },
-                  { name: "Emma Williams", role: "Freelance Designer", image: "EW", quote: "The custom plugin saved me countless hours. Highly recommended!" },
-                  { name: "David Brown", role: "Business Owner", image: "DB", quote: "Professional and creative. My site is performing better than ever." },
-                ].map((testimonial, i) => (
-                  <motion.div key={`${testimonial.name}-${i}`} className="glass-card p-8 rounded-2xl min-w-[350px] sm:min-w-[400px] flex-shrink-0">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl font-bold">{testimonial.image}</div>
-                      <div>
-                        <p className="font-semibold text-lg">{testimonial.name}</p>
-                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-1 mb-4">
-                      {Array.from({ length: 5 }).map((_, j) => (
-                        <svg key={j} className="w-5 h-5 fill-primary text-primary" viewBox="0 0 24 24">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                        </svg>
-                      ))}
-                    </div>
-                    <p className="text-muted-foreground italic">"{testimonial.quote}"</p>
-                  </motion.div>
-                ))
-              )}
-            </motion.div>
-          </div>
-        </section>
+        {/* Testimonials - Dynamic from DB */}
+        <TestimonialsCarousel />
       </div>
 
       {selectedProduct && (

@@ -44,6 +44,7 @@ import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminReviews from "./pages/admin/AdminReviews";
 import AdminPortfolio from "./pages/admin/AdminPortfolio";
+import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import Providers from "./pages/Providers";
 
 const queryClient = new QueryClient();
@@ -96,6 +97,7 @@ const App = () => (
               <Route path="/admin/settings" element={<AdminSettings />} />
               <Route path="/admin/reviews" element={<AdminReviews />} />
               <Route path="/admin/portfolio" element={<AdminPortfolio />} />
+              <Route path="/admin/testimonials" element={<AdminTestimonials />} />
               
               <Route path="/providers" element={<Providers />} />
               

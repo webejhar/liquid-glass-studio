@@ -1245,6 +1245,42 @@ export type Database = {
         }
         Relationships: []
       }
+      testimonials: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          quote: string
+          rating: number
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          quote: string
+          rating?: number
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          quote?: string
+          rating?: number
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_notifications: {
         Row: {
           created_at: string | null
