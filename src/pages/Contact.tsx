@@ -187,7 +187,7 @@ export default function Contact() {
               <label className="block mb-2 font-medium text-sm sm:text-base">Service</label>
               <select 
                 name="service" 
-                className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-background text-sm sm:text-base"
+                className="w-full glass-card px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground text-sm sm:text-base [&_option]:bg-background [&_option]:text-foreground"
               >
                 <option value="">Select a service</option>
                 <option value="UI/UX Design">UI/UX Design</option>
