@@ -37,6 +37,7 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>([]);
   const [isMobile, setIsMobile] = useState(false);
+  const [cvDialogOpen, setCvDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
