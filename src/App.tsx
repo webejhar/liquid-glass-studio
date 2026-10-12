@@ -10,6 +10,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Cart } from "@/components/Cart";
 import { CartProvider } from "@/contexts/CartContext";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Services from "./pages/Services";
