@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { useSEO } from "@/hooks/useSEO";
 
 interface Provider {
   user_id: string;
@@ -26,6 +27,7 @@ const SERVICE_CATEGORIES = [
 ];
 
 export default function Providers() {
+  useSEO("Find Service Providers", "Browse and hire verified freelance service providers on Webejhar.");
   const navigate = useNavigate();
   const [providers, setProviders] = useState<Provider[]>([]);
   const [filteredProviders, setFilteredProviders] = useState<Provider[]>([]);

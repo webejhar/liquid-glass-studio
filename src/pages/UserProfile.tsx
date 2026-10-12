@@ -10,6 +10,7 @@ import { Facebook, Instagram, Linkedin, Twitter, Github, Globe, Dribbble, Extern
 import { toast } from "sonner";
 import { HireModal } from "@/components/HireModal";
 import { ProviderSkillsTags } from "@/components/ProviderSkillsTags";
+import { useSEO } from "@/hooks/useSEO";
 
 interface UserProfile {
   user_id: string;

@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Calendar, User, ArrowRight } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 
 const blogPosts = [
   {
@@ -29,6 +30,7 @@ const blogPosts = [
 ];
 
 export default function Blog() {
+  useSEO("Blog", "Latest insights on design, development, and digital branding from Webejhar.");
   return (
     <div className="min-h-screen pt-24 sm:pt-32 px-4 pb-20">
       <div className="max-w-7xl mx-auto">
