@@ -57,6 +57,7 @@ const App = () => (
         <Toaster />
         <Sonner position="bottom-left" />
         <BrowserRouter>
+          <ScrollToTop />
           <LoadingScreen />
           <CustomCursor />
           <AnimatedBackground />
