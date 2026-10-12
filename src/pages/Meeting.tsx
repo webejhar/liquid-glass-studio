@@ -5,8 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { TimePicker } from "@/components/TimePicker";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function Meeting() {
+  useSEO("Book a Meeting", "Schedule a one-on-one meeting with Webejhar to discuss your project.");
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");

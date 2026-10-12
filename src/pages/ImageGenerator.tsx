@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { useSEO } from "@/hooks/useSEO";
 
 interface GeneratedImage {
   url: string;
@@ -16,6 +17,7 @@ interface GeneratedImage {
 }
 
 export default function ImageGenerator() {
+  useSEO("AI Image Generator", "Create stunning AI-generated images with Webejhar.");
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
   const [images, setImages] = useState<GeneratedImage[]>([]);

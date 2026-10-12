@@ -4,8 +4,10 @@ import { Copy, Check, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function EmailGenerator() {
+  useSEO("Email Generator", "Generate professional email templates instantly with Webejhar's Email Generator.");
   const navigate = useNavigate();
   const [subject, setSubject] = useState("");
   const [details, setDetails] = useState("");

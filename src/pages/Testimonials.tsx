@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Star, Quote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useSEO } from "@/hooks/useSEO";
 
 interface Testimonial {
   id: string;
@@ -13,6 +14,7 @@ interface Testimonial {
 }
 
 export default function Testimonials() {
+  useSEO("Client Testimonials", "See what clients say about working with Webejhar.");
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
 
   useEffect(() => {

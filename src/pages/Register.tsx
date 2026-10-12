@@ -8,10 +8,12 @@ import { ServiceProviderForm } from "@/components/registration/ServiceProviderFo
 import { ClientForm } from "@/components/registration/ClientForm";
 
 import { ArrowLeft } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 
 type AccountType = 'general' | 'service_provider' | 'client' | null;
 
 export default function Register() {
+  useSEO("Create Account", "Join Webejhar — register as a client, service provider, or general user.");
   const navigate = useNavigate();
   const [showTypeModal, setShowTypeModal] = useState(true);
   const [selectedType, setSelectedType] = useState<AccountType>(null);
